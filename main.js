@@ -1,12 +1,15 @@
 $(document).ready(function () {
 
-    //hides elements when proceeding forward
+    //hides elements shows next element
+    //hides elements when confirming selection
     $('.fwdBtn').on('click', function () {
         this.style.backgroundColor = 'LightSteelBlue';
         var btnId = $(this).attr('tog-lerID');
+        
+        //$('#' + btnId).addClass('overlay');
+        //$("#" + btnId).removeClass('overlay');
         $("#" + btnId).slideToggle(300);
         $("#" + btnId).next().slideToggle(300);
-
         if (btnId == 'defaults') {
             setEmployeeCount(this.id);
         } else if (btnId == 'enterManually') {
@@ -15,8 +18,18 @@ $(document).ready(function () {
             calculateTips();
             $('#enterManually').slideToggle(300);
             $('#' + btnId).slideToggle(300);
-        }
+        } 
     });
+
+    //hides current element shows previous element
+    $('.backBtn').on('click', function(){
+        var backBtnId = $(this).attr('tog-lerID');
+        this.style.backgroundColor = 'Blue';
+        console.log(backBtnId);
+        $('#' + backBtnId).slideToggle(300);
+        $("#" + backBtnId).next().slideToggle(300);
+    });
+
 
     //initialize variables
     function setEmployeeCount(helper) {
@@ -92,5 +105,7 @@ $(document).ready(function () {
             remainder.value = totalCash.value - totalBusser.value - servHelper;
         }
     }
+    
 });
 
+ 
