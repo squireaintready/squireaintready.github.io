@@ -5,9 +5,6 @@ $(document).ready(function () {
     $('.fwdBtn').on('click', function () {
         this.style.backgroundColor = 'LightSteelBlue';
         var btnId = $(this).attr('tog-lerID');
-        
-        //$('#' + btnId).addClass('overlay');
-        //$("#" + btnId).removeClass('overlay');
         $("#" + btnId).slideToggle(300);
         $("#" + btnId).next().slideToggle(300);
         if (btnId == 'defaults') {
