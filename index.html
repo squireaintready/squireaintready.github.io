@@ -15,14 +15,20 @@
 
     <div id='container'>
         <h1 id='heading' style="background-color: #c3b9de;">Mizumi Calculator By Samuel Jo</h1>
-        <div id='defaults'>
+        <div id = 'begin'>
+            Click to begin
+            <button type = 'button' class = 'fwdBtn' tog-lerID = 'begin'>Start</button>
+        </div>
+        <div id='defaults' hidden>
+            Choose ONE
             <button type = 'button' id = 'weekday' class = 'fwdBtn' tog-lerID = 'defaults'>Weekday</button>
             <button type = 'button' id = 'weekend' class = 'fwdBtn' tog-lerID = 'defaults'>Weekend</button>
             <button type = 'button' id = 'manual' class = 'fwdBtn' tog-lerID = 'defaults'>Manual</button>
             <button type = 'button' class = 'fwdBtn' tog-lerID = 'defaults'>Go Forward</button>
         </div>
 
-        <div id = 'enterManually'>
+        <div id = 'enterManually' hidden>
+            Confirm employees working
             <input type="text" id="numBG" placeholder="numBG"></input>
             <input type="text" id="numBB" placeholder="numBB"></input>
             <input type="text" id="numServer" placeholder="numServer"></input>
@@ -30,18 +36,19 @@
             <button type = 'button' class = 'fwdBtn' tog-lerID = 'enterManually'>Go Forward</button>
         </div>
 
-        <div id = 'cashV'>
+        <div id = 'cashV' hidden>
+            Enter cash
             <input type = "text" id = 'totalCash' placeholder="Total Cash">
             <button type='button' id='calculateBtn' class = 'fwdBtn' tog-lerID = 'cashV'>Calculate</button>
         </div>
 
-        <div id = 'results'>
-            <input type="text" id="bg" placeholder="bg"></input>
-            <input type="text" id="bb" placeholder="bb"></input>
-            <input type="text" id="serv" placeholder="server"></input>
-            <input type="text" id="remainder" placeholder="remainder"></input>
-            <input type="text" id="totalBB" placeholder="totalBB"></input>
-            <input type="text" id="totalBusser" placeholder="totalBusser"></input>
+        <div id = 'results'hidden>
+            Busgirls Made: <input type="text" id="bg" placeholder="bg"></input>
+            Busboys Made: <input type="text" id="bb" placeholder="bb"></input>
+            Servers Made: <input type="text" id="serv" placeholder="server"></input>
+            PIGGY: <input type="text" id="remainder" placeholder="remainder"></input>
+            Busboy Total: <input type="text" id="totalBB" placeholder="totalBB"></input>
+            Total Bussers: <input type="text" id="totalBusser" placeholder="totalBusser"></input>
         </div>
 
     </div>
