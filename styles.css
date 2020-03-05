@@ -7,34 +7,31 @@
     width: 100vw;
     height: 100vh;
     overflow: auto;
-    float: left;
-}
-
-.results{
-    -webkit-column-count: 2;
-    -moz-column-count: 2;
-    column-count: 2;
-    -webkit-column-gap: 0px;
-    -moz-column-gap: 0px;
-    column-gap: 0px;
-    -webkit-column-rule: 1px solid transparent;
-    -moz-column-rule: 1px solid transparent;
-    column-rule: 1px solid transparent;
+    margin: auto;
+    padding: 1px;
 }
 
 .navBar{
-    position: absolute;
     bottom: 0;
+    margin: .1%;
 }
 
 #backward{
     float: left;
+    bottom: 0;
 }
 
 #forward{
     float: right;
+    bottom: 0;
 }
 
 body {
     background-image: url("sushi.png");
+}
+
+input{
+    float: right;
+    right: 40%;
+    clear: both;
 }
