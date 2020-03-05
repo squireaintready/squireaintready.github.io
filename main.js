@@ -16,8 +16,8 @@ $(document).ready(function () {
             setEmployeeCount(this.id);
         } else if (btnId == 'cashV') {
             calculateTips();
-            $('#enterManually').slideToggle(300);
-            $('#' + btnId).slideToggle(300);
+            //$('#enterManually').slideToggle(300);
+            //$('#' + btnId).slideToggle(300);
         } 
     });
 
