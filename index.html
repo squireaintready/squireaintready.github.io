@@ -12,34 +12,43 @@
     <title>Samuel Jo's Calculator</title>
 </head>
 <body>
-
+    <h1 id='heading' style="background-color: #c3b9de;">Mizumi Calculator By Samuel Jo</h1>
     <div id='container'>
-        <h1 id='heading' style="background-color: #c3b9de;">Mizumi Calculator By Samuel Jo</h1>
-        <div id = 'begin'>
+        <div id = 'begin' class = 'fullscreen'>
             Click to begin
             <button type = 'button' class = 'fwdBtn' tog-lerID = 'begin'>Start</button>
         </div>
-        <div id='defaults' hidden>
+        <div id='defaults' class = 'fullscreen' hidden>
             Choose ONE
             <button type = 'button' id = 'weekday' class = 'fwdBtn' tog-lerID = 'defaults'>Weekday</button>
             <button type = 'button' id = 'weekend' class = 'fwdBtn' tog-lerID = 'defaults'>Weekend</button>
             <button type = 'button' id = 'manual' class = 'fwdBtn' tog-lerID = 'defaults'>Manual</button>
-            <button type = 'button' class = 'fwdBtn' tog-lerID = 'defaults'>Go Forward</button>
+            <div class = 'navBar'>
+                <button type = 'button' id = 'backward'class = 'backBtn' tog-lerID = 'begin'>Backward</button>
+                <button type = 'button' id = 'forward' class = 'fwdBtn' tog-lerID = 'defaults'>Forward</button>
+            </div>
         </div>
 
-        <div id = 'enterManually' hidden>
+        <div id = 'enterManually' class = 'fullscreen' hidden>
             Confirm employees working
             <input type="text" id="numBG" placeholder="numBG"></input>
             <input type="text" id="numBB" placeholder="numBB"></input>
             <input type="text" id="numServer" placeholder="numServer"></input>
             <button type = 'button' id = 'manualSelectorBtn' class = 'fwdBtn' tog-lerID = 'enterManually'>Confirm</button>
-            <button type = 'button' class = 'fwdBtn' tog-lerID = 'enterManually'>Go Forward</button>
+            <div class = 'navBar'>
+                <button type = 'button' id = 'backward'class = 'backBtn' tog-lerID = 'defaults'>Backward</button>
+                <button type = 'button' id = 'forward' class = 'fwdBtn' tog-lerID = 'enterManually'>Forward</button>
+            </div>
         </div>
 
-        <div id = 'cashV' hidden>
+        <div id = 'cashV' class = 'fullscreen' hidden>
             Enter cash
             <input type = "text" id = 'totalCash' placeholder="Total Cash">
             <button type='button' id='calculateBtn' class = 'fwdBtn' tog-lerID = 'cashV'>Calculate</button>
+            <div class = 'navBar'>
+                <button type = 'button' id = 'backward'class = 'backBtn' tog-lerID = 'enterManually'>Backward</button>
+                <button type = 'button' id = 'forward' class = 'fwdBtn' tog-lerID = 'cashV'>Forward</button>
+            </div>
         </div>
 
         <div id = 'results'hidden>
@@ -49,6 +58,10 @@
             PIGGY: <input type="text" id="remainder" placeholder="remainder"></input>
             Busboy Total: <input type="text" id="totalBB" placeholder="totalBB"></input>
             Total Bussers: <input type="text" id="totalBusser" placeholder="totalBusser"></input>
+            <div class = 'navBar'>
+                <button type = 'button' id = 'backward'class = 'backBtn' tog-lerID = 'cashV'>Backward</button>
+                <button type = 'button' id = 'forward' class = 'fwdBtn' tog-lerID = 'results'>Forward</button>
+            </div>
         </div>
 
     </div>
