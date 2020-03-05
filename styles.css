@@ -26,12 +26,12 @@
     bottom: 0;
 }
 
-body {
-    background-image: url("sushi.png");
-}
-
 input{
     float: right;
     right: 40%;
     clear: both;
+}
+
+body {
+    background-image: url("sushi.png");
 }
