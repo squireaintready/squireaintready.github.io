@@ -13,11 +13,11 @@
 </head>
 <body>
 
-<div id="mypanel">
-    <button type = 'reset' class = 'refresh' onClick="window.location.reload();">Refresh</button>
+<div class="myPanel">
+    <button type = 'reset' class = 'myPanel' id = 'refreshBtn' onClick="window.location.reload();">Refresh</button>
 </div>
 
-<h1 id='heading' ">Mizumi Calculator By Samuel Jo</h1>
+<h1 id='heading' ">Mizumi Calculator </br>By Samuel Jo</h1>
 <form>
     <div id='container'>
         <div id = 'begin' class = 'fullscreen'>
@@ -31,7 +31,7 @@
             <button type = 'button' id = 'weekend' class = 'fwdBtn' tog-lerID = 'defaults'>Weekend</button></br>
             <button type = 'button' id = 'manual' class = 'fwdBtn' tog-lerID = 'defaults'>Manual</button></br>
             <div class = 'navBar'>
-                <button type = 'button' id = 'backward'class = 'backBtn' tog-lerID = 'begin'>Back</button>
+                <button type = 'button' id = 'backward' class = 'backBtn myPanel'  tog-lerID = 'begin'>Back</button>
             </div>
         </div>
 
@@ -47,7 +47,7 @@
             
                 <button type = 'button' id = 'manualSelectorBtn' class = 'fwdBtn' tog-lerID = 'enterManually'>Confirm</button>
             <div class = 'navBar'>
-                <button type = 'button' id = 'backward'class = 'backBtn' tog-lerID = 'defaults'>Back</button>
+                <button type = 'button' id = 'backward'class = 'backBtn myPanel' tog-lerID = 'defaults'>Back</button>
             </div>
         </div>
 
@@ -57,7 +57,7 @@
             <label for="totalCash"class = 'label-name'>Total Cash</label>
             <button type='button' id='calculateBtn' class = 'fwdBtn' tog-lerID = 'cashV'>Calculate</button>
             <div class = 'navBar'>
-                <button type = 'button' id = 'backward'class = 'backBtn' tog-lerID = 'enterManually'>Back</button>
+                <button type = 'button' id = 'backward'class = 'backBtn myPanel' tog-lerID = 'enterManually'>Back</button>
             </div>
         </div>
 
@@ -83,7 +83,7 @@
             <label for="totalBusser"class = 'label-name'>Total BUSSERS</label>
 
             <div class = 'navBar'>
-                <button type = 'button' id = 'backward'class = 'backBtn' tog-lerID = 'cashV'>Back</button>
+                <button type = 'button' id = 'backward'class = 'backBtn myPanel' tog-lerID = 'cashV'>Back</button>
             </div>
         </div>
 
