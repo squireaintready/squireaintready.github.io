@@ -1,8 +1,14 @@
 $(document).ready(function () {
 
+    //refresh page
+    /*$('.refresh').on('click', function(){
+        document.reload();
+    });*/
+
     //hides elements shows next element
     //hides elements when confirming selection
     $('.fwdBtn').on('click', function () {
+        $( "#mypanel" ).trigger( "updatelayout" );
         this.style.backgroundColor = 'LightSteelBlue';
         var btnId = $(this).attr('tog-lerID');
         $("#" + btnId).slideToggle(300);
@@ -20,6 +26,7 @@ $(document).ready(function () {
 
     //hides current element shows previous element
     $('.backBtn').on('click', function(){
+        $( "#mypanel" ).trigger( "updatelayout" );
         var backBtnId = $(this).attr('tog-lerID');
         this.style.backgroundColor = 'Blue';
         console.log(backBtnId);
@@ -80,13 +87,13 @@ $(document).ready(function () {
             };
             //calculates servers        
             if ((numServer.value % 1) == 0) {
-                serv.value = Math.round(((totalCash.value - bgHelper - bbHelper) /
+                serv.value = Math.floor(((totalCash.value - bgHelper - bbHelper) /
                     numServer.value));
                 var servHelper = (serv.value * numServer.value);
             } else if ((numServer.value % 1) != 0) {
-                let senior = Math.round(((totalCash.value - bgHelper - bbHelper) /
+                let senior = Math.floor(((totalCash.value - bgHelper - bbHelper) /
                     numServer.value));
-                let trainnee = Math.round(senior * (numServer.value % 1));
+                let trainnee = Math.floor(senior * (numServer.value % 1));
                 servHelper = senior + trainee + 0;
                 serv.value = servHelper;
                 servHelper = (servHelper * numServer * 1);
@@ -102,6 +109,8 @@ $(document).ready(function () {
             remainder.value = totalCash.value - totalBusser.value - servHelper;
         }
     }
+
+
     
 });
 
