@@ -1,4 +1,19 @@
-.myPanel {
+.backBtn{
+    margin-top: 100px;
+    transform:rotate(-90deg);
+    height: 5%;
+    width: 100%;
+    background-color: black;
+    color: whitesmoke
+}
+
+#refreshBtn{
+    margin-top: 100px;
+    transform:rotate(90deg);
+    height: 5%;
+}
+
+.navBar {
     height: 100%;
     width: 5%;
     position: fixed;
@@ -6,9 +21,22 @@
     top: 0;
     left: 0;
     background-color: #111;
-    padding-top: 20px;
+    padding-top: 10px;
     color: white;
 }
+
+.rightPanel{
+    height: 100%;
+    width: 5%;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    right: 0;
+    background-color: #111;
+    padding-top: 10px;
+    color: white;
+}
+
 
 body {
     text-align: center;
