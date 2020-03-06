@@ -1,19 +1,21 @@
-
-.fullscreen {
+body {
     font-weight: bolder;
     font-size: large;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    overflow: auto;
+    width: 60vw;
+    height: 60vh;
+    color: whitesmoke;
     margin: auto;
     padding: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    flex-direction: column;
+    background-image: url(gsection.png);
 }
 
-.navBar{
-    bottom: 0;
-    margin: .1%;
+#heading{
+    width: 100vw;
+    text-align: center;
 }
 
 #backward{
@@ -21,17 +23,27 @@
     bottom: 0;
 }
 
-#forward{
-    float: right;
-    bottom: 0;
+
+form{
+    width: 50%;
+    position: relative;
+    height: 50px;
 }
 
-input{
-    float: right;
-    right: 40%;
-    clear: both;
+.fullscreen input{
+    width: 100%;
+    height: 100%;
+    color: #595f6e;
+    padding-top: 20px;
+    border: none;
 }
 
-body {
-    background-image: url("sushi.png");
+.fullscreen label{
+    bottom: 0px;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    border-bottom: 1px solid black;
 }
+
