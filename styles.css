@@ -1,15 +1,23 @@
 .backBtn{
-    margin-top: 100px;
     transform:rotate(-90deg);
-    width: 100%;
+    top: 10%;
+    position: fixed;
     background-color: black;
     color: whitesmoke;
+    height: auto;
+    width:fit-content;
+    left:0px;
 }
 
 #refreshBtn{
-    margin-top: 100px;
+    top: 10%;
+    right: 0px;
+    position: fixed;
     transform:rotate(90deg);
-    height: 5%;
+    height: auto;
+    width:fit-content;
+    border-top:1px;
+    padding: 1px 1px;
 }
 
 .navBar {
@@ -32,7 +40,7 @@
     top: 0;
     right: 0;
     background-color: #111;
-    padding-top: 5px;
+    padding: 1px 1px;
     color: white;
 }
 
