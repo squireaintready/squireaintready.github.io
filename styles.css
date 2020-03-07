@@ -6,23 +6,23 @@
     color: whitesmoke;
     height: auto;
     width:fit-content;
-    left:0px;
+    left: 0%
 }
 
 #refreshBtn{
     top: 10%;
-    right: 0px;
     position: fixed;
     transform:rotate(90deg);
     height: auto;
     width:fit-content;
     border-top:1px;
     padding: 1px 1px;
+    right:0%;
 }
 
 .navBar {
     height: 100%;
-    width: 5%;
+    width: 6%;
     position: fixed;
     z-index: 1;
     top: 0;
@@ -34,7 +34,7 @@
 
 .rightPanel{
     height: 100%;
-    width: 5%;
+    width: 6%;
     position: fixed;
     z-index: 1;
     top: 0;
