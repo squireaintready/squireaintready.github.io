@@ -59,7 +59,7 @@ body {
     align-items: center;
     justify-content: space-around;
     flex-direction: column;
-    background-image: url("gsection.png"), url("gsect.JPG"), url("https://squireaintready.github.io/gsection.png"), url("https://squireaintready.github.io/gsect.JPG");
+    background-image: url(".../gsect.JPG"), url("/../gsect.JPG"), url("gsection.png"), url("gsect.JPG"), url("https://squireaintready.github.io/gsection.png"), url("https://squireaintready.github.io/gsect.JPG");
 }
 
 #heading{
