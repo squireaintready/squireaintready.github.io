@@ -1,6 +1,6 @@
 .backBtn{
     transform:rotate(-90deg);
-    top: 10%;
+    top: 3%;
     position: fixed;
     background-color: black;
     color: whitesmoke;
@@ -13,7 +13,7 @@
 
 #refreshBtn{
     right: 0;
-    top: 10%;
+    top: 3%;
     position: absolute;
     transform:rotate(90deg);
     height: auto;
