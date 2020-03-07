@@ -3,7 +3,7 @@
     transform:rotate(-90deg);
     width: 100%;
     background-color: black;
-    color: whitesmoke
+    color: whitesmoke;
 }
 
 #refreshBtn{
@@ -50,6 +50,7 @@ body {
     align-items: center;
     justify-content: space-around;
     flex-direction: column;
+    background-image: url(/gsect.JPG), url('https://squireaintready.github.io/gsect.JPG'), url(https://squireaintready.github.io/gsection.png);
 }
 
 #heading{
