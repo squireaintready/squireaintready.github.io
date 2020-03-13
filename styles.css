@@ -1,14 +1,12 @@
 .backgroundImg {
-    position: fixed;
-    display: block;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-size: cover;
     background-position: center center;
-    transform: translateZ(0);
-    will-change: transform;
+    /* Image doesn't repeat */
+
+    /* Makes the image fixed in the viewport so that it doesn't move when the content height is greater than the image height */
+    background-attachment: fixed;
+
+    /* This is what makes the background image rescale based on its     container's size */
+    background-size: auto;
 }
 
 .backBtn{
