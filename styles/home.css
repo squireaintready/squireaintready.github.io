@@ -305,26 +305,37 @@
 .craft__head { margin-bottom: clamp(1.75rem, 4vw, 2.75rem); }
 .craft__title { font-family: var(--font-display); font-weight: 340; font-size: var(--fs-3xl); line-height: 1.02; letter-spacing: -0.025em; max-width: 18ch; text-wrap: balance; }
 .craft__flow {
+  position: relative;
   font-family: var(--font-prose); font-size: var(--fs-lg); line-height: 1.72; color: var(--text-dim);
-  display: grid; grid-template-columns: 1fr 1fr;
-  align-items: center; justify-items: center;
-  column-gap: clamp(1rem, 4vw, 2rem); row-gap: clamp(1.5rem, 5vw, 2.25rem);
+  max-width: 76ch; margin-inline: auto;
+  text-align: center; /* centers the seal row on phones */
 }
 .craft__flow strong { color: var(--text); font-weight: 600; }
-.craft__flow > p { grid-column: 1 / -1; margin: 0; max-width: 64ch; }
-.craft__disc { width: clamp(126px, 17vw, 178px); aspect-ratio: 1; display: grid; place-items: center; cursor: grab; touch-action: none; -webkit-user-select: none; user-select: none; transform: translate(var(--dx, 0px), var(--dy, 0px)); will-change: transform; }
+.craft__flow > p { margin: 0; text-align: left; }
+/* phones: the two seals sit in a centered row above the prose */
+.craft__disc {
+  width: clamp(122px, 30vw, 166px); aspect-ratio: 1;
+  display: inline-grid; place-items: center; vertical-align: top;
+  margin: 0 0.45rem 1.4rem;
+  cursor: grab; touch-action: none; -webkit-user-select: none; user-select: none;
+  transform: translate(var(--dx, 0px), var(--dy, 0px)); will-change: transform;
+}
 .craft__disc.is-grabbing { cursor: grabbing; }
-/* On desktop the two seals flank the prose (one each side); the text sits in a
-   readable centered column between them and never overlaps either seal. */
-@media (min-width: 920px) {
-  .craft__flow {
-    grid-template-columns: auto minmax(0, 60ch) auto;
-    justify-content: center;
-    column-gap: clamp(1.5rem, 4vw, 3.25rem);
+/* desktop: seals float INTO the prose and the text wraps around them. The left seal
+   sits high, the right one drops lower (margin-top) so the pair reads as designed,
+   not crammed; shape-margin keeps the prose off the rings. */
+@media (min-width: 860px) {
+  .craft__flow { text-align: left; }
+  .craft__disc {
+    float: left; display: grid;
+    width: clamp(142px, 14.5vw, 176px);
+    shape-outside: circle(50%); shape-margin: 0.85rem;
+    margin: 0.1rem 0.7rem 0.7rem 0;
   }
-  .craft__flow > p { grid-column: 2; grid-row: 1; max-width: none; }
-  .craft__disc:not(.craft__disc--right) { grid-column: 1; grid-row: 1; }
-  .craft__disc--right { grid-column: 3; grid-row: 1; }
+  .craft__disc--right {
+    float: right;
+    margin: 4.75rem 0 0.7rem 0.7rem;
+  }
 }
 .craft__principles { margin-top: clamp(2rem, 5vw, 3rem); display: grid; grid-template-columns: 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; }
 @media (min-width: 680px) { .craft__principles { grid-template-columns: repeat(2, 1fr); } }
