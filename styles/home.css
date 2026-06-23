@@ -180,6 +180,18 @@
 .browser__view img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
 .browser__view--fit img { object-fit: contain; object-position: center; }
 
+/* miztips preview adapts to the active theme: Luxe (champagne) on light, dark on dark */
+.browser__view--mz { background: #c1b38c; }
+.mz-shot--dark { display: none; }
+:is([data-theme="dark"], [data-theme="midnight"], [data-theme="bordeaux"], [data-theme="forest"]) .browser__view--mz { background: #0d1625; }
+:is([data-theme="dark"], [data-theme="midnight"], [data-theme="bordeaux"], [data-theme="forest"]) .mz-shot--luxe { display: none; }
+:is([data-theme="dark"], [data-theme="midnight"], [data-theme="bordeaux"], [data-theme="forest"]) .mz-shot--dark { display: block; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .browser__view--mz { background: #0d1625; }
+  :root:not([data-theme]) .mz-shot--luxe { display: none; }
+  :root:not([data-theme]) .mz-shot--dark { display: block; }
+}
+
 /* ---------- Shared CSS visuals (also used on case pages) ---------- */
 .viz { position: relative; width: 100%; height: 100%; display: grid; place-items: center; overflow: hidden; }
 .viz--tells { background: radial-gradient(125% 95% at 50% 16%, #1d5440 0%, #0d271b 52%, #06110c 100%); }
