@@ -32,7 +32,7 @@
     (function () {
       try {
         var t = localStorage.getItem("theme");
-        if (t === "dark" || t === "light") document.documentElement.setAttribute("data-theme", t);
+        if (["light","dark","midnight","bordeaux","forest"].includes(t)) document.documentElement.setAttribute("data-theme", t);
       } catch (e) {}
     })();
   </script>
@@ -100,12 +100,10 @@
         <a class="btn btn--ghost" href="#contact">Get in touch</a>
       </div>
 
-      <dl class="hero__stats">
-        <div class="stat"><dt class="visually-hidden">Products in production</dt><dd class="stat__num"><b>4</b></dd><p class="stat__label">products shipped to production</p></div>
-        <div class="stat"><dt class="visually-hidden">Records indexed</dt><dd class="stat__num"><b>9.6M+</b></dd><p class="stat__label">parcels indexed · RegWatch</p></div>
-        <div class="stat"><dt class="visually-hidden">Face landmarks tracked</dt><dd class="stat__num"><b>478</b>-pt</dd><p class="stat__label">live face meshes · Tells</p></div>
-        <div class="stat"><dt class="visually-hidden">Real-world use</dt><dd class="stat__num">daily</dd><p class="stat__label">in real-world use · miztips</p></div>
-      </dl>
+      <div class="hero__status">
+        <span class="hero__avail"><span class="avail-dot" aria-hidden="true"></span> Open to Software &amp; AI Engineering roles</span>
+        <span class="hero__focus">New York · remote-friendly · currently building <a href="https://regwatch.nyc/" target="_blank" rel="noopener">RegWatch</a></span>
+      </div>
 
       <p class="hero__scroll" aria-hidden="true"><span class="line"></span> Selected work</p>
     </section>
@@ -121,89 +119,117 @@
 
       <div class="work-grid">
         <!-- Crowdtells -->
-        <article class="work-card reveal" data-proj="crowdtells" data-delay="1">
-          <div class="work-card__top">
-            <span class="work-card__index">01</span>
-            <span class="badge badge--live"><span class="dot" aria-hidden="true"></span> Live</span>
+        <article class="feature reveal" data-proj="crowdtells">
+          <div class="feature__media">
+            <a class="browser" href="https://crowdtells.com/" target="_blank" rel="noopener" aria-label="Open Crowdtells live at crowdtells.com">
+              <span class="browser__bar"><span class="browser__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="browser__url"><span class="lock">●</span>crowdtells.com</span><span class="browser__go" aria-hidden="true">open ↗</span></span>
+              <span class="browser__view"><img src="/public/img/shot-crowdtells.jpg" width="1200" height="750" alt="Crowdtells home page — a serif CROWDTELLS masthead over stories ranked by newsworthiness." loading="lazy"></span>
+            </a>
           </div>
-          <h3 class="work-card__title">Crowdtells</h3>
-          <p class="work-card__role">AI · News · Prediction Markets</p>
-          <p class="work-card__desc">A news feed driven by the money. It reads Polymarket and Kalshi as a signal of what matters, ranks stories by newsworthiness, then briefs each one from many outlets — with LLM summaries grounded strictly in the market data, so the prose can never drift from the odds.</p>
-          <div class="work-card__chips cluster">
-            <span class="chip">React</span><span class="chip">TypeScript</span><span class="chip">Groq LLM</span><span class="chip">Cloudflare</span>
-          </div>
-          <div class="work-card__foot">
-            <a class="tlink card-link" href="/work/crowdtells.html">Case study <span class="arrow" aria-hidden="true">→</span></a>
-            <span class="sep" aria-hidden="true">·</span>
-            <div class="work-card__links">
-              <a href="https://crowdtells.com/" target="_blank" rel="noopener">Live <span class="arrow" aria-hidden="true">↗</span></a>
+          <div class="feature__body">
+            <div class="feature__meta"><span class="feature__index">01</span><span class="badge badge--live"><span class="dot" aria-hidden="true"></span> Live</span></div>
+            <h3 class="feature__title">Crowdtells</h3>
+            <p class="feature__role">AI · News · Prediction Markets</p>
+            <p class="feature__desc">A news feed driven by the money — it reads Polymarket and Kalshi as a signal of what matters, ranks stories by newsworthiness, then briefs each from many outlets with LLM summaries grounded strictly in the market data.</p>
+            <div class="feature__chips cluster"><span class="chip">React</span><span class="chip">TypeScript</span><span class="chip">Groq LLM</span><span class="chip">Cloudflare</span></div>
+            <div class="feature__actions">
+              <a class="btn btn--primary" href="https://crowdtells.com/" target="_blank" rel="noopener">Open live <span class="arrow" aria-hidden="true">↗</span></a>
+              <a class="tlink" href="/work/crowdtells.html">Case study <span class="arrow" aria-hidden="true">→</span></a>
             </div>
           </div>
         </article>
 
         <!-- RegWatch -->
-        <article class="work-card reveal" data-proj="regwatch" data-delay="2">
-          <div class="work-card__top">
-            <span class="work-card__index">02</span>
-            <span class="badge badge--live"><span class="dot" aria-hidden="true"></span> Live · Founder</span>
+        <article class="feature feature--flip reveal" data-proj="regwatch">
+          <div class="feature__media">
+            <a class="browser" href="https://regwatch.nyc/" target="_blank" rel="noopener" aria-label="Open RegWatch live at regwatch.nyc">
+              <span class="browser__bar"><span class="browser__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="browser__url"><span class="lock">●</span>regwatch.nyc</span><span class="browser__go" aria-hidden="true">open ↗</span></span>
+              <span class="browser__view"><img src="/public/img/shot-regwatch.jpg" width="1200" height="750" alt="RegWatch landing page — a dark hero reading 'Every building has a record' over a 3D city, with an address search." loading="lazy"></span>
+            </a>
           </div>
-          <h3 class="work-card__title">RegWatch</h3>
-          <p class="work-card__role">SaaS · Civic Data · Full-Stack</p>
-          <p class="work-card__desc">Property intelligence for NY, NJ &amp; CT. Instant compliance and risk reports built on 9.6M+ parcels aggregated from 86+ government sources — with real-time regulatory monitoring, grounded AI chat, and a 12-language UI, all served from a single multi-brand codebase.</p>
-          <div class="work-card__chips cluster">
-            <span class="chip">Next.js 15</span><span class="chip">React 19</span><span class="chip">SQLite</span><span class="chip">Stripe</span><span class="chip">Groq</span>
-          </div>
-          <div class="work-card__foot">
-            <a class="tlink card-link" href="/work/regwatch.html">Case study <span class="arrow" aria-hidden="true">→</span></a>
-            <span class="sep" aria-hidden="true">·</span>
-            <div class="work-card__links">
-              <a href="https://regwatch.nyc/" target="_blank" rel="noopener">Live <span class="arrow" aria-hidden="true">↗</span></a>
+          <div class="feature__body">
+            <div class="feature__meta"><span class="feature__index">02</span><span class="badge badge--live"><span class="dot" aria-hidden="true"></span> Live · Founder</span></div>
+            <h3 class="feature__title">RegWatch</h3>
+            <p class="feature__role">SaaS · Civic Data · Full-Stack</p>
+            <p class="feature__desc">Property intelligence for NY, NJ &amp; CT — instant compliance and risk reports over 9.6M+ parcels from 86+ government sources, with real-time monitoring, grounded AI chat, and a 12-language UI from one multi-brand codebase.</p>
+            <div class="feature__chips cluster"><span class="chip">Next.js 15</span><span class="chip">React 19</span><span class="chip">SQLite</span><span class="chip">Stripe</span><span class="chip">Groq</span></div>
+            <div class="feature__actions">
+              <a class="btn btn--primary" href="https://regwatch.nyc/" target="_blank" rel="noopener">Open live <span class="arrow" aria-hidden="true">↗</span></a>
+              <a class="tlink" href="/work/regwatch.html">Case study <span class="arrow" aria-hidden="true">→</span></a>
             </div>
           </div>
         </article>
 
         <!-- Tells -->
-        <article class="work-card reveal" data-proj="tells" data-delay="1">
-          <div class="work-card__top">
-            <span class="work-card__index">03</span>
-            <span class="badge badge--private">Private demo</span>
+        <article class="feature reveal" data-proj="tells">
+          <div class="feature__media">
+            <a class="browser" href="https://facer-fti6.onrender.com/" target="_blank" rel="noopener" aria-label="Open Tells live">
+              <span class="browser__bar"><span class="browser__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="browser__url"><span class="lock">●</span>facer-fti6.onrender.com</span><span class="browser__go" aria-hidden="true">open ↗</span></span>
+              <span class="browser__view">
+                <span class="viz viz--tells" role="img" aria-label="A 3D poker table: a green felt ellipse ringed by glowing markers standing in for players' live webcam face-meshes.">
+                  <span class="dots" aria-hidden="true"></span>
+                  <span class="felt" aria-hidden="true">
+                    <span class="seat" style="top:-15px;left:calc(50% - 15px)"></span><span class="seat" style="top:22%;left:-15px"></span><span class="seat" style="top:22%;right:-15px"></span><span class="seat" style="bottom:22%;left:-15px"></span><span class="seat" style="bottom:22%;right:-15px"></span><span class="seat" style="bottom:-15px;left:calc(50% - 15px)"></span>
+                  </span>
+                  <span class="label" aria-hidden="true">Live faces · 3D table · spatial voice</span>
+                </span>
+              </span>
+            </a>
           </div>
-          <h3 class="work-card__title">Tells</h3>
-          <p class="work-card__role">Real-Time · 3D · WebRTC</p>
-          <p class="work-card__desc">Browser-based 3D Texas Hold'em where every player's real webcam face is reconstructed as a live, video-textured 3D mesh around the table. An authoritative server engine runs the game; faces and spatial voice stream peer-to-peer through a LiveKit SFU.</p>
-          <div class="work-card__chips cluster">
-            <span class="chip">TypeScript</span><span class="chip">Three.js</span><span class="chip">MediaPipe</span><span class="chip">LiveKit</span><span class="chip">Socket.IO</span>
-          </div>
-          <div class="work-card__foot">
-            <a class="tlink card-link" href="/work/tells.html">Case study <span class="arrow" aria-hidden="true">→</span></a>
-            <span class="sep" aria-hidden="true">·</span>
-            <div class="work-card__links">
-              <a href="#contact">Demo on request</a>
+          <div class="feature__body">
+            <div class="feature__meta"><span class="feature__index">03</span><span class="badge badge--live"><span class="dot" aria-hidden="true"></span> Live</span></div>
+            <h3 class="feature__title">Tells</h3>
+            <p class="feature__role">Real-Time · 3D · WebRTC</p>
+            <p class="feature__desc">Browser-based 3D Texas Hold'em where each player's real webcam face becomes a live 478-point video-textured 3D mesh around the table. An authoritative server runs the game; faces and spatial voice stream peer-to-peer over a LiveKit SFU.</p>
+            <div class="feature__chips cluster"><span class="chip">TypeScript</span><span class="chip">Three.js</span><span class="chip">MediaPipe</span><span class="chip">LiveKit</span><span class="chip">Socket.IO</span></div>
+            <div class="feature__actions">
+              <a class="btn btn--primary" href="https://facer-fti6.onrender.com/" target="_blank" rel="noopener">Open live <span class="arrow" aria-hidden="true">↗</span></a>
+              <a class="tlink" href="/work/tells.html">Case study <span class="arrow" aria-hidden="true">→</span></a>
             </div>
           </div>
         </article>
 
         <!-- miztips -->
-        <article class="work-card reveal" data-proj="miztips" data-delay="2">
-          <div class="work-card__top">
-            <span class="work-card__index">04</span>
-            <span class="badge badge--live"><span class="dot" aria-hidden="true"></span> Live</span>
+        <article class="feature feature--flip reveal" data-proj="miztips">
+          <div class="feature__media">
+            <a class="browser" href="https://miztips.vercel.app/" target="_blank" rel="noopener" aria-label="Open miztips live at miztips.vercel.app">
+              <span class="browser__bar"><span class="browser__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="browser__url"><span class="lock">●</span>miztips.vercel.app</span><span class="browser__go" aria-hidden="true">open ↗</span></span>
+              <span class="browser__view">
+                <span class="viz viz--miztips" role="img" aria-label="The miztips app icon — a pink-to-purple dollar-sign coin — on the app's indigo gradient.">
+                  <img class="coin" src="/public/img/miztips-icon.png" alt="" aria-hidden="true" width="130" height="130">
+                  <span class="cap" aria-hidden="true">Pooled tips · split fairly · every shift</span>
+                </span>
+              </span>
+            </a>
           </div>
-          <h3 class="work-card__title">miztips</h3>
-          <p class="work-card__role">PWA · Mobile-First · Real-Time</p>
-          <p class="work-card__desc">A tip-distribution PWA used every shift at a NYC restaurant. It splits pooled tips across roles by weighted percentages, tracks shifts, exports branded PDFs, and syncs in real time with offline fallback — installable, touch-first, and built to be trusted with people's pay.</p>
-          <div class="work-card__chips cluster">
-            <span class="chip">React</span><span class="chip">Firebase</span><span class="chip">Tailwind</span><span class="chip">jsPDF</span><span class="chip">PWA</span>
-          </div>
-          <div class="work-card__foot">
-            <a class="tlink card-link" href="/work/miztips.html">Case study <span class="arrow" aria-hidden="true">→</span></a>
-            <span class="sep" aria-hidden="true">·</span>
-            <div class="work-card__links">
-              <a href="https://miztips.vercel.app/" target="_blank" rel="noopener">Live <span class="arrow" aria-hidden="true">↗</span></a>
-              <a href="https://github.com/squireaintready/tc" target="_blank" rel="noopener">Code <span class="arrow" aria-hidden="true">↗</span></a>
+          <div class="feature__body">
+            <div class="feature__meta"><span class="feature__index">04</span><span class="badge badge--live"><span class="dot" aria-hidden="true"></span> Live · in daily use</span></div>
+            <h3 class="feature__title">miztips</h3>
+            <p class="feature__role">PWA · Mobile-First · Real-Time</p>
+            <p class="feature__desc">A tip-distribution PWA used every shift at a NYC restaurant — role-weighted pooling, shift tracking, branded PDF exports, and real-time sync with an offline fallback. Installable, touch-first, and trusted with people's pay.</p>
+            <div class="feature__chips cluster"><span class="chip">React</span><span class="chip">Firebase</span><span class="chip">Tailwind</span><span class="chip">jsPDF</span><span class="chip">PWA</span></div>
+            <div class="feature__actions">
+              <a class="btn btn--primary" href="https://miztips.vercel.app/" target="_blank" rel="noopener">Open live <span class="arrow" aria-hidden="true">↗</span></a>
+              <a class="tlink" href="/work/miztips.html">Case study <span class="arrow" aria-hidden="true">→</span></a>
+              <a class="tlink" href="https://github.com/squireaintready/tc" target="_blank" rel="noopener">Code <span class="arrow" aria-hidden="true">↗</span></a>
             </div>
           </div>
         </article>
+      </div>
+
+      <div class="more reveal">
+        <div class="more__head">
+          <h3 class="more__title">Also shipped</h3>
+          <a class="tlink" href="https://github.com/squireaintready" target="_blank" rel="noopener">All repos on GitHub <span class="arrow" aria-hidden="true">↗</span></a>
+        </div>
+        <ul class="more__list">
+          <li class="more-item" data-proj="tells"><a href="https://github.com/squireaintready/breakout" target="_blank" rel="noopener"><span class="more-item__top"><span class="more-item__name">breakout</span><span class="more-item__lang">TypeScript</span><span class="more-item__go" aria-hidden="true">↗</span></span><span class="more-item__desc">Real-time crypto trading terminal — live feeds, charts, and portfolio tracking.</span></a></li>
+          <li class="more-item" data-proj="regwatch"><a href="https://github.com/squireaintready/game3d" target="_blank" rel="noopener"><span class="more-item__top"><span class="more-item__name">game3d</span><span class="more-item__lang">Unity · C#</span><span class="more-item__go" aria-hidden="true">↗</span></span><span class="more-item__desc">A 3D tower-defense × Clash Royale hybrid, built in Unity.</span></a></li>
+          <li class="more-item" data-proj="crowdtells"><a href="https://github.com/squireaintready/phos-analysis" target="_blank" rel="noopener"><span class="more-item__top"><span class="more-item__name">phos-analysis</span><span class="more-item__lang">Python</span><span class="more-item__go" aria-hidden="true">↗</span></span><span class="more-item__desc">Interactive equity-research dashboard for First Phosphate (CSE: PHOS).</span></a></li>
+          <li class="more-item" data-proj="miztips"><a href="https://github.com/squireaintready/polymarket-news" target="_blank" rel="noopener"><span class="more-item__top"><span class="more-item__name">polymarket-news</span><span class="more-item__lang">JavaScript</span><span class="more-item__go" aria-hidden="true">↗</span></span><span class="more-item__desc">The prototype that became Crowdtells — news generated from Polymarket odds.</span></a></li>
+          <li class="more-item" data-proj="tells"><a href="https://github.com/squireaintready/chad-trading-bot" target="_blank" rel="noopener"><span class="more-item__top"><span class="more-item__name">chad-trading-bot</span><span class="more-item__lang">Python</span><span class="more-item__go" aria-hidden="true">↗</span></span><span class="more-item__desc">An autonomous crypto trading agent — signal detection, execution, and alerts.</span></a></li>
+          <li class="more-item" data-proj="regwatch"><a href="https://github.com/squireaintready/staff-scheduling" target="_blank" rel="noopener"><span class="more-item__top"><span class="more-item__name">staff-scheduling</span><span class="more-item__lang">Python</span><span class="more-item__go" aria-hidden="true">↗</span></span><span class="more-item__desc">Shift scheduling &amp; staff management for restaurants and hospitality.</span></a></li>
+        </ul>
       </div>
     </section>
 
@@ -236,6 +262,30 @@
         <h2 id="skills-title" class="sec-head__title">Tools of the trade.</h2>
         <p class="sec-head__meta">03 — Capabilities</p>
       </div>
+      <div class="cap-feature reveal">
+        <div class="cap-feature__head">
+          <span class="cap-feature__label"><span class="kicker__dot" style="background:var(--proj)"></span> AI Engineering</span>
+          <span class="cap-feature__tag">where I focus</span>
+        </div>
+        <p class="cap-feature__lead">Production LLM systems that run unattended and <em>stay correct at scale</em> — grounded, evaluated, and shipped.</p>
+        <div class="cap-feature__chips">
+          <span class="cap-chip"><b>LLM orchestration</b></span>
+          <span class="cap-chip">Claude · GPT · Groq · Llama</span>
+          <span class="cap-chip"><b>RAG</b> architecture</span>
+          <span class="cap-chip">Prompt engineering</span>
+          <span class="cap-chip">Structured output &amp; guardrails</span>
+          <span class="cap-chip">Few-shot · chain-of-thought</span>
+          <span class="cap-chip"><b>Autonomous agents</b></span>
+          <span class="cap-chip">Agentic tool-use</span>
+          <span class="cap-chip">Browser automation · Playwright</span>
+          <span class="cap-chip">Grounded generation</span>
+          <span class="cap-chip">NLP — summarize · classify</span>
+          <span class="cap-chip">AI evaluation &amp; eval harnesses</span>
+          <span class="cap-chip">Ranking &amp; MMR</span>
+          <span class="cap-chip">MediaPipe vision</span>
+          <span class="cap-chip">Streaming · JSON mode</span>
+        </div>
+      </div>
       <div class="skills-grid">
         <div class="skill-group reveal" data-proj="crowdtells">
           <p class="skill-group__head"><span>Languages</span><span class="n">6</span></p>
@@ -252,13 +302,13 @@
         <div class="skill-group reveal" data-proj="tells" data-delay="2">
           <p class="skill-group__head"><span>Backend &amp; Infra</span><span class="n">9</span></p>
           <ul class="skill-list">
-            <li><b>Node</b> / Express</li><li>Socket.IO · WebRTC</li><li>SQLite · Postgres</li><li>Firebase · Supabase</li><li>Stripe</li><li>Cloudflare · Vercel</li><li>Render · VPS / PM2</li><li>CI/CD</li><li>Playwright · Vitest</li>
+            <li><b>Node</b> / Express</li><li>Socket.IO · WebRTC</li><li>SQLite · Postgres</li><li>Firebase · Supabase</li><li>Stripe</li><li>Cloudflare · Vercel</li><li>Render · VPS / PM2</li><li>CI/CD · GH Actions</li><li>Playwright · Vitest</li>
           </ul>
         </div>
         <div class="skill-group reveal" data-proj="regwatch" data-delay="3">
-          <p class="skill-group__head"><span>AI &amp; Data</span><span class="n">7</span></p>
+          <p class="skill-group__head"><span>Data</span><span class="n">6</span></p>
           <ul class="skill-list">
-            <li><b>LLM integration</b> (Groq)</li><li>Grounded generation</li><li>Ranking · MMR</li><li>MediaPipe vision</li><li>Data pipelines</li><li>FTS / search</li><li>i18n at scale</li>
+            <li><b>Data pipelines</b> / ETL</li><li>FTS / search</li><li>Schema design</li><li>WAL tuning · indexes</li><li>i18n at scale</li><li>Cron / scheduled jobs</li>
           </ul>
         </div>
       </div>
@@ -266,9 +316,60 @@
 
     <hr class="divider wrap wrap--wide" />
 
+    <!-- ===================== The Craft ===================== -->
+    <section id="craft" class="craft section">
+      <div class="wrap wrap--wide">
+        <div class="craft__head sec-head reveal">
+          <h2 class="craft__title sec-head__title">Built to be used — not just demoed.</h2>
+          <p class="sec-head__meta">04 — The craft</p>
+        </div>
+        <div class="craft__flow reveal">
+          <span class="craft__disc" aria-hidden="true">
+            <span class="seal">
+              <svg viewBox="0 0 100 100" aria-hidden="true">
+                <defs><path id="seal-path" d="M50,50 m-37,0 a37,37 0 1,1 74,0 a37,37 0 1,1 -74,0"/></defs>
+                <g class="seal__ring">
+                  <circle class="seal__edge" cx="50" cy="50" r="45.5"/>
+                  <circle class="seal__edge" cx="50" cy="50" r="27.5"/>
+                  <text class="seal__text"><textPath href="#seal-path" startOffset="0">· SAMUEL JO · SOFTWARE &amp; AI ENGINEER · NEW YORK&#160;</textPath></text>
+                </g>
+              </svg>
+              <span class="seal__center"><span class="seal__mark"></span></span>
+            </span>
+          </span>
+          <p>Most portfolios are full of demos. Mine is full of <strong>products people open every day</strong>. The bar I hold isn't novelty — it's <strong>trust</strong>: a tip calculator a restaurant runs on every night, a property platform with paying customers, an LLM newsroom that can't contradict its own data. I sweat the parts that never show up in a screenshot — test coverage, offline behavior, accessibility, and type that reads like it was <strong>typeset, not assembled</strong>. Even the giant name at the top of this page isn't an image: <strong>Pretext</strong> measured it and sized it to fill its column, live in your browser.</p>
+        </div>
+        <div class="craft__principles reveal">
+          <div class="principle"><span class="principle__n">01</span><h3>Ship to production</h3><p>Not to a demo. All four are live and in real-world use.</p></div>
+          <div class="principle"><span class="principle__n">02</span><h3>Grounded AI</h3><p>LLMs kept honest by the data behind them — no invented numbers.</p></div>
+          <div class="principle"><span class="principle__n">03</span><h3>Typeset, not assembled</h3><p>Editorial type, real measurement, details at every zoom.</p></div>
+          <div class="principle"><span class="principle__n">04</span><h3>Tested &amp; accessible</h3><p>Coverage, offline paths, keyboard &amp; reduced-motion by default.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider wrap wrap--wide" />
+
+    <!-- ===================== Play ===================== -->
+    <section id="play" class="play section wrap">
+      <div class="sec-head reveal" style="flex-direction:column;align-items:center;text-align:center">
+        <h2 class="sec-head__title" style="max-width:none">Deal me in.</h2>
+        <p class="sec-head__meta">05 — Play</p>
+      </div>
+      <p class="play__lead reveal">A nod to <a href="/work/tells.html">Tells</a>. Hit deal for five cards — a poker-hand evaluator like the one inside Tells names it instantly, right in your browser.</p>
+      <div class="deck reveal" id="deck" aria-hidden="true"></div>
+      <p class="play__result reveal" id="play-result" role="status" aria-live="polite"></p>
+      <div class="play__actions reveal">
+        <button class="btn btn--primary" id="deal-btn" type="button">Deal a hand <span class="arrow" aria-hidden="true">→</span></button>
+      </div>
+      <p class="play__note reveal">Pure client-side · <a href="/work/tells.html">see the real engine →</a></p>
+    </section>
+
+    <hr class="divider wrap wrap--wide" />
+
     <!-- ===================== Contact ===================== -->
     <section id="contact" class="section wrap contact" aria-labelledby="contact-title">
-      <p class="kicker" style="justify-content:center"><span class="kicker__dot"></span> 04 — Contact</p>
+      <p class="kicker" style="justify-content:center"><span class="kicker__dot"></span> 06 — Contact</p>
       <h2 id="contact-title" class="contact__title display" data-fit data-fit-max="150" data-fit-min="34" style="margin-top:1rem">Let's build something.</h2>
       <p class="contact__lead">I'm open to software and AI engineering roles. The fastest way to reach me is email — I read everything.</p>
       <div class="contact__actions">
