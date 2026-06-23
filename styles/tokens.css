@@ -171,7 +171,7 @@
 /* No-JS / system-preference fallback: honor OS dark when no explicit theme is set.
    (The theme toggle sets data-theme and takes precedence over this.) */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]):not([data-theme="dark"]) {
+  :root:not([data-theme]) {
     color-scheme: dark;
     --bg: #13110c; --bg-tint: #181510; --surface: #1b1813; --surface-2: #221e18;
     --border: #322c22; --border-strong: #463e30; --rule: #efe9dc;

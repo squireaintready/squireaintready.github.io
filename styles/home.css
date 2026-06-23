@@ -189,6 +189,16 @@
 .viz--miztips { background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%); }
 .viz--miztips .coin { width: clamp(80px, 22%, 130px); aspect-ratio: 1; border-radius: 26%; box-shadow: 0 20px 50px rgba(0,0,0,0.35); }
 .viz--miztips .cap { position: absolute; bottom: 13px; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.72); }
+/* miztips tip-split preview card (anonymized) */
+.viz--miztips .mz-card { width: min(74%, 330px); background: #fff; border-radius: 16px; box-shadow: 0 26px 60px rgba(0,0,0,0.4); padding: 15px 17px; font-family: var(--font-sans); color: #16140f; }
+.mz-card__head { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 13.5px; margin-bottom: 6px; }
+.mz-card__head img { width: 22px; height: 22px; border-radius: 6px; }
+.mz-card__head span { color: #8d8995; font-weight: 500; }
+.mz-row { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; border-top: 1px solid #efeef2; font-size: 13px; }
+.mz-row i { color: #9a96a3; font-style: normal; font-size: 10px; margin-left: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+.mz-row b { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: #059669; font-weight: 600; }
+.mz-card__total { display: flex; justify-content: space-between; padding-top: 8px; margin-top: 3px; border-top: 2px solid #16140f; font-weight: 700; font-size: 13.5px; }
+.mz-card__total b { font-family: var(--font-mono); }
 
 /* ---------- AI capability feature block ---------- */
 .cap-feature {
