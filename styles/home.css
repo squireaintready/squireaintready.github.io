@@ -1,0 +1,138 @@
+/* ============================================================================
+   home.css — home page sections: hero, work grid, about, skills, contact
+   ========================================================================== */
+
+/* ---------- Hero ---------- */
+.hero { position: relative; padding-top: clamp(2.5rem, 8vw, 5.5rem); padding-bottom: clamp(2.5rem, 7vw, 4.5rem); }
+.hero__kicker { margin-bottom: clamp(1.25rem, 3vw, 2rem); }
+.hero__name {
+  font-size: var(--fs-display);     /* CSS fallback; JS fits it exactly to width */
+  font-weight: 340;
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  margin: 0;
+}
+.hero__name .amp { color: var(--accent); font-style: italic; }
+.hero__statement {
+  font-family: var(--font-display);
+  font-weight: 360;
+  font-size: var(--fs-2xl);
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  color: var(--text-dim);
+  max-width: 22ch;
+  margin-top: clamp(1rem, 2.5vw, 1.6rem);
+  text-wrap: balance;
+}
+.hero__statement em { font-style: italic; color: var(--text); }
+.hero__lead { margin-top: 1.5rem; max-width: 54ch; }
+.hero__actions { margin-top: clamp(1.75rem, 4vw, 2.5rem); display: flex; flex-wrap: wrap; gap: 0.8rem; }
+
+/* credential strip */
+.hero__stats {
+  margin-top: clamp(2.5rem, 6vw, 3.5rem);
+  border-top: 1px solid var(--border);
+  padding-top: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem 1rem;
+}
+@media (min-width: 720px) { .hero__stats { grid-template-columns: repeat(4, 1fr); } }
+.stat__num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--fs-xl); color: var(--text); letter-spacing: -0.01em; }
+.stat__num b { color: var(--accent); font-weight: inherit; }
+.stat__label { font-family: var(--font-sans); font-size: var(--fs-xs); color: var(--text-mute); margin-top: 0.25rem; line-height: 1.35; }
+
+.hero__scroll { margin-top: clamp(2rem, 5vw, 3rem); display: inline-flex; align-items: center; gap: 0.6em; color: var(--text-mute); font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: 0.18em; text-transform: uppercase; }
+.hero__scroll .line { width: 34px; height: 1px; background: var(--border-strong); position: relative; overflow: hidden; }
+.hero__scroll .line::after { content: ""; position: absolute; inset: 0; width: 40%; background: var(--accent); animation: scroll-cue 2.4s var(--ease) infinite; }
+@keyframes scroll-cue { 0% { transform: translateX(-100%); } 60%, 100% { transform: translateX(250%); } }
+
+/* ---------- Section headers ---------- */
+.sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: clamp(2rem, 5vw, 3rem); }
+.sec-head__title { font-size: var(--fs-3xl); font-weight: 380; max-width: 16ch; text-wrap: balance; }
+.sec-head__meta { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--text-mute); }
+
+/* ---------- Work grid ---------- */
+.work-grid { display: grid; grid-template-columns: 1fr; gap: clamp(1rem, 2.5vw, 1.5rem); }
+@media (min-width: 760px) { .work-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.work-card {
+  position: relative;
+  display: flex; flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: clamp(1.4rem, 3vw, 2rem);
+  overflow: hidden;
+  transition: transform var(--t) var(--ease-out), border-color var(--t), box-shadow var(--t);
+}
+.work-card::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: var(--proj, var(--accent)); transform: scaleY(0); transform-origin: top;
+  transition: transform var(--t-slow) var(--ease-out);
+}
+.work-card:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: var(--shadow-2); }
+.work-card:hover::before, .work-card:focus-within::before { transform: scaleY(1); }
+.work-card__top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.1rem; }
+.work-card__index { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--text-mute); letter-spacing: 0.1em; }
+.work-card__title {
+  font-family: var(--font-display); font-weight: 400;
+  font-size: var(--fs-2xl); line-height: 1.04; letter-spacing: -0.02em;
+  color: var(--text);
+}
+.work-card__title .tld { color: var(--text-mute); }
+.work-card__role { font-family: var(--font-mono); font-size: var(--fs-2xs); color: var(--proj-ink, var(--accent)); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 0.55rem; }
+.work-card__desc { margin-top: 0.9rem; color: var(--text-dim); font-size: var(--fs-base); line-height: 1.5; }
+.work-card__chips { margin-top: 1.1rem; }
+.work-card__foot { margin-top: auto; padding-top: 1.4rem; display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap; }
+.work-card__foot .sep { color: var(--border-strong); }
+.work-card__links { display: flex; gap: 1.1rem; align-items: center; }
+.work-card__links a { font-family: var(--font-sans); font-size: var(--fs-sm); font-weight: 600; color: var(--text-dim); display: inline-flex; align-items: center; gap: 0.35em; transition: color var(--t); }
+.work-card__links a:hover { color: var(--proj-ink, var(--accent)); }
+.work-card__links a .arrow { transition: transform var(--t) var(--ease); }
+.work-card__links a:hover .arrow { transform: translate(2px, -2px); }
+/* whole-card click target via stretched link */
+.card-link::after { content: ""; position: absolute; inset: 0; }
+
+/* ---------- About (prose flows around a monogram) ---------- */
+.about__grid { display: block; }
+.about__shape {
+  float: right;
+  shape-outside: circle(50%);
+  width: clamp(150px, 28vw, 250px);
+  aspect-ratio: 1;
+  margin: 0.4rem 0 1rem 1.6rem;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  background:
+    radial-gradient(120% 120% at 30% 25%, color-mix(in srgb, var(--accent) 22%, var(--surface)) 0%, var(--surface-2) 60%, var(--surface) 100%);
+  border: 1px solid var(--border);
+  position: relative;
+}
+.about__monogram { font-family: var(--font-display); font-weight: 360; font-size: clamp(3.2rem, 10vw, 6rem); color: var(--accent); letter-spacing: -0.04em; line-height: 1; }
+.about__shape .ring { position: absolute; inset: -1px; border-radius: 50%; border: 1px solid var(--proj, var(--accent)); opacity: 0.28; }
+.about__body { font-size: var(--fs-lg); line-height: 1.62; color: var(--text-dim); }
+.about__body p + p { margin-top: 1.1rem; }
+.about__body strong { color: var(--text); font-weight: 600; }
+@media (max-width: 600px) {
+  .about__shape { float: none; shape-outside: none; margin: 0 auto 1.8rem; }
+}
+
+/* ---------- Skills ---------- */
+.skills-grid { display: grid; grid-template-columns: 1fr; gap: clamp(1.5rem, 4vw, 2.5rem); }
+@media (min-width: 640px) { .skills-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 940px) { .skills-grid { grid-template-columns: repeat(4, 1fr); } }
+.skill-group__head { font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-mute); padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; display: flex; justify-content: space-between; }
+.skill-group__head .n { color: var(--proj-ink, var(--accent)); }
+.skill-list li { font-family: var(--font-sans); font-size: var(--fs-sm); color: var(--text-dim); padding-block: 0.35rem; line-height: 1.4; }
+.skill-list li b { color: var(--text); font-weight: 600; }
+
+/* ---------- Contact ---------- */
+.contact { text-align: center; }
+.contact__title { font-size: var(--fs-display); font-weight: 340; line-height: 0.95; letter-spacing: -0.03em; }
+.contact__lead { margin: 1.25rem auto 0; max-width: 42ch; color: var(--text-dim); font-size: var(--fs-lg); }
+.contact__actions { margin-top: 2rem; display: flex; flex-wrap: wrap; gap: 0.8rem; justify-content: center; }
+.contact__alt { margin-top: 1.5rem; font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--text-mute); }
+.contact__alt a { color: var(--text-dim); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--border-strong); }
+.contact__alt a:hover { color: var(--accent); }

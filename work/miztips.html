@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>miztips — Case study · Samuel Jo</title>
+  <meta name="description" content="miztips: a tip-distribution PWA used every shift at a NYC restaurant. Role-based weighted distribution, real-time Firestore sync with offline fallback, branded PDF export, and a production-hardened build." />
+  <link rel="canonical" href="https://samjo.me/work/miztips.html" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#13110c" media="(prefers-color-scheme: dark)" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="miztips — a tip calculator a restaurant runs every night" />
+  <meta property="og:description" content="Role-weighted tip distribution, real-time sync with offline fallback, PDF export — installable and touch-first." />
+  <meta property="og:image" content="https://samjo.me/public/img/og.png" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <script>(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+  <link rel="preload" href="/assets/fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/styles/tokens.css" />
+  <link rel="stylesheet" href="/styles/base.css" />
+  <link rel="stylesheet" href="/styles/case.css" />
+  <script type="module" src="/scripts/main.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-nav">
+    <nav class="wrap wrap--wide site-nav__inner" aria-label="Primary">
+      <a class="brand" href="/" aria-label="Samuel Jo — home"><span class="brand__mark" aria-hidden="true"></span> Samuel&nbsp;Jo</a>
+      <div class="nav-links">
+        <a href="/#work">Work</a>
+        <a href="/#about">About</a>
+        <a href="/#contact">Contact</a>
+        <a class="btn btn--ghost btn--sm nav-cta" href="/Samuel-Jo-Resume.pdf">Résumé</a>
+        <button class="theme-toggle" type="button" aria-label="Switch theme" title="Switch theme">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 14.2A8.2 8.2 0 0 1 9.8 3.5a.6.6 0 0 0-.82-.74 9.3 9.3 0 1 0 12.26 12.26.6.6 0 0 0-.74-.82Z"/></svg>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <article class="case" data-proj="miztips">
+      <header class="case-hero wrap wrap--wide">
+        <a class="case-back" href="/#work"><span aria-hidden="true">←</span> All work</a>
+        <p class="kicker kicker--accent"><span class="kicker__dot"></span> PWA · Mobile-First · Real-Time</p>
+        <h1 class="case-title display" style="margin-top:1rem">miztips</h1>
+        <p class="case-tagline">Tips, split fairly — a calculator a NYC restaurant runs every night.</p>
+        <div class="case-meta">
+          <span>Design + Engineering · solo</span><span class="sep">·</span>
+          <span>2026</span><span class="sep">·</span>
+          <span class="badge badge--live"><span class="dot" aria-hidden="true"></span> Live · in daily use</span>
+          <span class="sep">·</span>
+          <a href="https://miztips.vercel.app/" target="_blank" rel="noopener">miztips.vercel.app <span class="arrow" aria-hidden="true">↗</span></a>
+          <a href="https://github.com/squireaintready/tc" target="_blank" rel="noopener">Code <span class="arrow" aria-hidden="true">↗</span></a>
+        </div>
+      </header>
+
+      <figure class="case-shot wrap wrap--wide reveal">
+        <div class="case-shot__frame">
+          <div class="viz viz--miztips" role="img" aria-label="The miztips app icon — a pink-to-purple dollar-sign coin — on the app's indigo gradient.">
+            <img class="coin" src="/public/img/miztips-icon.png" alt="" aria-hidden="true" width="150" height="150" />
+            <span class="cap" aria-hidden="true">Pooled tips · split fairly · every shift</span>
+          </div>
+        </div>
+        <figcaption>Installable, touch-first, and trusted with real money — open it at <span class="mono">miztips.vercel.app</span>.</figcaption>
+      </figure>
+
+      <div class="case-body wrap wrap--wide">
+        <aside class="case-aside">
+          <div class="fact"><p class="fact__label">Role</p><p class="fact__value">Solo — design &amp; engineering</p></div>
+          <div class="fact"><p class="fact__label">Stack</p><p class="fact__value"><span class="chip">React 18</span><span class="chip">Vite</span><span class="chip">Tailwind</span><span class="chip">Firebase</span><span class="chip">jsPDF</span><span class="chip">PWA</span></p></div>
+          <div class="fact"><p class="fact__label">Backend</p><p class="fact__value">Firestore (realtime + offline) · Vercel cron</p></div>
+          <div class="fact"><p class="fact__label">Status</p><p class="fact__value">Live · used every shift in production</p></div>
+          <div class="fact"><p class="fact__label">Links</p><p class="fact__value"><a class="tlink" href="https://miztips.vercel.app/" target="_blank" rel="noopener">Open app <span class="arrow" aria-hidden="true">↗</span></a> &nbsp; <a class="tlink" href="https://github.com/squireaintready/tc" target="_blank" rel="noopener">Source <span class="arrow" aria-hidden="true">↗</span></a></p></div>
+        </aside>
+
+        <div class="case-content">
+          <section class="case-section reveal">
+            <div class="case-section__head"><span class="case-section__n">01</span><h2>The product</h2></div>
+            <div class="prose">
+              <p>miztips is a tip-distribution PWA <strong>used every shift at a NYC restaurant</strong>. It splits pooled tips across roles by weighted percentages, tracks shifts, exports branded PDFs, and syncs in real time with an offline fallback — installable, touch-first, and built to be trusted with people's pay.</p>
+              <p>It's small on the surface and serious underneath: when a tool decides what people take home, "mostly right" isn't good enough.</p>
+            </div>
+          </section>
+
+          <section class="case-section reveal">
+            <div class="case-section__head"><span class="case-section__n">02</span><h2>What's under the hood</h2></div>
+            <div class="highlights">
+              <div class="highlight"><span class="highlight__n">01</span><h3>Role-based weighted distribution</h3><p>Each share is computed from summed percentage weights, floored to whole cents, grouped and role-sorted — and any un-distributed remainder is surfaced as its own line instead of being silently absorbed. Trainee rates and special-case overrides are handled explicitly.</p></div>
+              <div class="highlight"><span class="highlight__n">02</span><h3>Real-time sync, offline-safe</h3><p>Firestore <span class="mono">onSnapshot</span> live updates with multi-tab offline persistence; it degrades to localStorage and never wipes the local backup on an empty snapshot — so a flaky restaurant Wi-Fi never loses a shift.</p></div>
+              <div class="highlight"><span class="highlight__n">03</span><h3>Branded PDF export</h3><p>Lazy-loaded jsPDF + autotable generate landscape weekly grids and per-employee summaries, shared via the Web Share API with a download fallback.</p></div>
+              <div class="highlight"><span class="highlight__n">04</span><h3>Shift tracking &amp; staff management</h3><p>All-day / lunch / dinner tagging (halves count as half-days), plus add, edit and "graduate trainee" flows guarded by confirmations.</p></div>
+              <div class="highlight"><span class="highlight__n">05</span><h3>Production-hardened</h3><p>An error boundary, password rate-limiting, a strict CSP, backward-compatible data migration, and an automated weekly email via a Vercel cron + EmailJS — the unglamorous details that keep a real tool trustworthy.</p></div>
+            </div>
+          </section>
+
+          <section class="case-section reveal">
+            <div class="case-section__head"><span class="case-section__n">03</span><h2>Why it matters</h2></div>
+            <div class="prose">
+              <p>Most portfolios are full of demos. This one is <strong>in daily use by people who depend on it being right</strong> — a reminder that the highest bar isn't novelty, it's trust. It's also fully mobile-first: locked viewport, 44px touch targets, safe-area insets, reduced-motion support, even a startup chime.</p>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <nav class="case-nav wrap wrap--wide" aria-label="More work">
+        <a class="prev" href="/work/tells.html"><span class="dir">← Prev</span><span class="name">Tells</span></a>
+        <a class="next" href="/work/crowdtells.html"><span class="dir">Next →</span><span class="name">Crowdtells</span></a>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap wrap--wide footer-grid">
+      <div><a class="brand" href="/"><span class="brand__mark" aria-hidden="true"></span> Samuel&nbsp;Jo</a><p class="footer-cred" style="margin-top:.6rem; max-width:34ch">Software &amp; AI engineer in New York. Open to new roles.</p></div>
+      <nav class="cluster" style="--cluster-gap:1.2rem" aria-label="Footer">
+        <a href="/#work">Work</a><a href="/#about">About</a><a href="/#contact">Contact</a>
+        <a href="https://github.com/squireaintready" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://www.linkedin.com/in/samuel-jo/" target="_blank" rel="noopener">LinkedIn</a>
+      </nav>
+    </div>
+    <p class="wrap wrap--wide footer-cred" style="margin-top:2rem; color:var(--text-mute)">© <span data-year>2026</span> Samuel Jo · Typeset in HTML &amp; CSS with <a href="https://github.com/chenglou/pretext" target="_blank" rel="noopener">Pretext</a>.</p>
+  </footer>
+</body>
+</html>

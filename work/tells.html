@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tells — Case study · Samuel Jo</title>
+  <meta name="description" content="Tells: browser-based 3D Texas Hold'em where each player's live webcam face becomes a 478-point video-textured 3D mesh. Authoritative server poker engine, LiveKit SFU, custom codecs, performance-adaptive rendering." />
+  <link rel="canonical" href="https://samjo.me/work/tells.html" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#13110c" media="(prefers-color-scheme: dark)" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Tells — 3D poker where your real face is the avatar" />
+  <meta property="og:description" content="Live 478-point face-meshes around a 3D table, an authoritative server poker engine, and peer-to-peer streaming over a LiveKit SFU." />
+  <meta property="og:image" content="https://samjo.me/public/img/og.png" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <script>(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+  <link rel="preload" href="/assets/fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/styles/tokens.css" />
+  <link rel="stylesheet" href="/styles/base.css" />
+  <link rel="stylesheet" href="/styles/case.css" />
+  <script type="module" src="/scripts/main.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-nav">
+    <nav class="wrap wrap--wide site-nav__inner" aria-label="Primary">
+      <a class="brand" href="/" aria-label="Samuel Jo — home"><span class="brand__mark" aria-hidden="true"></span> Samuel&nbsp;Jo</a>
+      <div class="nav-links">
+        <a href="/#work">Work</a>
+        <a href="/#about">About</a>
+        <a href="/#contact">Contact</a>
+        <a class="btn btn--ghost btn--sm nav-cta" href="/Samuel-Jo-Resume.pdf">Résumé</a>
+        <button class="theme-toggle" type="button" aria-label="Switch theme" title="Switch theme">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 14.2A8.2 8.2 0 0 1 9.8 3.5a.6.6 0 0 0-.82-.74 9.3 9.3 0 1 0 12.26 12.26.6.6 0 0 0-.74-.82Z"/></svg>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <article class="case" data-proj="tells">
+      <header class="case-hero wrap wrap--wide">
+        <a class="case-back" href="/#work"><span aria-hidden="true">←</span> All work</a>
+        <p class="kicker kicker--accent"><span class="kicker__dot"></span> Real-Time · 3D · WebRTC</p>
+        <h1 class="case-title display" style="margin-top:1rem">Tells</h1>
+        <p class="case-tagline">Read the room — 3D Hold'em where your real face is the avatar.</p>
+        <div class="case-meta">
+          <span>Design + Engineering · solo</span><span class="sep">·</span>
+          <span>2026</span><span class="sep">·</span>
+          <span class="badge badge--private">Private demo</span>
+          <span class="sep">·</span>
+          <a href="/#contact">Demo on request <span class="arrow" aria-hidden="true">→</span></a>
+        </div>
+      </header>
+
+      <figure class="case-shot wrap wrap--wide reveal">
+        <div class="case-shot__frame">
+          <div class="viz viz--tells" role="img" aria-label="Illustration of a 3D poker table: a green felt ellipse ringed by glowing markers that stand in for players' live webcam face-meshes.">
+            <span class="dots" aria-hidden="true"></span>
+            <span class="felt" aria-hidden="true">
+              <span class="seat" style="top:-17px;left:calc(50% - 17px)"></span>
+              <span class="seat" style="top:22%;left:-17px"></span>
+              <span class="seat" style="top:22%;right:-17px"></span>
+              <span class="seat" style="bottom:22%;left:-17px"></span>
+              <span class="seat" style="bottom:22%;right:-17px"></span>
+              <span class="seat" style="bottom:-17px;left:calc(50% - 17px)"></span>
+            </span>
+            <span class="label" aria-hidden="true">Live faces · 3D table · spatial voice</span>
+          </div>
+        </div>
+        <figcaption>Each seat is a player's real webcam face, reconstructed as a live 3D mesh.</figcaption>
+      </figure>
+
+      <div class="case-body wrap wrap--wide">
+        <aside class="case-aside">
+          <div class="fact"><p class="fact__label">Role</p><p class="fact__value">Solo — engine, graphics &amp; networking</p></div>
+          <div class="fact"><p class="fact__label">Stack</p><p class="fact__value"><span class="chip">TypeScript</span><span class="chip">Three.js</span><span class="chip">MediaPipe</span><span class="chip">LiveKit</span><span class="chip">Socket.IO</span></p></div>
+          <div class="fact"><p class="fact__label">Server</p><p class="fact__value">Node 20 · Express · single-origin deploy</p></div>
+          <div class="fact"><p class="fact__label">Infra</p><p class="fact__value">Render (one free service) · LiveKit Cloud SFU</p></div>
+          <div class="fact"><p class="fact__label">Status</p><p class="fact__value">Private demo · access by room link</p></div>
+        </aside>
+
+        <div class="case-content">
+          <section class="case-section reveal">
+            <div class="case-section__head"><span class="case-section__n">01</span><h2>The concept</h2></div>
+            <div class="prose">
+              <p>Tells is browser-based <strong>3D Texas Hold'em where every seated player's real webcam face is reconstructed as a live, video-textured 3D mesh</strong> around the table — so you can read the actual tells, not an emoji. An authoritative server runs the game; faces and spatial voice stream peer-to-peer.</p>
+              <p>It started as a question: can a browser carry real human presence into a 3D scene, in real time, without a native app? It can.</p>
+            </div>
+          </section>
+
+          <section class="case-section reveal">
+            <div class="case-section__head"><span class="case-section__n">02</span><h2>The hard parts</h2></div>
+            <div class="highlights">
+              <div class="highlight"><span class="highlight__n">01</span><h3>Live-face 3D reconstruction</h3><p>Webcam → MediaPipe FaceLandmarker (a 478-point mesh) plus selfie and hair segmentation → a deforming, hair-clipped, video-textured Three.js mesh, streamed peer-to-peer through a LiveKit SFU.</p></div>
+              <div class="highlight"><span class="highlight__n">02</span><h3>Authoritative server poker engine</h3><p>A self-authored, fully-tested no-limit Hold'em state machine — hand evaluator, side pots, blinds, all-in, showdown — runs on the server; clients only render state. Dedicated stress and unit suites guard it.</p></div>
+              <div class="highlight"><span class="highlight__n">03</span><h3>Secrets never touch the client</h3><p>The LiveKit API secret stays server-side; the server mints short-lived tokens and serves the SPA, sockets and minting from one origin — no CORS, no leaked keys.</p></div>
+              <div class="highlight"><span class="highlight__n">04</span><h3>Custom wire codecs</h3><p>Hand-rolled landmark and mask codecs plus a gaze ladder compress face data over the network, and audio is positioned spatially per seat.</p></div>
+              <div class="highlight"><span class="highlight__n">05</span><h3>Performance-adaptive rendering</h3><p>The mobile path drops shadow maps and per-fragment lights, folds ambient into a hemisphere light, and runs a perf probe; gyro look and pinch-zoom keep it playable on a phone.</p></div>
+            </div>
+          </section>
+
+          <section class="case-section reveal">
+            <div class="case-section__head"><span class="case-section__n">03</span><h2>How it's built</h2></div>
+            <div class="prose">
+              <p>Client: TypeScript, Three.js (r184), <span class="mono">@mediapipe/tasks-vision</span>, <span class="mono">livekit-client</span> and <span class="mono">socket.io-client</span> on Vite. Server: Node 20, Express 5, Socket.IO and <span class="mono">livekit-server-sdk</span>. The whole thing — SPA, signalling and token minting — deploys as a <strong>single free Render service</strong>, with LiveKit Cloud carrying the media.</p>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <nav class="case-nav wrap wrap--wide" aria-label="More work">
+        <a class="prev" href="/work/regwatch.html"><span class="dir">← Prev</span><span class="name">RegWatch</span></a>
+        <a class="next" href="/work/miztips.html"><span class="dir">Next →</span><span class="name">miztips</span></a>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap wrap--wide footer-grid">
+      <div><a class="brand" href="/"><span class="brand__mark" aria-hidden="true"></span> Samuel&nbsp;Jo</a><p class="footer-cred" style="margin-top:.6rem; max-width:34ch">Software &amp; AI engineer in New York. Open to new roles.</p></div>
+      <nav class="cluster" style="--cluster-gap:1.2rem" aria-label="Footer">
+        <a href="/#work">Work</a><a href="/#about">About</a><a href="/#contact">Contact</a>
+        <a href="https://github.com/squireaintready" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://www.linkedin.com/in/samuel-jo/" target="_blank" rel="noopener">LinkedIn</a>
+      </nav>
+    </div>
+    <p class="wrap wrap--wide footer-cred" style="margin-top:2rem; color:var(--text-mute)">© <span data-year>2026</span> Samuel Jo · Typeset in HTML &amp; CSS with <a href="https://github.com/chenglou/pretext" target="_blank" rel="noopener">Pretext</a>.</p>
+  </footer>
+</body>
+</html>

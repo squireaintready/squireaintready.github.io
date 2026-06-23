@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RegWatch — Case study · Samuel Jo</title>
+  <meta name="description" content="RegWatch: instant tri-state property-intelligence reports over 9.6M+ parcels from 86+ government sources. Synchronous SQLite at scale, multi-brand host routing, 12-locale i18n, blue-green VPS deploys." />
+  <link rel="canonical" href="https://samjo.me/work/regwatch.html" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#13110c" media="(prefers-color-scheme: dark)" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="RegWatch — every building has a record" />
+  <meta property="og:description" content="Instant property intelligence for NY, NJ & CT over 9.6M+ parcels. Founder, design & engineering." />
+  <meta property="og:image" content="https://samjo.me/public/img/shot-regwatch.jpg" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <script>(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+  <link rel="preload" href="/assets/fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/styles/tokens.css" />
+  <link rel="stylesheet" href="/styles/base.css" />
+  <link rel="stylesheet" href="/styles/case.css" />
+  <script type="module" src="/scripts/main.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-nav">
+    <nav class="wrap wrap--wide site-nav__inner" aria-label="Primary">
+      <a class="brand" href="/" aria-label="Samuel Jo — home"><span class="brand__mark" aria-hidden="true"></span> Samuel&nbsp;Jo</a>
+      <div class="nav-links">
+        <a href="/#work">Work</a>
+        <a href="/#about">About</a>
+        <a href="/#contact">Contact</a>
+        <a class="btn btn--ghost btn--sm nav-cta" href="/Samuel-Jo-Resume.pdf">Résumé</a>
+        <button class="theme-toggle" type="button" aria-label="Switch theme" title="Switch theme">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 14.2A8.2 8.2 0 0 1 9.8 3.5a.6.6 0 0 0-.82-.74 9.3 9.3 0 1 0 12.26 12.26.6.6 0 0 0-.74-.82Z"/></svg>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <article class="case" data-proj="regwatch">
+      <header class="case-hero wrap wrap--wide">
+        <a class="case-back" href="/#work"><span aria-hidden="true">←</span> All work</a>
+        <p class="kicker kicker--accent"><span class="kicker__dot"></span> SaaS · Civic Data · Full-Stack</p>
+        <h1 class="case-title display" style="margin-top:1rem">RegWatch</h1>
+        <p class="case-tagline">Every building has a record. Instant property intelligence for the tri-state.</p>
+        <div class="case-meta">
+          <span>Founder · design &amp; engineering</span><span class="sep">·</span>
+          <span>2024–26</span><span class="sep">·</span>
+          <span class="badge badge--live"><span class="dot" aria-hidden="true"></span> Live</span>
+          <span class="sep">·</span>
+          <a href="https://regwatch.nyc/" target="_blank" rel="noopener">regwatch.nyc <span class="arrow" aria-hidden="true">↗</span></a>
+        </div>
+      </header>
+
+      <figure class="case-shot wrap wrap--wide reveal">
+        <div class="case-shot__frame"><img src="/public/img/shot-regwatch.jpg" width="1200" height="750" alt="The RegWatch landing page: a dark hero reading 'Every building has a record' with an amber accent, over a 3D isometric city, and an address search bar." loading="lazy" /></div>
+        <figcaption>regwatch.nyc — type an address, get the whole record.</figcaption>
+      </figure>
+
+      <div class="case-body wrap wrap--wide">
+        <aside class="case-aside">
+          <div class="fact"><p class="fact__label">Role</p><p class="fact__value">Founder — product, design &amp; engineering</p></div>
+          <div class="fact"><p class="fact__label">Stack</p><p class="fact__value"><span class="chip">Next.js 15</span><span class="chip">React 19</span><span class="chip">better-sqlite3</span><span class="chip">Stripe</span><span class="chip">Groq</span></p></div>
+          <div class="fact"><p class="fact__label">Scale</p><p class="fact__value">9.6M+ parcels · 86+ sources · ~114 GB DB</p></div>
+          <div class="fact"><p class="fact__label">Infra</p><p class="fact__value">Contabo VPS · PM2 cluster · Cloudflare</p></div>
+          <div class="fact"><p class="fact__label">Status</p><p class="fact__value">Live · paying customers</p></div>
+          <div class="fact"><p class="fact__label">Links</p><p class="fact__value"><a class="tlink" href="https://regwatch.nyc/" target="_blank" rel="noopener">Visit site <span class="arrow" aria-hidden="true">↗</span></a></p></div>
+        </aside>
+
+        <div class="case-content">
+          <section class="case-section reveal">
+            <div class="case-section__head"><span class="case-section__n">01</span><h2>The product</h2></div>
+            <div class="prose">
+              <p>RegWatch turns scattered government data into <strong>one instant report</strong>. Type an address and get violations, permits, ownership, liens, tax and zoning across New York, New Jersey and Connecticut — built on <strong>9.6M+ parcels</strong> aggregated from 86+ public sources, with real-time regulatory monitoring and grounded AI chat.</p>
+              <p>It's the company I founded and the project I've taken furthest: from raw municipal datasets to a paid, multi-tenant SaaS that real estate professionals use to size up a building in seconds.</p>
+            </div>
+          </section>
+
+          <section class="case-section reveal">
+            <div class="case-section__head"><span class="case-section__n">02</span><h2>Engineering highlights</h2></div>
+            <div class="highlights">
+              <div class="highlight"><span class="highlight__n">01</span><h3>Synchronous SQLite at scale</h3><p>Six SQLite databases — including a ~114 GB parcel store with FTS5 full-text search — read synchronously through <span class="mono">better-sqlite3</span>. Deliberately no Postgres: for a read-heavy, single-box workload it's faster and far simpler to operate.</p></div>
+              <div class="highlight"><span class="highlight__n">02</span><h3>Single codebase, multiple brands</h3><p>The Host header maps to a brand config that drives UI, copy and feature flags — so RegWatch and a future national brand run from one app with no forks.</p></div>
+              <div class="highlight"><span class="highlight__n">03</span><h3>12-locale internationalization</h3><p>Twelve languages (including RTL) backed by an automated audit and a Claude-Haiku batch-translation pipeline, gated in CI so a missing string can't ship.</p></div>
+              <div class="highlight"><span class="highlight__n">04</span><h3>Blue-green, zero-downtime deploys</h3><p>A PM2 cluster on a Contabo VPS deploys by symlink swap with automatic rollback — no dropped requests, no cold platform.</p></div>
+              <div class="highlight"><span class="highlight__n">05</span><h3>Token-enforced design system</h3><p>A custom typography and spacing linter ratchets CSS-variable compliance in CI, and a Stripe-tiered paywall reveals value through masked-row teasers.</p></div>
+            </div>
+          </section>
+
+          <section class="case-section reveal">
+            <div class="case-section__head"><span class="case-section__n">03</span><h2>By the numbers</h2></div>
+            <dl class="case-stats">
+              <div class="stat"><dt class="visually-hidden">Parcels</dt><dd class="stat__num"><b>9.6M+</b></dd><p class="stat__label">parcels indexed</p></div>
+              <div class="stat"><dt class="visually-hidden">Sources</dt><dd class="stat__num"><b>86+</b></dd><p class="stat__label">government sources</p></div>
+              <div class="stat"><dt class="visually-hidden">Records</dt><dd class="stat__num"><b>42M+</b></dd><p class="stat__label">records, synced nightly</p></div>
+              <div class="stat"><dt class="visually-hidden">Languages</dt><dd class="stat__num"><b>12</b></dd><p class="stat__label">locales, incl. RTL</p></div>
+            </dl>
+          </section>
+        </div>
+      </div>
+
+      <nav class="case-nav wrap wrap--wide" aria-label="More work">
+        <a class="prev" href="/work/crowdtells.html"><span class="dir">← Prev</span><span class="name">Crowdtells</span></a>
+        <a class="next" href="/work/tells.html"><span class="dir">Next →</span><span class="name">Tells</span></a>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap wrap--wide footer-grid">
+      <div><a class="brand" href="/"><span class="brand__mark" aria-hidden="true"></span> Samuel&nbsp;Jo</a><p class="footer-cred" style="margin-top:.6rem; max-width:34ch">Software &amp; AI engineer in New York. Open to new roles.</p></div>
+      <nav class="cluster" style="--cluster-gap:1.2rem" aria-label="Footer">
+        <a href="/#work">Work</a><a href="/#about">About</a><a href="/#contact">Contact</a>
+        <a href="https://github.com/squireaintready" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://www.linkedin.com/in/samuel-jo/" target="_blank" rel="noopener">LinkedIn</a>
+      </nav>
+    </div>
+    <p class="wrap wrap--wide footer-cred" style="margin-top:2rem; color:var(--text-mute)">© <span data-year>2026</span> Samuel Jo · Typeset in HTML &amp; CSS with <a href="https://github.com/chenglou/pretext" target="_blank" rel="noopener">Pretext</a>.</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Crowdtells — Case study · Samuel Jo</title>
+  <meta name="description" content="Crowdtells: a news feed driven by prediction markets. Newsworthiness ranking with MMR diversity, hallucination-proof LLM briefings, and a zero-cost GitHub-native pipeline." />
+  <link rel="canonical" href="https://samjo.me/work/crowdtells.html" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#13110c" media="(prefers-color-scheme: dark)" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Crowdtells — a news feed driven by the money" />
+  <meta property="og:description" content="Prediction markets as an assignment desk: rank by newsworthiness, brief from many outlets, keep a living record of belief." />
+  <meta property="og:image" content="https://samjo.me/public/img/shot-crowdtells.jpg" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <script>(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+  <link rel="preload" href="/assets/fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/styles/tokens.css" />
+  <link rel="stylesheet" href="/styles/base.css" />
+  <link rel="stylesheet" href="/styles/case.css" />
+  <script type="module" src="/scripts/main.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-nav">
+    <nav class="wrap wrap--wide site-nav__inner" aria-label="Primary">
+      <a class="brand" href="/" aria-label="Samuel Jo — home"><span class="brand__mark" aria-hidden="true"></span> Samuel&nbsp;Jo</a>
+      <div class="nav-links">
+        <a href="/#work">Work</a>
+        <a href="/#about">About</a>
+        <a href="/#contact">Contact</a>
+        <a class="btn btn--ghost btn--sm nav-cta" href="/Samuel-Jo-Resume.pdf">Résumé</a>
+        <button class="theme-toggle" type="button" aria-label="Switch theme" title="Switch theme">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 14.2A8.2 8.2 0 0 1 9.8 3.5a.6.6 0 0 0-.82-.74 9.3 9.3 0 1 0 12.26 12.26.6.6 0 0 0-.74-.82Z"/></svg>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <article class="case" data-proj="crowdtells">
+      <header class="case-hero wrap wrap--wide">
+        <a class="case-back" href="/#work"><span aria-hidden="true">←</span> All work</a>
+        <p class="kicker kicker--accent"><span class="kicker__dot"></span> AI · News · Prediction Markets</p>
+        <h1 class="case-title display" style="margin-top:1rem">Crowdtells</h1>
+        <p class="case-tagline">A news feed driven by the money — prediction markets as an assignment desk.</p>
+        <div class="case-meta">
+          <span>Design + Engineering · solo</span><span class="sep">·</span>
+          <span>2025–26</span><span class="sep">·</span>
+          <span class="badge badge--live"><span class="dot" aria-hidden="true"></span> Live</span>
+          <span class="sep">·</span>
+          <a href="https://crowdtells.com/" target="_blank" rel="noopener">crowdtells.com <span class="arrow" aria-hidden="true">↗</span></a>
+        </div>
+      </header>
+
+      <figure class="case-shot wrap wrap--wide reveal">
+        <div class="case-shot__frame"><img src="/public/img/shot-crowdtells.jpg" width="1200" height="750" alt="The Crowdtells home page: a large serif CROWDTELLS masthead over a ranked list of top stories, each tagged with its prediction-market source." loading="lazy" /></div>
+        <figcaption>crowdtells.com — stories ranked by newsworthiness, briefed from many outlets.</figcaption>
+      </figure>
+
+      <div class="case-body wrap wrap--wide">
+        <aside class="case-aside">
+          <div class="fact"><p class="fact__label">Role</p><p class="fact__value">Solo — product, design &amp; engineering</p></div>
+          <div class="fact"><p class="fact__label">Stack</p><p class="fact__value"><span class="chip">React 19</span><span class="chip">TypeScript</span><span class="chip">Vite</span><span class="chip">Groq LLM</span><span class="chip">Cloudflare</span></p></div>
+          <div class="fact"><p class="fact__label">Testing</p><p class="fact__value">794 Vitest cases across 76 files</p></div>
+          <div class="fact"><p class="fact__label">Status</p><p class="fact__value">Live · updated continuously</p></div>
+          <div class="fact"><p class="fact__label">Links</p><p class="fact__value"><a class="tlink" href="https://crowdtells.com/" target="_blank" rel="noopener">Visit site <span class="arrow" aria-hidden="true">↗</span></a></p></div>
+        </aside>
+
+        <div class="case-content">
+          <section class="case-section reveal">
+            <div class="case-section__head"><span class="case-section__n">01</span><h2>The idea</h2></div>
+            <div class="prose">
+              <p>Crowdtells reads <strong>Polymarket and Kalshi as a signal of what the world actually cares about</strong>, then turns that signal into a newsroom. The money flags the story; Crowdtells briefs it from many outlets and keeps a living, timestamped record of how the crowd's belief moves over time.</p>
+              <p>The thesis: prediction markets are the fastest, least-biased assignment desk in the world. If you let them pick the stories and keep the prose honest to the numbers, you get news that's both timely and falsifiable.</p>
+            </div>
+          </section>
+
+          <section class="case-section reveal">
+            <div class="case-section__head"><span class="case-section__n">02</span><h2>What makes it interesting</h2></div>
+            <div class="highlights">
+              <div class="highlight"><span class="highlight__n">01</span><h3>Newsworthiness ranking with MMR diversity</h3><p>Every market is scored on volume, 24-hour surge, odds movement, comments and contestedness — then a maximal-marginal-relevance penalty per repeated category and platform keeps the feed multi-source instead of one leaderboard.</p></div>
+              <div class="highlight"><span class="highlight__n">02</span><h3>Hallucination-proof briefings</h3><p>LLM summaries (Groq, JSON mode) are grounded strictly in retrieved headlines and resolution rules. The model never sees live numbers — odds, volume and gaps are hydrated at render time, so the prose can't contradict the market.</p></div>
+              <div class="highlight"><span class="highlight__n">03</span><h3>Cross-platform canonical matching</h3><p>The same real-world question on Polymarket and Kalshi collapses into one briefing that carries both prices and a computed divergence between them.</p></div>
+              <div class="highlight"><span class="highlight__n">04</span><h3>Zero-cost, GitHub-native pipeline</h3><p>A market-aware cron Action dedupes, ranks, fetches news, briefs, and writes OG cards, RSS and sitemaps — persisting durable state to a <span class="mono">data</span> branch and deploying via <span class="mono">wrangler</span>.</p></div>
+              <div class="highlight"><span class="highlight__n">05</span><h3>SSG + progressive enhancement</h3><p>Every story is a crawlable <span class="mono">/s/&lt;id&gt;</span> page; the bold Pretext visual layer loads client-side only, so crawlers and no-JS readers always get real text — zero SEO or accessibility cost.</p></div>
+            </div>
+          </section>
+
+          <section class="case-section reveal">
+            <div class="case-section__head"><span class="case-section__n">03</span><h2>How it's built</h2></div>
+            <div class="prose">
+              <p>React 19 + TypeScript (strict) and Vite on the front; the data pipeline is TypeScript run via <span class="mono">tsx</span>, pulling Polymarket, Kalshi, Google News and roughly ten event APIs. Briefings come from Groq with key/model rotation on rate limits. It ships as a static site on <strong>Cloudflare Pages</strong> with optional Supabase for accounts — and 794 Vitest cases guarding the ranking and matching logic.</p>
+              <p>Crowdtells is also where I fell for <a href="https://github.com/chenglou/pretext" target="_blank" rel="noopener">Pretext</a> — text measured and laid out live so the <em>writing becomes the chart</em>. This very portfolio is typeset with the same engine.</p>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <nav class="case-nav wrap wrap--wide" aria-label="More work">
+        <a class="prev" href="/work/miztips.html"><span class="dir">← Prev</span><span class="name">miztips</span></a>
+        <a class="next" href="/work/regwatch.html"><span class="dir">Next →</span><span class="name">RegWatch</span></a>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap wrap--wide footer-grid">
+      <div><a class="brand" href="/"><span class="brand__mark" aria-hidden="true"></span> Samuel&nbsp;Jo</a><p class="footer-cred" style="margin-top:.6rem; max-width:34ch">Software &amp; AI engineer in New York. Open to new roles.</p></div>
+      <nav class="cluster" style="--cluster-gap:1.2rem" aria-label="Footer">
+        <a href="/#work">Work</a><a href="/#about">About</a><a href="/#contact">Contact</a>
+        <a href="https://github.com/squireaintready" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://www.linkedin.com/in/samuel-jo/" target="_blank" rel="noopener">LinkedIn</a>
+      </nav>
+    </div>
+    <p class="wrap wrap--wide footer-cred" style="margin-top:2rem; color:var(--text-mute)">© <span data-year>2026</span> Samuel Jo · Typeset in HTML &amp; CSS with <a href="https://github.com/chenglou/pretext" target="_blank" rel="noopener">Pretext</a>.</p>
+  </footer>
+</body>
+</html>

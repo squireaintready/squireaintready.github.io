@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Samuel Jo — Software &amp; AI Engineer</title>
+  <meta name="description" content="Samuel Jo — software & AI engineer in New York. I ship full-stack products end to end: Crowdtells, RegWatch (9.6M+ parcels), Tells, and miztips." />
+  <meta name="author" content="Samuel Jo" />
+  <link rel="canonical" href="https://samjo.me/" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#13110c" media="(prefers-color-scheme: dark)" />
+
+  <!-- Open Graph / Twitter -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Samuel Jo — Software &amp; AI Engineer" />
+  <meta property="og:description" content="Full-stack & AI engineer in New York. Four production products: Crowdtells, RegWatch, Tells, and miztips." />
+  <meta property="og:url" content="https://samjo.me/" />
+  <meta property="og:image" content="https://samjo.me/public/img/og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Samuel Jo — Software &amp; AI Engineer" />
+  <meta name="twitter:description" content="Full-stack & AI engineer in New York. Four production products, shipped." />
+  <meta name="twitter:image" content="https://samjo.me/public/img/og.png" />
+
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/public/img/apple-touch-icon.png" />
+
+  <!-- Set theme before paint to avoid a flash -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("theme");
+        if (t === "dark" || t === "light") document.documentElement.setAttribute("data-theme", t);
+      } catch (e) {}
+    })();
+  </script>
+
+  <!-- Preload the display + UI faces used above the fold -->
+  <link rel="preload" href="/assets/fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
+
+  <link rel="stylesheet" href="/styles/tokens.css" />
+  <link rel="stylesheet" href="/styles/base.css" />
+  <link rel="stylesheet" href="/styles/home.css" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Samuel Jo",
+    "jobTitle": "Software & AI Engineer",
+    "url": "https://samjo.me/",
+    "email": "mailto:sungjohak@gmail.com",
+    "address": { "@type": "PostalAddress", "addressLocality": "New York", "addressRegion": "NY", "addressCountry": "US" },
+    "sameAs": [
+      "https://github.com/squireaintready",
+      "https://www.linkedin.com/in/samuel-jo/"
+    ],
+    "knowsAbout": ["Software Engineering", "AI Engineering", "Full-Stack Development", "TypeScript", "React", "Next.js", "LLM Integration", "Real-Time Systems"]
+  }
+  </script>
+
+  <script type="module" src="/scripts/main.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ===================== Nav ===================== -->
+  <header class="site-nav">
+    <nav class="wrap wrap--wide site-nav__inner" aria-label="Primary">
+      <a class="brand" href="#top" aria-label="Samuel Jo — home">
+        <span class="brand__mark" aria-hidden="true"></span> Samuel&nbsp;Jo
+      </a>
+      <div class="nav-links">
+        <a href="#work">Work</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+        <a class="btn btn--ghost btn--sm nav-cta" href="/Samuel-Jo-Resume.pdf">Résumé</a>
+        <button class="theme-toggle" type="button" aria-label="Switch theme" title="Switch theme">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 14.2A8.2 8.2 0 0 1 9.8 3.5a.6.6 0 0 0-.82-.74 9.3 9.3 0 1 0 12.26 12.26.6.6 0 0 0-.74-.82Z"/></svg>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <span id="top"></span>
+
+    <!-- ===================== Hero ===================== -->
+    <section class="hero wrap wrap--wide" aria-labelledby="hero-name">
+      <p class="kicker hero__kicker"><span class="kicker__dot"></span> Software &amp; AI Engineer · New York</p>
+      <h1 id="hero-name" class="hero__name display" data-fit data-fit-max="248" data-fit-min="40">Samuel Jo</h1>
+      <p class="hero__statement">Building <em>living products</em> — software that ships, learns, and gets used every day.</p>
+      <p class="hero__lead lead">I design and engineer full-stack products end to end: type-safe frontends, authoritative game servers, civic-data pipelines over millions of records, and LLM features kept honest by the data behind them.</p>
+      <div class="hero__actions">
+        <a class="btn btn--primary" href="#work">View the work <span class="arrow" aria-hidden="true">→</span></a>
+        <a class="btn btn--ghost" href="#contact">Get in touch</a>
+      </div>
+
+      <dl class="hero__stats">
+        <div class="stat"><dt class="visually-hidden">Products in production</dt><dd class="stat__num"><b>4</b></dd><p class="stat__label">products shipped to production</p></div>
+        <div class="stat"><dt class="visually-hidden">Records indexed</dt><dd class="stat__num"><b>9.6M+</b></dd><p class="stat__label">parcels indexed · RegWatch</p></div>
+        <div class="stat"><dt class="visually-hidden">Face landmarks tracked</dt><dd class="stat__num"><b>478</b>-pt</dd><p class="stat__label">live face meshes · Tells</p></div>
+        <div class="stat"><dt class="visually-hidden">Real-world use</dt><dd class="stat__num">daily</dd><p class="stat__label">in real-world use · miztips</p></div>
+      </dl>
+
+      <p class="hero__scroll" aria-hidden="true"><span class="line"></span> Selected work</p>
+    </section>
+
+    <hr class="divider wrap wrap--wide" />
+
+    <!-- ===================== Work ===================== -->
+    <section id="work" class="section wrap wrap--wide" aria-labelledby="work-title">
+      <div class="sec-head reveal">
+        <h2 id="work-title" class="sec-head__title">Four products, shipped.</h2>
+        <p class="sec-head__meta">01 — Selected work</p>
+      </div>
+
+      <div class="work-grid">
+        <!-- Crowdtells -->
+        <article class="work-card reveal" data-proj="crowdtells" data-delay="1">
+          <div class="work-card__top">
+            <span class="work-card__index">01</span>
+            <span class="badge badge--live"><span class="dot" aria-hidden="true"></span> Live</span>
+          </div>
+          <h3 class="work-card__title">Crowdtells</h3>
+          <p class="work-card__role">AI · News · Prediction Markets</p>
+          <p class="work-card__desc">A news feed driven by the money. It reads Polymarket and Kalshi as a signal of what matters, ranks stories by newsworthiness, then briefs each one from many outlets — with LLM summaries grounded strictly in the market data, so the prose can never drift from the odds.</p>
+          <div class="work-card__chips cluster">
+            <span class="chip">React</span><span class="chip">TypeScript</span><span class="chip">Groq LLM</span><span class="chip">Cloudflare</span>
+          </div>
+          <div class="work-card__foot">
+            <a class="tlink card-link" href="/work/crowdtells.html">Case study <span class="arrow" aria-hidden="true">→</span></a>
+            <span class="sep" aria-hidden="true">·</span>
+            <div class="work-card__links">
+              <a href="https://crowdtells.com/" target="_blank" rel="noopener">Live <span class="arrow" aria-hidden="true">↗</span></a>
+            </div>
+          </div>
+        </article>
+
+        <!-- RegWatch -->
+        <article class="work-card reveal" data-proj="regwatch" data-delay="2">
+          <div class="work-card__top">
+            <span class="work-card__index">02</span>
+            <span class="badge badge--live"><span class="dot" aria-hidden="true"></span> Live · Founder</span>
+          </div>
+          <h3 class="work-card__title">RegWatch</h3>
+          <p class="work-card__role">SaaS · Civic Data · Full-Stack</p>
+          <p class="work-card__desc">Property intelligence for NY, NJ &amp; CT. Instant compliance and risk reports built on 9.6M+ parcels aggregated from 86+ government sources — with real-time regulatory monitoring, grounded AI chat, and a 12-language UI, all served from a single multi-brand codebase.</p>
+          <div class="work-card__chips cluster">
+            <span class="chip">Next.js 15</span><span class="chip">React 19</span><span class="chip">SQLite</span><span class="chip">Stripe</span><span class="chip">Groq</span>
+          </div>
+          <div class="work-card__foot">
+            <a class="tlink card-link" href="/work/regwatch.html">Case study <span class="arrow" aria-hidden="true">→</span></a>
+            <span class="sep" aria-hidden="true">·</span>
+            <div class="work-card__links">
+              <a href="https://regwatch.nyc/" target="_blank" rel="noopener">Live <span class="arrow" aria-hidden="true">↗</span></a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Tells -->
+        <article class="work-card reveal" data-proj="tells" data-delay="1">
+          <div class="work-card__top">
+            <span class="work-card__index">03</span>
+            <span class="badge badge--private">Private demo</span>
+          </div>
+          <h3 class="work-card__title">Tells</h3>
+          <p class="work-card__role">Real-Time · 3D · WebRTC</p>
+          <p class="work-card__desc">Browser-based 3D Texas Hold'em where every player's real webcam face is reconstructed as a live, video-textured 3D mesh around the table. An authoritative server engine runs the game; faces and spatial voice stream peer-to-peer through a LiveKit SFU.</p>
+          <div class="work-card__chips cluster">
+            <span class="chip">TypeScript</span><span class="chip">Three.js</span><span class="chip">MediaPipe</span><span class="chip">LiveKit</span><span class="chip">Socket.IO</span>
+          </div>
+          <div class="work-card__foot">
+            <a class="tlink card-link" href="/work/tells.html">Case study <span class="arrow" aria-hidden="true">→</span></a>
+            <span class="sep" aria-hidden="true">·</span>
+            <div class="work-card__links">
+              <a href="#contact">Demo on request</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- miztips -->
+        <article class="work-card reveal" data-proj="miztips" data-delay="2">
+          <div class="work-card__top">
+            <span class="work-card__index">04</span>
+            <span class="badge badge--live"><span class="dot" aria-hidden="true"></span> Live</span>
+          </div>
+          <h3 class="work-card__title">miztips</h3>
+          <p class="work-card__role">PWA · Mobile-First · Real-Time</p>
+          <p class="work-card__desc">A tip-distribution PWA used every shift at a NYC restaurant. It splits pooled tips across roles by weighted percentages, tracks shifts, exports branded PDFs, and syncs in real time with offline fallback — installable, touch-first, and built to be trusted with people's pay.</p>
+          <div class="work-card__chips cluster">
+            <span class="chip">React</span><span class="chip">Firebase</span><span class="chip">Tailwind</span><span class="chip">jsPDF</span><span class="chip">PWA</span>
+          </div>
+          <div class="work-card__foot">
+            <a class="tlink card-link" href="/work/miztips.html">Case study <span class="arrow" aria-hidden="true">→</span></a>
+            <span class="sep" aria-hidden="true">·</span>
+            <div class="work-card__links">
+              <a href="https://miztips.vercel.app/" target="_blank" rel="noopener">Live <span class="arrow" aria-hidden="true">↗</span></a>
+              <a href="https://github.com/squireaintready/tc" target="_blank" rel="noopener">Code <span class="arrow" aria-hidden="true">↗</span></a>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <hr class="divider wrap wrap--wide" />
+
+    <!-- ===================== About ===================== -->
+    <section id="about" class="section wrap" aria-labelledby="about-title">
+      <div class="sec-head reveal">
+        <h2 id="about-title" class="sec-head__title">About</h2>
+        <p class="sec-head__meta">02 — The engineer</p>
+      </div>
+      <div class="about__grid reveal">
+        <div class="about__shape" aria-hidden="true">
+          <span class="ring"></span>
+          <span class="about__monogram">SJ</span>
+        </div>
+        <div class="about__body">
+          <p>I'm a <strong>software and AI engineer</strong> based in New York. I like building things people actually use — and shipping them all the way to production, not just to a demo.</p>
+          <p>My work spans the whole stack: type-safe frontends, authoritative real-time game servers, large civic-data pipelines, and LLM features engineered to stay grounded in real data. I care about the parts that never show up in a screenshot — test coverage, offline behavior, accessibility, and interfaces that read like they were <strong>typeset, not assembled</strong>.</p>
+          <p>Lately that has meant a prediction-market newsroom, a property-intelligence platform serving millions of parcels, a real-time 3D poker table, and a tip calculator a restaurant runs on every night.</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider wrap wrap--wide" />
+
+    <!-- ===================== Skills ===================== -->
+    <section class="section wrap wrap--wide" aria-labelledby="skills-title">
+      <div class="sec-head reveal">
+        <h2 id="skills-title" class="sec-head__title">Tools of the trade.</h2>
+        <p class="sec-head__meta">03 — Capabilities</p>
+      </div>
+      <div class="skills-grid">
+        <div class="skill-group reveal" data-proj="crowdtells">
+          <p class="skill-group__head"><span>Languages</span><span class="n">6</span></p>
+          <ul class="skill-list">
+            <li><b>TypeScript</b> / JavaScript</li><li><b>Python</b></li><li>C#</li><li>SQL</li><li>HTML &amp; CSS</li><li>Bash</li>
+          </ul>
+        </div>
+        <div class="skill-group reveal" data-proj="miztips" data-delay="1">
+          <p class="skill-group__head"><span>Frontend</span><span class="n">7</span></p>
+          <ul class="skill-list">
+            <li><b>React</b> / Next.js</li><li>Vite</li><li><b>Three.js</b></li><li>Tailwind</li><li>Pretext</li><li>PWAs</li><li>Accessibility</li>
+          </ul>
+        </div>
+        <div class="skill-group reveal" data-proj="tells" data-delay="2">
+          <p class="skill-group__head"><span>Backend &amp; Infra</span><span class="n">9</span></p>
+          <ul class="skill-list">
+            <li><b>Node</b> / Express</li><li>Socket.IO · WebRTC</li><li>SQLite · Postgres</li><li>Firebase · Supabase</li><li>Stripe</li><li>Cloudflare · Vercel</li><li>Render · VPS / PM2</li><li>CI/CD</li><li>Playwright · Vitest</li>
+          </ul>
+        </div>
+        <div class="skill-group reveal" data-proj="regwatch" data-delay="3">
+          <p class="skill-group__head"><span>AI &amp; Data</span><span class="n">7</span></p>
+          <ul class="skill-list">
+            <li><b>LLM integration</b> (Groq)</li><li>Grounded generation</li><li>Ranking · MMR</li><li>MediaPipe vision</li><li>Data pipelines</li><li>FTS / search</li><li>i18n at scale</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider wrap wrap--wide" />
+
+    <!-- ===================== Contact ===================== -->
+    <section id="contact" class="section wrap contact" aria-labelledby="contact-title">
+      <p class="kicker" style="justify-content:center"><span class="kicker__dot"></span> 04 — Contact</p>
+      <h2 id="contact-title" class="contact__title display" data-fit data-fit-max="150" data-fit-min="34" style="margin-top:1rem">Let's build something.</h2>
+      <p class="contact__lead">I'm open to software and AI engineering roles. The fastest way to reach me is email — I read everything.</p>
+      <div class="contact__actions">
+        <a class="btn btn--primary" href="mailto:sungjohak@gmail.com">Email me <span class="arrow" aria-hidden="true">→</span></a>
+        <a class="btn btn--ghost" href="https://github.com/squireaintready" target="_blank" rel="noopener">GitHub <span class="arrow" aria-hidden="true">↗</span></a>
+        <a class="btn btn--ghost" href="https://www.linkedin.com/in/samuel-jo/" target="_blank" rel="noopener">LinkedIn <span class="arrow" aria-hidden="true">↗</span></a>
+      </div>
+      <p class="contact__alt">or grab the <a href="/Samuel-Jo-Resume.pdf">résumé (PDF)</a></p>
+    </section>
+  </main>
+
+  <!-- ===================== Footer ===================== -->
+  <footer class="site-footer">
+    <div class="wrap wrap--wide footer-grid">
+      <div>
+        <a class="brand" href="#top"><span class="brand__mark" aria-hidden="true"></span> Samuel&nbsp;Jo</a>
+        <p class="footer-cred" style="margin-top:.6rem; max-width:34ch">Software &amp; AI engineer in New York. Open to new roles.</p>
+      </div>
+      <nav class="cluster" style="--cluster-gap:1.2rem" aria-label="Footer">
+        <a href="#work">Work</a><a href="#about">About</a><a href="#contact">Contact</a>
+        <a href="https://github.com/squireaintready" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://www.linkedin.com/in/samuel-jo/" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="mailto:sungjohak@gmail.com">Email</a>
+      </nav>
+    </div>
+    <p class="wrap wrap--wide footer-cred" style="margin-top:2rem; color:var(--text-mute)">© <span data-year>2026</span> Samuel Jo · Typeset in HTML &amp; CSS with <a href="https://github.com/chenglou/pretext" target="_blank" rel="noopener">Pretext</a>.</p>
+  </footer>
+</body>
+</html>

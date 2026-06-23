@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Samuel Jo — Résumé</title>
+  <meta name="robots" content="noindex" />
+  <style>
+    @font-face { font-family:"Inter"; src:url("/assets/fonts/inter-latin.woff2") format("woff2"); font-weight:100 900; font-display:swap; }
+    @font-face { font-family:"Fraunces"; src:url("/assets/fonts/fraunces-latin.woff2") format("woff2"); font-weight:100 900; font-display:swap; }
+
+    :root{
+      --ink:#16140f; --dim:#3f3b34; --mute:#6b665c; --rule:#d9d3c6; --accent:#27496d;
+      --serif:"Fraunces", Georgia, serif; --sans:"Inter", -apple-system, system-ui, sans-serif;
+    }
+    *{ box-sizing:border-box; margin:0; }
+    html,body{ background:#fff; }
+    body{ font-family:var(--sans); color:var(--ink); font-size:9.2pt; line-height:1.28; -webkit-font-smoothing:antialiased; }
+
+    .page{ max-width:8.5in; margin:0 auto; padding:0.42in 0.6in; }
+
+    /* Header */
+    .r-name{ font-family:var(--serif); font-weight:420; font-size:25pt; letter-spacing:-0.01em; line-height:1; }
+    .r-title{ font-family:var(--sans); font-weight:600; font-size:9pt; letter-spacing:0.16em; text-transform:uppercase; color:var(--accent); margin-top:5px; }
+    .r-contact{ font-size:8.4pt; color:var(--dim); margin-top:7px; }
+    .r-contact a{ color:var(--dim); text-decoration:none; }
+    .r-contact .sep{ color:var(--rule); margin:0 6px; }
+    .r-head{ border-bottom:1.5px solid var(--ink); padding-bottom:8px; margin-bottom:8px; }
+
+    /* Sections */
+    .sec{ margin-top:9px; }
+    .sec > h2{ font-family:var(--sans); font-weight:700; font-size:8pt; letter-spacing:0.2em; text-transform:uppercase; color:var(--ink);
+      border-bottom:1px solid var(--rule); padding-bottom:3px; margin-bottom:7px; }
+    .summary{ color:var(--dim); font-size:9.4pt; }
+
+    .skills{ display:grid; grid-template-columns:max-content 1fr; gap:2px 12px; font-size:8.8pt; }
+    .skills dt{ font-weight:700; color:var(--ink); white-space:nowrap; }
+    .skills dd{ color:var(--dim); }
+
+    .job{ margin-bottom:6px; }
+    .job:last-child{ margin-bottom:0; }
+    .job__top{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
+    .job__role{ font-weight:700; font-size:9.8pt; }
+    .job__role .org{ color:var(--accent); }
+    .job__date{ font-size:8.2pt; color:var(--mute); white-space:nowrap; font-variant-numeric:tabular-nums; }
+    .job ul{ list-style:none; margin-top:3px; }
+    .job li{ position:relative; padding-left:12px; color:var(--dim); margin-top:2px; font-size:9pt; }
+    .job li::before{ content:""; position:absolute; left:2px; top:0.5em; width:3px; height:3px; border-radius:50%; background:var(--accent); }
+    .job li b, .summary b, .proj b{ color:var(--ink); font-weight:650; }
+
+    .proj{ margin-bottom:5px; font-size:9pt; color:var(--dim); }
+    .proj:last-child{ margin-bottom:0; }
+    .proj__name{ font-weight:700; color:var(--ink); }
+    .proj__name .stack{ font-weight:500; color:var(--mute); font-size:8.2pt; }
+
+    .edu{ display:flex; justify-content:space-between; gap:10px; font-size:9.1pt; }
+    .edu b{ color:var(--ink); }
+    .edu .muted{ color:var(--mute); }
+
+    @page{ size:Letter; margin:0; }
+    @media print{ .page{ padding:0.42in 0.6in; max-width:none; } a{ color:var(--dim) !important; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="r-head">
+      <div class="r-name">Samuel Jo</div>
+      <div class="r-title">Software &amp; AI Engineer</div>
+      <div class="r-contact">
+        New York, NY <span class="sep">·</span> 917-426-1656 <span class="sep">·</span>
+        <a href="mailto:sungjohak@gmail.com">sungjohak@gmail.com</a> <span class="sep">·</span>
+        <a href="https://www.linkedin.com/in/samuel-jo/">linkedin.com/in/samuel-jo</a> <span class="sep">·</span>
+        <a href="https://github.com/squireaintready">github.com/squireaintready</a> <span class="sep">·</span>
+        <a href="https://samjo.me">samjo.me</a>
+      </div>
+    </header>
+
+    <section class="sec">
+      <h2>Summary</h2>
+      <p class="summary">Software &amp; AI engineer who builds and ships <b>end to end</b> — LLM orchestration and grounded generation, real-time and 3D frontends, large data pipelines, and the cloud infra and CI/CD in between. <b>Four products in production.</b> At home in zero-to-one problems where the product needs to exist yesterday, and AI systems that run unattended and stay correct at scale.</p>
+    </section>
+
+    <section class="sec">
+      <h2>Skills</h2>
+      <dl class="skills">
+        <dt>Languages</dt><dd>TypeScript / JavaScript, Python, Java, C#, C++, SQL, R, HTML/CSS</dd>
+        <dt>Frontend</dt><dd>React 19, Next.js 15, Vite, Three.js, Tailwind, PWAs, accessibility, Pretext</dd>
+        <dt>Real-time / AI</dt><dd>WebRTC (LiveKit), Socket.IO, MediaPipe · LLM orchestration (Groq/Claude/GPT), RAG, structured output &amp; guardrails, ranking/MMR, autonomous agents</dd>
+        <dt>Data &amp; DB</dt><dd>SQLite (FTS5, WAL tuning), PostgreSQL, Firebase/Firestore, Supabase; pipelines, schema design</dd>
+        <dt>Infra</dt><dd>AWS (EC2/EBS/VPC), Cloudflare, Vercel, Render, VPS + PM2, Docker, GitHub Actions CI/CD, Stripe, Sentry, PostHog</dd>
+      </dl>
+    </section>
+
+    <section class="sec">
+      <h2>Experience</h2>
+
+      <div class="job">
+        <div class="job__top"><div class="job__role">Founder &amp; AI Engineer, <span class="org">RegWatch</span> (regwatch.nyc)</div><div class="job__date">Jan 2025 – Present</div></div>
+        <ul>
+          <li>Architected a full-stack AI property-intelligence SaaS <b>0→1</b>: <b>9.6M+ parcels / 42M+ records</b> across NY, NJ &amp; CT from <b>86+ government sources</b>, with sub-100ms search and instant compliance reports.</li>
+          <li>Shipped a <b>RAG AI assistant</b> (grounded, session-persistent, graceful fallback) and automated compliance monitoring across 150+ government pages with AI change detection and structured alerts.</li>
+          <li>Built single-codebase <b>multi-brand host routing</b>, <b>12-locale i18n</b> (incl. RTL) with a CI translation gate, Stripe tiered billing, and <b>blue-green zero-downtime deploys</b> on a VPS (PM2 cluster).</li>
+          <li>Optimized a <b>~114 GB SQLite</b> store (FTS5, WAL, covering indexes); shipped 65+ features via AI-augmented development with human review gates.</li>
+        </ul>
+      </div>
+
+      <div class="job">
+        <div class="job__top"><div class="job__role">General Manager, <span class="org">Mizumi</span></div><div class="job__date">Aug 2019 – Present</div></div>
+        <ul>
+          <li>Built and shipped <b>miztips</b> (miztips.vercel.app) — a tip-distribution <b>PWA</b> (React, Firebase) used <b>every shift by 18+ staff</b>: role-weighted pooling, PDF exports, real-time sync with offline fallback.</li>
+          <li>Run a <b>$5M+</b> hospitality operation with 25+ staff; built data-driven inventory forecasting (−15% waste) and 100%-accurate daily revenue reconciliation.</li>
+        </ul>
+      </div>
+
+      <div class="job">
+        <div class="job__top"><div class="job__role">Full Stack Engineer (Contract), <span class="org">Tegger</span></div><div class="job__date">Oct 2020 – Apr 2021</div></div>
+        <ul>
+          <li>Delivered a Celo-blockchain widget MVP (React, Node.js) with the CTO; earned the <b>Celo Design Tenet Award</b>.</li>
+        </ul>
+      </div>
+
+      <div class="job">
+        <div class="job__top"><div class="job__role">Municipal Financial Analyst, <span class="org">Queens College</span></div><div class="job__date">Aug 2018 – Jul 2019</div></div>
+        <ul>
+          <li>Restructured CAFRs for <b>10,000+ U.S. municipalities</b>; automated balance-sheet validation with VBA (−80% processing time).</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2>Selected Projects</h2>
+      <p class="proj"><span class="proj__name">Crowdtells</span> &nbsp;<span class="proj__name"><span class="stack">crowdtells.com · React/TS · Groq · Cloudflare</span></span><br/>A news feed driven by prediction markets: <b>newsworthiness ranking with MMR diversity</b>, hallucination-proof LLM briefings grounded in market data, and a zero-cost GitHub-native pipeline. 794 automated tests.</p>
+      <p class="proj"><span class="proj__name">Tells</span> &nbsp;<span class="stack">TypeScript · Three.js · MediaPipe · LiveKit</span><br/>Browser 3D Texas Hold'em rendering each player's live webcam face as a <b>478-point video-textured 3D mesh</b>; authoritative server poker engine, peer-to-peer media over a LiveKit SFU.</p>
+      <p class="proj"><span class="proj__name">Quant Trading Engine &amp; Autonomous Bot</span> &nbsp;<span class="stack">Python · Playwright · Docker</span><br/>Backtested 80k+ candles / 30k+ Monte Carlo runs; deployed as a cron-driven <b>autonomous agent</b> (signal detection, browser-automated execution, Discord alerts) in production on Railway.</p>
+    </section>
+
+    <section class="sec">
+      <h2>Education &amp; Certifications</h2>
+      <div class="edu"><div><b>B.A. Economics</b> — Queens College, NY <span class="muted">· Econometrics, Statistical Methods, Multivariable Calculus</span></div><div class="muted">2016 – 2019</div></div>
+      <div class="edu" style="margin-top:3px"><div><b>CS50x</b> — Harvard <span class="muted">·</span> <b>Data Structures &amp; Algorithms in Java</b> — University of Helsinki</div></div>
+    </section>
+  </div>
+</body>
+</html>
