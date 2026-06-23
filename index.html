@@ -3,6 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-7JHC95DWC3"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-7JHC95DWC3');
+  </script>
   <title>Samuel Jo — Software &amp; AI Engineer</title>
   <meta name="description" content="Samuel Jo — software & AI engineer in New York. I ship full-stack products end to end: Crowdtells, RegWatch (9.6M+ parcels), Tells, and miztips." />
   <meta name="author" content="Samuel Jo" />
@@ -233,8 +241,12 @@
       </div>
       <div class="about__grid reveal">
         <div class="about__shape" aria-hidden="true">
-          <span class="ring"></span>
-          <span class="about__monogram">SJ</span>
+          <span class="about__orb">
+            <span class="about__orb-face" data-orb>
+              <span class="ring"></span>
+              <span class="about__monogram">SJ</span>
+            </span>
+          </span>
         </div>
         <div class="about__body">
           <p>I'm a <strong>software and AI engineer</strong> based in New York. I like building things people actually use — and shipping them all the way to production, not just to a demo.</p>
@@ -359,13 +371,18 @@
         <h2 class="sec-head__title" style="max-width:none">Deal me in.</h2>
         <p class="sec-head__meta">05 — Play</p>
       </div>
-      <p class="play__lead reveal">A nod to <a href="/work/tells.html">Tells</a>. Hit deal for five cards — a poker-hand evaluator like the one inside Tells names it instantly, right in your browser.</p>
-      <div class="deck reveal" id="deck" aria-hidden="true"></div>
+      <p class="play__lead reveal">A nod to <a href="/work/tells.html">Tells</a>. Real five-card draw — hold the cards you want, draw the rest, and the same hand-evaluator that runs inside Tells scores the payout. Live in your browser.</p>
+      <div class="play__hud reveal">
+        <span class="play__chips">♦ <b id="play-chips">100</b> chips</span>
+        <span class="play__bet">Bet <b>5</b></span>
+      </div>
+      <div class="deck reveal" id="deck" role="group" aria-label="Your five-card hand"></div>
       <p class="play__result reveal" id="play-result" role="status" aria-live="polite"></p>
       <div class="play__actions reveal">
         <button class="btn btn--primary" id="deal-btn" type="button">Deal a hand <span class="arrow" aria-hidden="true">→</span></button>
       </div>
-      <p class="play__note reveal">Pure client-side · <a href="/work/tells.html">see the real engine →</a></p>
+      <p class="play__hint" id="play-hint" aria-live="polite"></p>
+      <p class="play__note reveal">Hold-and-draw · client-side · <a href="/work/tells.html">see the real engine →</a></p>
     </section>
 
     <hr class="divider wrap wrap--wide" />

@@ -112,18 +112,53 @@
   width: clamp(150px, 28vw, 250px);
   aspect-ratio: 1;
   margin: 0.4rem 0 1rem 1.6rem;
+  position: relative;
+  perspective: 820px;
+}
+/* outer = idle bob; face = cursor tilt; monogram = click pop. Three layers so the
+   transforms never fight each other (each owns its own element). */
+.about__orb {
+  position: absolute; inset: 0;
+  transform-style: preserve-3d;
+  animation: about-float 7s ease-in-out infinite;
+}
+@keyframes about-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+.about__orb-face {
+  position: absolute; inset: 0;
   border-radius: 50%;
   display: grid; place-items: center;
   background:
     radial-gradient(120% 120% at 30% 25%, color-mix(in srgb, var(--accent) 22%, var(--surface)) 0%, var(--surface-2) 60%, var(--surface) 100%);
   border: 1px solid var(--border);
-  position: relative;
+  box-shadow: var(--shadow-2);
+  transform-style: preserve-3d;
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.2s var(--ease-out);
+  cursor: pointer;
+  -webkit-user-select: none; user-select: none;
 }
-.about__monogram { font-family: var(--font-display); font-weight: 360; font-size: clamp(3.2rem, 10vw, 6rem); color: var(--accent); letter-spacing: -0.04em; line-height: 1; }
-.about__shape .ring { position: absolute; inset: -1px; border-radius: 50%; border: 1px solid var(--proj, var(--accent)); opacity: 0.28; }
+.about__monogram {
+  font-family: var(--font-display); font-weight: 360;
+  font-size: clamp(3.2rem, 10vw, 6rem);
+  color: var(--accent); letter-spacing: -0.04em; line-height: 1;
+  transform: translateZ(30px);
+}
+.about__monogram.is-pop { animation: orb-pop 0.55s var(--ease-spring); }
+@keyframes orb-pop {
+  0% { transform: translateZ(30px) scale(1); }
+  35% { transform: translateZ(46px) scale(1.16); }
+  70% { transform: translateZ(30px) scale(0.97); }
+  100% { transform: translateZ(30px) scale(1); }
+}
+.about__shape .ring { position: absolute; inset: -1px; border-radius: 50%; border: 1px solid var(--proj, var(--accent)); opacity: 0.28; transform: translateZ(14px); }
 .about__body { font-size: var(--fs-lg); line-height: 1.62; color: var(--text-dim); }
 .about__body p + p { margin-top: 1.1rem; }
 .about__body strong { color: var(--text); font-weight: 600; }
+@media (prefers-reduced-motion: reduce) {
+  .about__orb { animation: none; }
+  .about__orb-face { transition: none; }
+  .about__monogram.is-pop { animation: none; }
+}
 @media (max-width: 600px) {
   .about__shape { float: none; shape-outside: none; margin: 0 auto 1.8rem; }
 }
@@ -258,18 +293,31 @@
 .seal--alt .seal__mark { transform: none; border-radius: 1px; clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
 .seal--alt:hover .seal__mark { transform: rotate(72deg) scale(1.12); }
 .seal__edge--dash { stroke-dasharray: 2.4 3; }
+/* click a seal -> quick spin burst (direction is flipped from JS) */
+.seal.is-spun .seal__ring { animation-duration: 2.4s; }
+@media (prefers-reduced-motion: reduce) {
+  .seal, .seal__ring, .seal--alt .seal__ring { animation: none; }
+}
 
-/* second (right) seal — only when there's room; collapses on small screens */
-.craft__flow .craft__disc--right { float: right; shape-outside: circle(52%); margin: 0.2rem 0 0.8rem 1.9rem; display: none; }
-@media (min-width: 760px) { .craft__flow .craft__disc--right { display: block; } }
+/* second (right) seal — lives in the right gutter beside the prose (out of the text,
+   so it no longer crowds the paragraph). Shows only when the gutter has room. */
+.craft__flow .craft__disc--right {
+  float: none; shape-outside: none; margin: 0;
+  position: absolute; top: 50%;
+  left: calc(100% + clamp(1.25rem, 3vw, 3rem));
+  transform: translateY(-50%) translate(var(--dx, 0px), var(--dy, 0px));
+  display: none;
+}
+@media (min-width: 1100px) { .craft__flow .craft__disc--right { display: grid; } }
 
 /* ---------- The Craft (expansive, Pretext flow around the seal) ---------- */
 .craft { background: var(--bg-tint); border-block: 1px solid var(--border); }
 .craft__head { margin-bottom: clamp(1.75rem, 4vw, 2.75rem); }
 .craft__title { font-family: var(--font-display); font-weight: 340; font-size: var(--fs-3xl); line-height: 1.02; letter-spacing: -0.025em; max-width: 18ch; text-wrap: balance; }
-.craft__flow { font-family: var(--font-prose); font-size: var(--fs-lg); line-height: 1.72; color: var(--text-dim); max-width: 70ch; }
+.craft__flow { position: relative; font-family: var(--font-prose); font-size: var(--fs-lg); line-height: 1.72; color: var(--text-dim); max-width: 70ch; }
 .craft__flow strong { color: var(--text); font-weight: 600; }
-.craft__disc { float: left; shape-outside: circle(52%); width: clamp(132px, 21vw, 196px); aspect-ratio: 1; margin: 0.2rem 1.9rem 0.8rem 0; display: grid; place-items: center; }
+.craft__disc { float: left; shape-outside: circle(52%); width: clamp(132px, 21vw, 196px); aspect-ratio: 1; margin: 0.2rem 1.9rem 0.8rem 0; display: grid; place-items: center; cursor: grab; touch-action: none; -webkit-user-select: none; user-select: none; transform: translate(var(--dx, 0px), var(--dy, 0px)); will-change: transform; }
+.craft__disc.is-grabbing { cursor: grabbing; }
 @media (max-width: 560px) { .craft__disc { float: none; shape-outside: none; margin: 0 auto 1.6rem; } }
 .craft__principles { margin-top: clamp(2rem, 5vw, 3rem); display: grid; grid-template-columns: 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; }
 @media (min-width: 680px) { .craft__principles { grid-template-columns: repeat(2, 1fr); } }
@@ -281,10 +329,19 @@
 
 /* ---------- Play — poker mini-game ---------- */
 .play { text-align: center; }
-.play__lead { max-width: 46ch; margin: 1rem auto 0; color: var(--text-dim); }
-.deck { display: flex; justify-content: center; align-items: flex-end; gap: clamp(6px, 1.6vw, 13px); margin: clamp(1.75rem, 5vw, 2.75rem) auto 1.25rem; perspective: 1200px; min-height: clamp(112px, 22vw, 164px); }
-.pcard { width: clamp(58px, 12vw, 88px); aspect-ratio: 5 / 7; position: relative; transform-style: preserve-3d; transition: transform 0.6s var(--ease-spring), opacity 0.4s ease; transform: rotateY(0deg) translateY(16px); opacity: 0; }
+.play__lead { max-width: 48ch; margin: 1rem auto 0; color: var(--text-dim); }
+.play__hud { display: flex; gap: 1.6rem; justify-content: center; align-items: baseline; margin-top: 1.25rem; font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-mute); }
+.play__chips b { font-family: var(--font-display); font-size: 1.2rem; letter-spacing: 0; color: var(--proj-ink, var(--accent)); transition: color var(--t) var(--ease); }
+.play__bet b { color: var(--text-dim); }
+.deck { display: flex; justify-content: center; align-items: flex-end; gap: clamp(6px, 1.6vw, 13px); margin: clamp(1.5rem, 4.5vw, 2.5rem) auto 1.25rem; padding-top: 1.7rem; perspective: 1200px; min-height: clamp(112px, 22vw, 164px); }
+.pslot { position: relative; display: flex; flex-direction: column; align-items: center; }
+.pslot__hold { position: absolute; top: -1.5rem; left: 50%; transform: translateX(-50%) translateY(5px); font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--on-accent); background: var(--proj, var(--accent)); padding: 2px 8px; border-radius: var(--r-pill); opacity: 0; transition: opacity var(--t-fast) var(--ease), transform var(--t-fast) var(--ease); pointer-events: none; white-space: nowrap; }
+.pslot.held .pslot__hold { opacity: 1; transform: translateX(-50%) translateY(0); }
+.pcard { width: clamp(58px, 12vw, 88px); aspect-ratio: 5 / 7; position: relative; transform-style: preserve-3d; transition: transform 0.6s var(--ease-spring), opacity 0.4s ease; transform: rotateY(0deg) translateY(16px); opacity: 0; cursor: pointer; }
 .pcard.in { opacity: 1; transform: rotateY(180deg) translateY(0); }
+.pslot.held .pcard.in { transform: rotateY(180deg) translateY(-12px); }
+.pslot.held .pcard__face { box-shadow: 0 0 0 2px var(--proj, var(--accent)), var(--shadow-3); }
+.pcard:focus-visible { outline: 2px solid var(--proj, var(--accent)); outline-offset: 4px; border-radius: var(--r); }
 .pcard__side { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: var(--r); border: 1px solid var(--border-strong); display: grid; place-items: center; box-shadow: var(--shadow-2); }
 .pcard__back { background: linear-gradient(135deg, var(--accent), var(--accent-strong)); }
 .pcard__back::after { content: "◆"; color: var(--on-accent); opacity: 0.5; font-size: 1.4rem; }
@@ -295,7 +352,9 @@
 .play__result { font-family: var(--font-display); font-weight: 380; font-size: var(--fs-2xl); letter-spacing: -0.015em; min-height: 1.3em; color: var(--text); }
 .play__result .muted { color: var(--text-mute); font-size: var(--fs-base); }
 .play__actions { margin-top: 1.5rem; display: flex; justify-content: center; gap: 0.8rem; }
-.play__note { margin-top: 1.25rem; font-family: var(--font-mono); font-size: var(--fs-2xs); color: var(--text-mute); }
+.play__win { color: var(--up); font-family: var(--font-display); font-weight: 500; }
+.play__hint { min-height: 1.2em; margin-top: 0.9rem; font-family: var(--font-mono); font-size: var(--fs-2xs); color: var(--text-mute); letter-spacing: 0.05em; }
+.play__note { margin-top: 1.1rem; font-family: var(--font-mono); font-size: var(--fs-2xs); color: var(--text-mute); }
 .play__note a { color: var(--text-dim); text-decoration: underline; text-underline-offset: 3px; }
 
 /* ---------- Also shipped (more work) ---------- */

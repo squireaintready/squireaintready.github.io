@@ -168,7 +168,12 @@ const RANKS = [
   { r: 7, l: "7" }, { r: 8, l: "8" }, { r: 9, l: "9" }, { r: 10, l: "10" },
   { r: 11, l: "J" }, { r: 12, l: "Q" }, { r: 13, l: "K" }, { r: 14, l: "A" },
 ];
-function evalHand(cards) {
+const SUIT_NAME = { "♠": "Spades", "♥": "Hearts", "♦": "Diamonds", "♣": "Clubs" };
+const RANK_NAME = { J: "Jack", Q: "Queen", K: "King", A: "Ace" };
+const cardName = (c) => `${RANK_NAME[c.l] || c.l} of ${SUIT_NAME[c.s]}`;
+
+/* Same hand ranking the real Tells engine uses, plus a Jacks-or-Better paytable. */
+function analyze(cards) {
   const ranks = cards.map((c) => c.r).sort((a, b) => a - b);
   const suits = cards.map((c) => c.s);
   const counts = {};
@@ -179,46 +184,185 @@ function evalHand(cards) {
   let straight = uniq.length === 5 && uniq[4] - uniq[0] === 4;
   const wheel = uniq.length === 5 && uniq[0] === 2 && uniq[4] === 14 && uniq[3] === 5; // A-2-3-4-5
   if (wheel) straight = true;
-  if (straight && flush && uniq[0] === 10) return "Royal Flush";
-  if (straight && flush) return "Straight Flush";
-  if (vals[0] === 4) return "Four of a Kind";
-  if (vals[0] === 3 && vals[1] === 2) return "Full House";
-  if (flush) return "Flush";
-  if (straight) return "Straight";
-  if (vals[0] === 3) return "Three of a Kind";
-  if (vals[0] === 2 && vals[1] === 2) return "Two Pair";
-  if (vals[0] === 2) return "Pair";
-  return "High Card";
+  if (straight && flush && uniq[0] === 10) return { name: "Royal Flush", mult: 250 };
+  if (straight && flush) return { name: "Straight Flush", mult: 50 };
+  if (vals[0] === 4) return { name: "Four of a Kind", mult: 25 };
+  if (vals[0] === 3 && vals[1] === 2) return { name: "Full House", mult: 9 };
+  if (flush) return { name: "Flush", mult: 6 };
+  if (straight) return { name: "Straight", mult: 4 };
+  if (vals[0] === 3) return { name: "Three of a Kind", mult: 3 };
+  if (vals[0] === 2 && vals[1] === 2) return { name: "Two Pair", mult: 2 };
+  if (vals[0] === 2) {
+    const pairRank = +Object.keys(counts).find((r) => counts[r] === 2);
+    return pairRank >= 11 ? { name: "Jacks or Better", mult: 1 } : { name: "Pair", mult: 0 };
+  }
+  return { name: "High Card", mult: 0 };
 }
 function initPlay() {
   const deck = $("#deck"), btn = $("#deal-btn"), result = $("#play-result");
+  const chipsEl = $("#play-chips"), hint = $("#play-hint");
   if (!deck || !btn || !result) return;
+
   const FULL = [];
   SUITS.forEach((su) => RANKS.forEach((rk) => FULL.push({ ...rk, ...su })));
-  let busy = false;
+  const BET = 5;
+  const flipWait = prefersReduced ? 0 : 70 * 5 + 420;
+
+  let chips = 100, hand = [], rest = [], phase = "idle", busy = false, freeHand = true;
+  let onClick = deal;
+
+  const setChips = (v) => { chips = Math.max(0, v); if (chipsEl) chipsEl.textContent = chips; };
+  const setHint = (t) => { if (hint) hint.textContent = t; };
+  const setBtn = (label) => { btn.innerHTML = `${label} <span class="arrow" aria-hidden="true">→</span>`; };
+  const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+  function render() {
+    deck.innerHTML = "";
+    hand.forEach((h, i) => {
+      const slot = document.createElement("div");
+      slot.className = "pslot" + (h.held ? " held" : "");
+      const card = document.createElement("div");
+      card.className = "pcard" + (h.card.red ? " red" : "");
+      card.setAttribute("role", "button");
+      card.tabIndex = 0;
+      card.setAttribute("aria-pressed", String(h.held));
+      card.setAttribute("aria-label", cardName(h.card) + (phase === "hold" ? " — press to hold" : ""));
+      card.innerHTML = `<span class="pcard__side pcard__back"></span><span class="pcard__side pcard__face"><span class="rank">${h.card.l}</span><span class="suit">${h.card.s}</span></span>`;
+      const tab = document.createElement("span");
+      tab.className = "pslot__hold"; tab.textContent = "Hold"; tab.setAttribute("aria-hidden", "true");
+      slot.append(tab, card);
+      deck.appendChild(slot);
+      if (h.fresh) setTimeout(() => card.classList.add("in"), prefersReduced ? 0 : 70 * i + 40);
+      else card.classList.add("in");
+      const toggle = () => {
+        if (phase !== "hold" || busy) return;
+        h.held = !h.held;
+        slot.classList.toggle("held", h.held);
+        card.setAttribute("aria-pressed", String(h.held));
+      };
+      card.addEventListener("click", toggle);
+      card.addEventListener("keydown", (e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); toggle(); } });
+    });
+  }
+
   function deal() {
     if (busy) return;
-    busy = true;
-    btn.disabled = true;
-    const d = FULL.slice();
-    for (let i = d.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [d[i], d[j]] = [d[j], d[i]]; }
-    const hand = d.slice(0, 5);
-    deck.innerHTML = "";
-    result.textContent = "";
-    hand.forEach((c, i) => {
-      const card = document.createElement("div");
-      card.className = "pcard" + (c.red ? " red" : "");
-      card.innerHTML = `<span class="pcard__side pcard__back"></span><span class="pcard__side pcard__face"><span class="rank">${c.l}</span><span class="suit">${c.s}</span></span>`;
-      deck.appendChild(card);
-      setTimeout(() => card.classList.add("in"), prefersReduced ? 0 : 90 * i + 50);
-    });
+    if (freeHand) freeHand = false;
+    else { if (chips < BET) setChips(100); setChips(chips - BET); }
+    busy = true; btn.disabled = true;
+    const d = shuffle(FULL.slice());
+    hand = d.slice(0, 5).map((card) => ({ card, held: false, fresh: true }));
+    rest = d.slice(5);
+    phase = "hold";
+    render();
+    result.innerHTML = "";
+    setHint("Tap the cards you want to keep, then draw.");
     setTimeout(() => {
-      result.innerHTML = `${evalHand(hand)} <span class="muted">— ${hand.map((c) => c.l + c.s).join("  ")}</span>`;
-      busy = false; btn.disabled = false;
-    }, prefersReduced ? 0 : 90 * 5 + 340);
+      const a = analyze(hand.map((h) => h.card));
+      result.innerHTML = `<span class="muted">Holding · ${a.name}</span>`;
+      setBtn("Draw"); onClick = draw;
+      btn.disabled = false; busy = false;
+    }, flipWait);
   }
-  btn.addEventListener("click", deal);
+
+  function draw() {
+    if (busy) return;
+    busy = true; btn.disabled = true;
+    hand.forEach((h) => { if (!h.held) { h.card = rest.pop(); h.fresh = true; } else h.fresh = false; });
+    phase = "show";
+    render();
+    setHint("");
+    setTimeout(() => {
+      const a = analyze(hand.map((h) => h.card));
+      const pay = a.mult * BET;
+      if (pay > 0) setChips(chips + pay);
+      result.innerHTML = pay > 0
+        ? `${a.name} <span class="play__win">+${pay}</span>`
+        : `${a.name} <span class="muted">— no pay</span>`;
+      setBtn(chips < BET ? "Reset chips" : "Deal again"); onClick = deal;
+      btn.disabled = false; busy = false;
+    }, flipWait);
+  }
+
+  btn.addEventListener("click", () => onClick());
   deal();
+}
+
+/* ---------- Interactive monogram orb (About): float + cursor tilt + click pop ---------- */
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+function initOrb() {
+  const face = $("[data-orb]");
+  if (!face) return;
+  const mono = face.querySelector(".about__monogram");
+  if (!prefersReduced) {
+    const zone = face.closest("section") || face;
+    const MAX = 9; // degrees of tilt at the edges
+    let raf = 0;
+    zone.addEventListener("pointermove", (e) => {
+      const r = face.getBoundingClientRect();
+      const px = clamp(((e.clientX - r.left) / r.width - 0.5) * 2, -1, 1);
+      const py = clamp(((e.clientY - r.top) / r.height - 0.5) * 2, -1, 1);
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        face.style.setProperty("--ry", (px * MAX).toFixed(2) + "deg");
+        face.style.setProperty("--rx", (-py * MAX).toFixed(2) + "deg");
+      });
+    }, { passive: true });
+    zone.addEventListener("pointerleave", () => {
+      face.style.setProperty("--rx", "0deg");
+      face.style.setProperty("--ry", "0deg");
+    });
+  }
+  if (mono) {
+    face.addEventListener("click", () => {
+      if (prefersReduced) return;
+      mono.classList.remove("is-pop");
+      void mono.offsetWidth; // restart the keyframe
+      mono.classList.add("is-pop");
+    });
+    mono.addEventListener("animationend", () => mono.classList.remove("is-pop"));
+  }
+}
+
+/* ---------- Seals (The Craft): drag to move, click to reverse the spin ---------- */
+function initSeals() {
+  $$(".craft__disc").forEach((disc) => {
+    const seal = disc.querySelector(".seal");
+    const ring = disc.querySelector(".seal__ring");
+    if (!seal || !ring) return;
+    let dx = 0, dy = 0, ox = 0, oy = 0, sx = 0, sy = 0, moved = 0, dragging = false, pid = null, reversed = false;
+
+    disc.addEventListener("pointerdown", (e) => {
+      dragging = true; moved = 0; pid = e.pointerId;
+      sx = e.clientX; sy = e.clientY; ox = dx; oy = dy;
+      disc.classList.add("is-grabbing");
+      try { disc.setPointerCapture(pid); } catch (_) {}
+    });
+    disc.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+      const mvx = e.clientX - sx, mvy = e.clientY - sy;
+      moved = Math.max(moved, Math.abs(mvx) + Math.abs(mvy));
+      dx = clamp(ox + mvx, -150, 150);
+      dy = clamp(oy + mvy, -110, 110);
+      disc.style.setProperty("--dx", dx + "px");
+      disc.style.setProperty("--dy", dy + "px");
+    });
+    const end = () => {
+      if (!dragging) return;
+      dragging = false;
+      disc.classList.remove("is-grabbing");
+      if (pid != null) { try { disc.releasePointerCapture(pid); } catch (_) {} pid = null; }
+      if (moved < 6) { // a click, not a drag -> flip spin direction + quick burst
+        reversed = !reversed;
+        ring.style.animationDirection = reversed ? "reverse" : "normal";
+        seal.classList.add("is-spun");
+        clearTimeout(seal._spin);
+        seal._spin = setTimeout(() => seal.classList.remove("is-spun"), 1200);
+      }
+    };
+    disc.addEventListener("pointerup", end);
+    disc.addEventListener("pointercancel", end);
+  });
 }
 
 function init() {
@@ -228,6 +372,8 @@ function init() {
   initYear();
   initFit();
   initPlay();
+  initOrb();
+  initSeals();
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
 else init();
