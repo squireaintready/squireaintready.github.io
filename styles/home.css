@@ -178,6 +178,7 @@
 .browser:hover .browser__go { opacity: 1; }
 .browser__view { aspect-ratio: 16 / 10; background: var(--surface-2); position: relative; overflow: hidden; }
 .browser__view img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+.browser__view--fit img { object-fit: contain; object-position: center; }
 
 /* ---------- Shared CSS visuals (also used on case pages) ---------- */
 .viz { position: relative; width: 100%; height: 100%; display: grid; place-items: center; overflow: hidden; }
