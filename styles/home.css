@@ -230,6 +230,27 @@
 .seal:hover .seal__mark { transform: rotate(225deg) scale(1.1); }
 @keyframes seal-spin { to { transform: rotate(360deg); } }
 
+/* Both seals gently drift (in addition to the ring spinning) */
+.seal { animation: seal-float 9s ease-in-out infinite; }
+@keyframes seal-float {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(3px, -6px); }
+  50% { transform: translate(0, -9px); }
+  75% { transform: translate(-3px, -5px); }
+}
+/* Second seal: opposite spin, out-of-phase drift, star center, dashed inner ring */
+.seal--alt { animation-delay: -4.5s; }
+.seal--alt .seal__ring { animation-name: seal-spin-rev; animation-duration: 24s; }
+.seal--alt:hover .seal__ring { animation-duration: 6s; }
+@keyframes seal-spin-rev { to { transform: rotate(-360deg); } }
+.seal--alt .seal__mark { transform: none; border-radius: 1px; clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
+.seal--alt:hover .seal__mark { transform: rotate(72deg) scale(1.12); }
+.seal__edge--dash { stroke-dasharray: 2.4 3; }
+
+/* second (right) seal — only when there's room; collapses on small screens */
+.craft__flow .craft__disc--right { float: right; shape-outside: circle(52%); margin: 0.2rem 0 0.8rem 1.9rem; display: none; }
+@media (min-width: 760px) { .craft__flow .craft__disc--right { display: block; } }
+
 /* ---------- The Craft (expansive, Pretext flow around the seal) ---------- */
 .craft { background: var(--bg-tint); border-block: 1px solid var(--border); }
 .craft__head { margin-bottom: clamp(1.75rem, 4vw, 2.75rem); }
