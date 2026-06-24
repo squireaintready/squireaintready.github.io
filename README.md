@@ -49,7 +49,6 @@ paths require a server.)
 ├── assets/fonts            # Inter, Fraunces, Source Serif 4 (self-hosted woff2)
 ├── assets/vendor           # pretext.mjs + lib.js (the Pretext engine)
 ├── public/img/             # live-site screenshots, app icon, OG image
-├── resume.html → Samuel-Jo-Resume.pdf
 └── favicon.svg · robots.txt · sitemap.xml · CNAME
 ```
 

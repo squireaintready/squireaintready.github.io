@@ -58,6 +58,5 @@ git push -u origin main
 ---
 
 ### Before going live — checklist
-- [ ] Confirm contact email (currently `sungjohak@gmail.com` across site + résumé).
-- [ ] Swap `Samuel-Jo-Resume.pdf` if you tweak the résumé (`resume.html` is the source → print to PDF, or re-run the render).
+- [ ] Confirm contact email (currently `sungjohak@gmail.com` across site).
 - [ ] After deploy, validate the share card with the [OpenGraph debugger](https://www.opengraph.xyz/) (`/public/img/og.png`).

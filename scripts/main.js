@@ -21,10 +21,10 @@ function currentTheme() {
 }
 const THEMES = [
   { id: "light", name: "Paper" },
+  { id: "forest", name: "Forest" },
   { id: "dark", name: "Dossier" },
   { id: "midnight", name: "Midnight" },
   { id: "bordeaux", name: "Bordeaux" },
-  { id: "forest", name: "Forest" },
 ];
 function applyTheme(id) {
   document.documentElement.setAttribute("data-theme", id);

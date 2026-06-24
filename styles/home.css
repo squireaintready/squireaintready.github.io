@@ -29,19 +29,12 @@
 .hero__lead { margin-top: 1.5rem; max-width: 54ch; }
 .hero__actions { margin-top: clamp(1.75rem, 4vw, 2.5rem); display: flex; flex-wrap: wrap; gap: 0.8rem; }
 
-/* availability strip (replaces vanity stats — recruiter-relevant) */
+/* focus strip — where I am + what I'm building */
 .hero__status {
   margin-top: clamp(2.25rem, 5vw, 3rem);
   border-top: 1px solid var(--border);
   padding-top: 1.4rem;
   display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1.4rem;
-}
-.hero__avail { display: inline-flex; align-items: center; gap: 0.6em; font-family: var(--font-sans); font-size: var(--fs-sm); font-weight: 600; color: var(--text); }
-.hero__avail .avail-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--up); animation: avail-pulse 2.6s var(--ease) infinite; }
-@keyframes avail-pulse {
-  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--up) 55%, transparent); }
-  70% { box-shadow: 0 0 0 8px transparent; }
-  100% { box-shadow: 0 0 0 0 transparent; }
 }
 .hero__focus { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--text-mute); }
 .hero__focus a { color: var(--text-dim); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--border-strong); transition: color var(--t); }
