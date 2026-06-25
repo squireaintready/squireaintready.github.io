@@ -6,7 +6,6 @@
 .hero { position: relative; padding-top: clamp(2.5rem, 8vw, 5.5rem); padding-bottom: clamp(2.5rem, 7vw, 4.5rem); }
 .hero__kicker { margin-bottom: clamp(1.25rem, 3vw, 2rem); }
 .hero__name {
-  font-family: var(--font-wordmark);  /* Marcellus — upright J */
   font-size: var(--fs-display);     /* CSS fallback; JS fits it exactly to width */
   font-weight: 340;
   line-height: 0.92;
@@ -132,7 +131,7 @@
   -webkit-user-select: none; user-select: none;
 }
 .about__monogram {
-  font-family: var(--font-wordmark); font-weight: 360;
+  font-family: var(--font-display); font-weight: 360;
   font-size: clamp(3.2rem, 10vw, 6rem);
   color: var(--accent); letter-spacing: -0.04em; line-height: 1;
   transform: translateZ(30px);
