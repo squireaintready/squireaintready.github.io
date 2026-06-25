@@ -23,6 +23,7 @@ export async function readyFonts() {
     "400 16px 'Source Serif 4'", "600 16px 'Source Serif 4'", "300 16px 'Source Serif 4'",
     "400 14px 'Inter Variable'", "600 13px 'Inter Variable'", "700 11px 'Inter Variable'",
     "340 120px 'Fraunces Variable'", "300 120px 'Fraunces Variable'", "600 48px 'Fraunces Variable'",
+    "400 120px 'Marcellus'",
   ];
   try { await Promise.all(probes.map((f) => document.fonts.load(f))); } catch { /* older engines */ }
   await document.fonts.ready;
