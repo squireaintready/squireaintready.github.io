@@ -67,9 +67,28 @@
   .hero__signal { margin-top: 0.85rem; }
   .hero__signal .signal { height: clamp(58px, 6.5vw, 84px); }
 }
+/* ---------- Mobile hero: lead with the name; drop the dense meta rail; give the car a full-width track ---------- */
+@media (max-width: 600px) {
+  .hero__rail { display: none; }                        /* role + location already live in the kicker */
+  .hero__name-l2 { flex-wrap: wrap; row-gap: 0.1em; }   /* "Jo" sits on its own row ... */
+  .hero__name-rule { flex: 1 1 100%; }                  /* ... the rule drops to its own full-width row (the car's track) */
+  .hero__kicker { margin-bottom: 0.8rem; }
+  .hero__statement { margin-top: 1rem; }
+  .hero__lead { margin-top: 0.8rem; }
+  .car__hint { display: none; }                         /* the little car invites a tap on its own — no label crowding the name */
+  .car-reset { top: clamp(10px, 2vh, 18px); right: 12px; padding: 0.5em; gap: 0; } /* icon-only, tucked in the corner */
+  .car-reset__label { display: none; }
+}
+/* very short phones (SE-class): tighten gaps + compact the lead so the full pitch fits one clean screen */
+@media (max-width: 600px) and (max-height: 760px) {
+  .hero__name-l2 { row-gap: 0; }
+  .hero__kicker { margin-bottom: 0.45rem; }
+  .hero__statement { margin-top: 0.65rem; }
+  .hero__lead { margin-top: 0.5rem; font-size: var(--fs-sm); line-height: 1.45; }
+}
 
 /* drive-able car on the name underline */
-.car { position: absolute; left: 0; top: 0; z-index: 6; width: clamp(46px, 4.6vw, 60px); color: var(--text); cursor: grab; touch-action: none; will-change: transform; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25)); transition: opacity 0.25s ease, filter 0.2s ease; }
+.car { position: absolute; left: 0; top: 0; z-index: 6; width: clamp(46px, 4.6vw, 60px); color: var(--text); cursor: grab; touch-action: none; will-change: transform; transform-origin: 50% 84%; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25)); transition: opacity 0.25s ease, filter 0.2s ease; }
 .car:active { cursor: grabbing; }
 .car.is-off { opacity: 0; pointer-events: none; }
 .car.is-air { filter: drop-shadow(0 0 10px var(--accent)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3)); } /* glows while airborne / falling so it stays trackable */

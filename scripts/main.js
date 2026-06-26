@@ -926,9 +926,9 @@ function initCar() {
   const resetBtn = $("[data-car-reset]");
   const coarse = matchMedia("(hover: none)").matches;
 
-  let x = 0, y = 0, vx = 0, vy = 0, rot = 0, bodyRot = 0, lastDir = 1, cw = 56, ch = 24, fo = 22, heroW = 0, heroH = 0;
+  let x = 0, y = 0, vx = 0, vy = 0, rot = 0, bodyRot = 0, deform = 0, lastDir = 1, cw = 56, ch = 24, fo = 22, heroW = 0, heroH = 0;
   let grounded = false, wasGrounded = true, off = false, driven = false, raf = 0, heroVis = true;
-  let dragging = false, lastX = 0, lastY = 0, dvx = 0, dvy = 0, offTimer = 0;
+  let dragging = false, lastX = 0, lastY = 0, dvx = 0, dvy = 0, moved = 0, offTimer = 0;
   let platforms = [], home = { x: 0, y: 0 };
   const L = {}, R = {};
   const ACC = 0.5, FR = 0.82, AIRFR = 0.99, MAXVX = 8, G = 0.6, JUMP = 11.5, MAXVY = 18, FOOT = 0.9, TOL = 9;
@@ -950,7 +950,8 @@ function initCar() {
     if (!driven && !dragging && !off) { x = home.x; y = home.y; place(); }
   }
   function place() {
-    car.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${bodyRot.toFixed(1)}deg)`;
+    const sx = (1 + deform * 0.45).toFixed(3), sy = (1 - deform * 0.55).toFixed(3); // squash (land) / stretch (hop)
+    car.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${bodyRot.toFixed(1)}deg) scale(${sx}, ${sy})`;
     const t = `rotate(${rot.toFixed(1)}deg)`;
     for (const wl of wheels) wl.style.transform = t;
     if (!off) { CAR.x = x; CAR.y = y; CAR.vx = dragging ? dvx : vx; } // share with the physics field
@@ -964,7 +965,7 @@ function initCar() {
     vx = clamp(vx, -MAXVX, MAXVX);
     vy = clamp(vy + G, -MAXVY, MAXVY);
     const prevFoot = y + fo;
-    x = clamp(x + vx, -cw * 0.5, heroW - cw * 0.5);
+    x = clamp(x + vx, 0, heroW - cw);                         // stay fully on-screen: never half-clipped off a side
     y += vy;
     vx *= grounded ? FR : AIRFR;
     if (Math.abs(vx) < 0.03) vx = 0;
@@ -973,8 +974,11 @@ function initCar() {
     const cx = x + cw / 2, foot = y + fo;
     for (const p of platforms) {
       if (cx < p.x - 2 || cx > p.x + p.w + 2) continue;
-      if (vy >= 0 && foot >= p.y && prevFoot <= p.y + TOL) { y = p.y - fo; vy = 0; grounded = true; break; }
+      if (vy >= 0 && foot >= p.y && prevFoot <= p.y + TOL) { y = p.y - fo; grounded = true; break; }
     }
+    if (grounded && !wasGrounded) deform = Math.min(0.5, vy * 0.045); // squash scaled by how hard it hit
+    if (grounded) vy = 0;
+    deform *= 0.8; if (Math.abs(deform) < 0.01) deform = 0;
     if (vx > 0.2) lastDir = 1; else if (vx < -0.2) lastDir = -1;
     if (grounded) {
       rot += vx * 6;                            // wheels roll along the surface
@@ -986,16 +990,16 @@ function initCar() {
     }
     if (grounded !== wasGrounded) { car.classList.toggle("is-air", !grounded); wasGrounded = grounded; }
     place();
-    if (y > heroH + 80) { goOff(); return; }                  // fell off the bottom of the map
-    if (!grounded || vx !== 0 || vy !== 0 || L.on || R.on) raf = requestAnimationFrame(step); else raf = 0;
+    if (y > heroH + 60) { goOff(); return; }                  // dropped off the bottom of the map
+    if (!grounded || vx !== 0 || vy !== 0 || deform !== 0 || L.on || R.on) raf = requestAnimationFrame(step); else raf = 0;
   }
   const kick = () => { if (!raf && heroVis && !off) raf = requestAnimationFrame(step); };
-  function hop() { if (grounded && !dragging && !off) { vy = -JUMP; grounded = false; mark(); kick(); } }
+  function hop() { if (grounded && !dragging && !off) { vy = -JUMP; grounded = false; deform = -0.3; mark(); kick(); } }
   function goOff() {
     off = true; raf = 0;
     car.classList.add("is-off"); hero.classList.add("car-lost");
     CAR.x = -1e4; CAR.y = -1e4; CAR.vx = 0;                    // drop it from the physics field
-    clearTimeout(offTimer); offTimer = setTimeout(reset, 1500); // self-recover (reset button also pulses)
+    clearTimeout(offTimer); offTimer = setTimeout(reset, 1200); // self-recover (reset button also pulses)
   }
   function reset() {
     clearTimeout(offTimer);
@@ -1021,19 +1025,27 @@ function initCar() {
     if (k === "ArrowRight" || k === "d" || k === "D") R.on = false;
   });
   car.addEventListener("pointerdown", (e) => {
-    dragging = true; lastX = e.clientX; lastY = e.clientY; dvx = dvy = 0; mark();
+    dragging = true; lastX = e.clientX; lastY = e.clientY; dvx = dvy = 0; moved = 0; mark();
     try { car.setPointerCapture(e.pointerId); } catch (_) {}
     e.preventDefault(); kick();
   });
   addEventListener("pointermove", (e) => {
     if (!dragging) return;
     dvx = e.clientX - lastX; dvy = e.clientY - lastY; lastX = e.clientX; lastY = e.clientY;
-    x = clamp(x + dvx, -cw * 0.5, heroW - cw * 0.5); y += dvy; place();
+    moved += Math.abs(dvx) + Math.abs(dvy);
+    x = clamp(x + dvx, 0, heroW - cw); y += dvy; place();
   });
-  const endDrag = () => { if (!dragging) return; dragging = false; vx = clamp(dvx, -MAXVX, MAXVX); vy = clamp(dvy, -MAXVY, MAXVY); grounded = false; kick(); };
+  const endDrag = () => {
+    if (!dragging) return;
+    dragging = false;
+    const wasOnGround = grounded; grounded = false;
+    if (moved < 6 && wasOnGround) { vy = -JUMP; deform = -0.3; }   // a tap (not a drag) hops — handy on touch
+    else { vx = clamp(dvx, -MAXVX, MAXVX); vy = clamp(dvy, -MAXVY, MAXVY); } // otherwise fling it
+    kick();
+  };
   addEventListener("pointerup", endDrag); addEventListener("pointercancel", endDrag);
   if (resetBtn) resetBtn.addEventListener("click", () => { reset(); resetBtn.blur(); });
-  if (hint) hint.textContent = coarse ? "drag me · or reset →" : "← → drive · ↑ hop";
+  if (hint) hint.textContent = coarse ? "tap to hop · drag to fling" : "← → drive · ↑ hop";
 
   measure(); kick();
   addEventListener("resize", debounce(() => { measure(); kick(); }, 180));
