@@ -47,7 +47,11 @@
 .hero__signal .signal { display: block; width: 100%; height: clamp(98px, 12vw, 126px); }
 .hero__signal-cap { position: absolute; top: 8px; left: 12px; right: 12px; z-index: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 0.25em 0.9em; font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-mute); }
 .hero__signal-lead { display: inline-flex; align-items: center; gap: 0.5em; }
-.hero__signal-k { color: var(--text-mute); }
+.hero__signal-k { display: inline-flex; align-items: center; gap: 0.4em; color: var(--text-mute); }
+.hero__signal-k i { width: 7px; height: 7px; border-radius: 2px; flex: none; display: inline-block; }
+.hero__signal-k--e i { background: var(--accent); }
+.hero__signal-k--c i { background: var(--up); }
+.hero__signal-k--c b { color: var(--up); }
 .hero__signal-cap b { color: var(--proj-ink, var(--accent)); font-weight: 600; letter-spacing: 0; font-variant-numeric: tabular-nums; }
 .hero__signal-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--live); box-shadow: 0 0 0 0 color-mix(in srgb, var(--live) 60%, transparent); animation: live-ping 2.6s var(--ease) infinite; }
 
@@ -88,6 +92,43 @@
 .sec-head--center { text-align: center; }
 .sec-head--center .sec-head__meta { justify-content: center; }
 .sec-head--center .sec-head__title { margin-inline: auto; max-width: none; }
+
+/* ---------- Subtle per-section backgrounds (full-bleed, CSS-only, behind content) ----------
+   Each motif nods to the section's meaning; all kept very low-contrast so text stays clean. */
+#work, #about, #capabilities, #play, #contact { position: relative; isolation: isolate; }
+#work::before, #about::before, #capabilities::before, #play::before, #contact::before {
+  content: ""; position: absolute; z-index: -1; inset-block: 0; left: 50%; width: 100vw; transform: translateX(-50%);
+  pointer-events: none; background-repeat: no-repeat;
+}
+/* Work — a faint data-point matrix + cool corner glow */
+#work::before {
+  background:
+    radial-gradient(46% 55% at 90% 4%, color-mix(in srgb, var(--proj-crowdtells) 7%, transparent), transparent 70%),
+    radial-gradient(var(--grid-line) 1px, transparent 1.6px) 0 0 / 24px 24px;
+}
+/* About — a warm soft glow on a tinted band */
+#about::before {
+  background:
+    radial-gradient(55% 70% at 10% 0%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 66%),
+    var(--bg-tint);
+}
+/* Capabilities — a faint engineering grid + glow */
+#capabilities::before {
+  background:
+    radial-gradient(48% 58% at 86% 0%, color-mix(in srgb, var(--proj-crowdtells) 8%, transparent), transparent 70%),
+    repeating-linear-gradient(0deg, var(--grid-line) 0 1px, transparent 1px 30px),
+    repeating-linear-gradient(90deg, var(--grid-line) 0 1px, transparent 1px 30px);
+}
+/* Play — a subtle felt vignette on a tinted band */
+#play::before {
+  background:
+    radial-gradient(58% 72% at 50% 42%, color-mix(in srgb, var(--proj-tells) 9%, transparent), transparent 72%),
+    var(--bg-tint);
+}
+/* Contact — a soft centered focus glow */
+#contact::before {
+  background: radial-gradient(50% 80% at 50% 28%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 72%);
+}
 
 /* shared stat figures (used by case-study "by the numbers") */
 .stat__num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--fs-xl); color: var(--text); letter-spacing: -0.01em; }
@@ -211,7 +252,7 @@
 .skill-list li b { color: var(--text); font-weight: 600; }
 
 /* ---------- The Craft (real Pretext text-flow around the seal) ---------- */
-.craft { background: var(--bg-tint); border-block: 1px solid var(--border); }
+.craft { background: radial-gradient(50% 60% at 14% 8%, color-mix(in srgb, var(--accent) 5%, transparent), transparent 70%), var(--bg-tint); border-block: 1px solid var(--border); }
 .craft__head { margin-bottom: clamp(1.75rem, 4vw, 2.75rem); }
 .craft__title { max-width: 18ch; }
 .craft__flow {

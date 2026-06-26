@@ -223,15 +223,16 @@ function initHeroSignal() {
   const sigE = $("[data-sig-e]"), sigC = $("[data-sig-c]"), sigN = $("[data-sig-n]");
   if (!ctx) return;
   let W = 0, H = 0, dpr = 1;
-  const N = 100, data = new Array(N).fill(0.5);
-  let v = 0.5, target = 0.55, pointerX = null, frac = 0, COL = readColors();
+  const N = 100, data = new Array(N).fill(0.06), cData = new Array(N).fill(0);
+  let frac = 0, lastHits = 0, COL = readColors();
   const STEP = 6; // frames between new samples — higher = calmer scroll
 
   function readColors() {
-    const stroke = parseRGB(resolveColor("var(--accent)"));
-    const grid = resolveColor("var(--grid-line)");
-    const text = parseRGB(resolveColor("var(--text)"));
-    return { stroke, grid, text };
+    return {
+      stroke: parseRGB(resolveColor("var(--accent)")),     // kinetic-energy line
+      impact: parseRGB(resolveColor("var(--up)")),          // collision impulse spikes
+      grid: resolveColor("var(--grid-line)"),
+    };
   }
   function resize() {
     const r = wrap.getBoundingClientRect();
@@ -252,30 +253,39 @@ function initHeroSignal() {
   function draw(fr = 0) {
     ctx.clearRect(0, 0, W, H);
     const padTop = 38, padBot = 14, gh = H - padTop - padBot, n = data.length;
-    const stepW = W / (n - 1);
+    const stepW = W / (n - 1), baseY = padTop + gh;
     const xAt = (i) => i * stepW - fr * stepW, yAt = (val) => padTop + (1 - val) * gh;
     // grid
     ctx.strokeStyle = COL.grid; ctx.lineWidth = 1; ctx.beginPath();
-    for (let i = 0; i <= 4; i++) { const y = Math.round(padTop + (gh * i) / 4) + 0.5; ctx.moveTo(0, y); ctx.lineTo(W, y); }
+    for (let i = 0; i <= 3; i++) { const y = Math.round(padTop + (gh * i) / 3) + 0.5; ctx.moveTo(0, y); ctx.lineTo(W, y); }
     ctx.stroke();
-    // area
+    // collisions → impulse spikes rising from the baseline (recent ones brighter)
+    ctx.lineWidth = 2; ctx.lineCap = "round";
+    for (let i = 0; i < n; i++) {
+      const c = cData[i]; if (c <= 0.001) continue;
+      const x = xAt(i); if (x < -3 || x > W + 3) continue;
+      ctx.strokeStyle = rgba(COL.impact, 0.16 + 0.44 * (i / n));
+      ctx.beginPath(); ctx.moveTo(x, baseY); ctx.lineTo(x, baseY - c * gh * 0.92); ctx.stroke();
+    }
+    // kinetic energy → area + line
     path(n, xAt, yAt); ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
     const g = ctx.createLinearGradient(0, padTop, 0, H);
-    g.addColorStop(0, rgba(COL.stroke, 0.16)); g.addColorStop(1, rgba(COL.stroke, 0));
+    g.addColorStop(0, rgba(COL.stroke, 0.15)); g.addColorStop(1, rgba(COL.stroke, 0));
     ctx.fillStyle = g; ctx.fill();
-    // line
     path(n, xAt, yAt); ctx.strokeStyle = rgba(COL.stroke, 0.92); ctx.lineWidth = 1.8; ctx.lineJoin = "round"; ctx.stroke();
-    // leading dot
+    // leading dot on the energy line
     const lx = xAt(n - 1), ly = yAt(data[n - 1]);
-    ctx.beginPath(); ctx.arc(lx, ly, 9, 0, Math.PI * 2); ctx.fillStyle = rgba(COL.stroke, 0.14); ctx.fill();
-    ctx.beginPath(); ctx.arc(lx, ly, 3.2, 0, Math.PI * 2); ctx.fillStyle = rgba(COL.stroke, 1); ctx.fill();
+    ctx.beginPath(); ctx.arc(lx, ly, 9, 0, 6.2832); ctx.fillStyle = rgba(COL.stroke, 0.14); ctx.fill();
+    ctx.beginPath(); ctx.arc(lx, ly, 3.2, 0, 6.2832); ctx.fillStyle = rgba(COL.stroke, 1); ctx.fill();
   }
   function advance() {
-    // the signal IS the physics field: kinetic energy → line height; live stats → readouts
-    const push = FIELD.n ? clamp(0.06 + Math.sqrt(FIELD.e) / 13, 0.05, 0.98) : 0.5;
-    data.push(push); data.shift();
-    if (readout) readout.textContent = (push * 100).toFixed(1);
-    if (sigE) sigE.textContent = Math.round(FIELD.e);
+    // two correlated series read straight from the physics field:
+    //   data[]  = kinetic energy (the line)   ·   cData[] = collisions since last sample (the spikes)
+    const e = FIELD.n ? clamp(0.06 + Math.sqrt(FIELD.e) / 13, 0.05, 0.98) : 0.06;
+    const rate = Math.max(0, FIELD.hits - lastHits); lastHits = FIELD.hits;
+    data.push(e); data.shift();
+    cData.push(clamp(rate / 6, 0, 1)); cData.shift();
+    if (readout) readout.textContent = (e * 100).toFixed(1);
     if (sigC) sigC.textContent = FIELD.hits.toLocaleString("en-US");
     if (sigN) sigN.textContent = FIELD.n;
   }
@@ -290,9 +300,6 @@ function initHeroSignal() {
     setTimeout(() => { if (readout) readout.textContent = (clamp(0.06 + Math.sqrt(FIELD.e) / 13, 0.05, 0.98) * 100).toFixed(1); if (sigE) sigE.textContent = Math.round(FIELD.e); if (sigC) sigC.textContent = FIELD.hits.toLocaleString("en-US"); if (sigN) sigN.textContent = FIELD.n; }, 120);
     return;
   }
-  wrap.addEventListener("pointermove", (e) => { const r = wrap.getBoundingClientRect(); pointerX = (e.clientX - r.left) / r.width; }, { passive: true });
-  wrap.addEventListener("pointerleave", () => { pointerX = null; });
-
   let raf = 0, visible = true;
   const loop = () => { frac += 1 / STEP; if (frac >= 1) { frac -= 1; advance(); } draw(frac); raf = requestAnimationFrame(loop); };
   const start = () => { if (!raf && visible && !document.hidden) raf = requestAnimationFrame(loop); };
