@@ -12,7 +12,7 @@
     gtag('config', 'G-7JHC95DWC3');
   </script>
   <title>Samuel Jo — Software &amp; AI Engineer</title>
-  <meta name="description" content="Samuel Jo — software & AI engineer in New York. I ship full-stack products end to end: Crowdtells, RegWatch (9.6M+ parcels), Tells, and miztips." />
+  <meta name="description" content="Samuel Jo — software & AI engineer in New York. I build living products end to end: Crowdtells, RegWatch (9.6M+ parcels), Tells, and miztips — all live and in daily use." />
   <meta name="author" content="Samuel Jo" />
   <link rel="canonical" href="https://samjo.me/" />
   <meta name="color-scheme" content="light dark" />
@@ -45,9 +45,10 @@
     })();
   </script>
 
-  <!-- Preload the display + UI faces used above the fold -->
+  <!-- Preload the faces used above the fold (display, UI, body prose) -->
   <link rel="preload" href="/assets/fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/assets/fonts/source-serif-4-latin.woff2" as="font" type="font/woff2" crossorigin />
 
   <link rel="stylesheet" href="/styles/tokens.css" />
   <link rel="stylesheet" href="/styles/base.css" />
@@ -75,6 +76,9 @@
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
 
+  <!-- scroll progress (JS-driven width) -->
+  <div class="scroll-progress" aria-hidden="true"><span class="scroll-progress__bar" data-progress></span></div>
+
   <!-- ===================== Nav ===================== -->
   <header class="site-nav">
     <nav class="wrap wrap--wide site-nav__inner" aria-label="Primary">
@@ -85,6 +89,10 @@
         <a href="#work">Work</a>
         <a href="#about">About</a>
         <a href="#contact">Contact</a>
+        <button class="cmdk-trigger" type="button" data-cmdk-open aria-label="Open command menu — search and jump anywhere">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <span class="cmdk-trigger__hint"><kbd>⌘</kbd><kbd>K</kbd></span>
+        </button>
         <button class="theme-toggle" type="button" aria-label="Switch theme" title="Switch theme">
           <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></svg>
           <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 14.2A8.2 8.2 0 0 1 9.8 3.5a.6.6 0 0 0-.82-.74 9.3 9.3 0 1 0 12.26 12.26.6.6 0 0 0-.74-.82Z"/></svg>
@@ -97,30 +105,65 @@
     <span id="top"></span>
 
     <!-- ===================== Hero ===================== -->
-    <section class="hero wrap wrap--wide" aria-labelledby="hero-name">
-      <p class="kicker hero__kicker"><span class="kicker__dot"></span> Software &amp; AI Engineer · New York</p>
-      <h1 id="hero-name" class="hero__name display" data-fit data-fit-max="248" data-fit-min="40">Samuel Jo</h1>
-      <p class="hero__statement">Building <em>living products</em> — software that ships, learns, and gets used every day.</p>
-      <p class="hero__lead lead">I design and engineer full-stack products end to end: type-safe frontends, authoritative game servers, civic-data pipelines over millions of records, and LLM features kept honest by the data behind them.</p>
-      <div class="hero__actions">
-        <a class="btn btn--primary" href="#work">View the work <span class="arrow" aria-hidden="true">→</span></a>
-        <a class="btn btn--ghost" href="#contact">Get in touch</a>
+    <section class="hero" aria-labelledby="hero-name">
+      <canvas class="phys" data-physics aria-hidden="true"></canvas>
+      <div class="hero__inner wrap wrap--wide">
+        <aside class="hero__rail" aria-hidden="true">
+          <span class="hero__rail-row"><span class="hero__rail-k">Based</span> New York</span>
+          <span class="hero__rail-row"><span class="hero__rail-k">Local</span> <span class="num" data-clock>—:—</span></span>
+          <span class="hero__rail-row"><span class="hero__rail-k">Now</span> <a href="https://regwatch.nyc/" target="_blank" rel="noopener">RegWatch</a></span>
+          <span class="hero__rail-row"><span class="hero__rail-k">Shipped</span> <span class="num"><span class="count" data-count-to="4" data-count-decimals="0">4</span></span> live</span>
+          <span class="hero__rail-hint">✦ toss the shapes</span>
+        </aside>
+        <div class="hero__main">
+          <p class="kicker hero__kicker"><span class="kicker__dot kicker__dot--live"></span> Software &amp; AI Engineer · New York</p>
+          <h1 id="hero-name" class="hero__name display" data-fit data-fit-text="Samuel" data-fit-max="190" data-fit-min="44">
+            <span class="hero__name-l">Samuel</span>
+            <span class="hero__name-l hero__name-l2"><span>Jo</span><span class="hero__name-rule"></span></span>
+          </h1>
+          <p class="hero__statement">I build <em>living products</em> — software that ships, then gets used every day.</p>
+          <p class="hero__lead lead">Full-stack and AI engineer. I take products from blank repo to production: type-safe interfaces, real-time game servers, civic-data pipelines over millions of records, and LLM features kept honest by the data behind them.</p>
+          <div class="hero__actions">
+            <a class="btn btn--primary" href="#work">See the work <span class="arrow" aria-hidden="true">→</span></a>
+            <a class="btn btn--ghost" href="#contact">Get in touch</a>
+          </div>
+        </div>
       </div>
-
-      <div class="hero__status">
-        <span class="hero__focus">New York · remote-friendly · currently building <a href="https://regwatch.nyc/" target="_blank" rel="noopener">RegWatch</a></span>
+      <div class="car" data-car aria-hidden="true">
+        <span class="car__hint" data-car-hint>← drive →</span>
+        <svg class="car__svg" viewBox="0 0 64 28" fill="none">
+          <path d="M5 20 L5 15.5 Q5 13.5 8 13 L19 12.5 Q23 7.5 32 7.5 Q41 7.5 45 12.5 L56 13.5 Q59 14 59 16 L59 20 Z" fill="var(--bg)" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M23 12.4 Q25.5 9.4 31 9.4 L31 12.4 Z M33 9.4 Q38.5 9.4 41 12.4 L33 12.4 Z" fill="currentColor" opacity="0.4"/>
+          <g class="car__wheel" data-wheel><circle cx="18" cy="21" r="5" fill="var(--bg)" stroke="currentColor" stroke-width="2"/><line x1="18" y1="16.6" x2="18" y2="25.4" stroke="currentColor" stroke-width="1.3"/></g>
+          <g class="car__wheel" data-wheel><circle cx="46" cy="21" r="5" fill="var(--bg)" stroke="currentColor" stroke-width="2"/><line x1="46" y1="16.6" x2="46" y2="25.4" stroke="currentColor" stroke-width="1.3"/></g>
+        </svg>
       </div>
-
-      <p class="hero__scroll" aria-hidden="true"><span class="line"></span> Selected work</p>
+      <figure class="hero__signal wrap wrap--wide" aria-hidden="true">
+        <figcaption class="hero__signal-cap">
+          <span class="hero__signal-lead"><span class="hero__signal-dot"></span> kinetic field <b data-signal-readout>—</b></span>
+          <span class="hero__signal-k">E <b data-sig-e>—</b></span>
+          <span class="hero__signal-k">collisions <b data-sig-c>0</b></span>
+          <span class="hero__signal-k">bodies <b data-sig-n>—</b></span>
+        </figcaption>
+        <canvas class="signal" data-signal width="1200" height="150"></canvas>
+      </figure>
     </section>
 
-    <hr class="divider wrap wrap--wide" />
+    <!-- section index rail (clean, modern — telegraphs the page, doubles as the scroll cue) -->
+    <nav class="index-rail wrap wrap--wide" aria-label="Sections">
+      <a href="#work"><span class="index-rail__n">01</span> Work</a>
+      <a href="#about"><span class="index-rail__n">02</span> About</a>
+      <a href="#capabilities"><span class="index-rail__n">03</span> Capabilities</a>
+      <a href="#craft"><span class="index-rail__n">04</span> Craft</a>
+      <a href="#play"><span class="index-rail__n">05</span> Play</a>
+      <a href="#contact"><span class="index-rail__n">06</span> Contact</a>
+    </nav>
 
     <!-- ===================== Work ===================== -->
     <section id="work" class="section wrap wrap--wide" aria-labelledby="work-title">
       <div class="sec-head reveal">
-        <h2 id="work-title" class="sec-head__title">Four products, shipped.</h2>
-        <p class="sec-head__meta">01 — Selected work</p>
+        <p class="sec-head__meta"><span class="sec-head__n">01</span> Selected work</p>
+        <h2 id="work-title" class="sec-head__title">Four products. All live, all in use.</h2>
       </div>
 
       <div class="work-grid">
@@ -136,7 +179,7 @@
             <div class="feature__meta"><span class="feature__index">01</span><span class="badge badge--live"><span class="dot" aria-hidden="true"></span> Live</span></div>
             <h3 class="feature__title">Crowdtells</h3>
             <p class="feature__role">AI · News · Prediction Markets</p>
-            <p class="feature__desc">A news feed driven by the money — it reads Polymarket and Kalshi as a signal of what matters, ranks stories by newsworthiness, then briefs each from many outlets with LLM summaries grounded strictly in the market data.</p>
+            <p class="feature__desc">A newsroom driven by the money. It reads Polymarket and Kalshi as a signal of what matters, ranks stories by newsworthiness, then briefs each one from many outlets with LLM summaries kept strictly grounded in the market data.</p>
             <div class="feature__chips cluster"><span class="chip">React</span><span class="chip">TypeScript</span><span class="chip">Groq LLM</span><span class="chip">Cloudflare</span></div>
             <div class="feature__actions">
               <a class="btn btn--primary" href="https://crowdtells.com/" target="_blank" rel="noopener">Open live <span class="arrow" aria-hidden="true">↗</span></a>
@@ -157,7 +200,7 @@
             <div class="feature__meta"><span class="feature__index">02</span><span class="badge badge--live"><span class="dot" aria-hidden="true"></span> Live · Founder</span></div>
             <h3 class="feature__title">RegWatch</h3>
             <p class="feature__role">SaaS · Civic Data · Full-Stack</p>
-            <p class="feature__desc">Property intelligence for NY, NJ &amp; CT — instant compliance and risk reports over 9.6M+ parcels from 86+ government sources, with real-time monitoring, grounded AI chat, and a 12-language UI from one multi-brand codebase.</p>
+            <p class="feature__desc">Property intelligence for NY, NJ &amp; CT. Instant compliance and risk reports over <span class="count" data-count-to="9.6" data-count-decimals="1" data-count-suffix="M+">9.6M+</span> parcels drawn from <span class="count" data-count-to="86" data-count-decimals="0" data-count-suffix="+">86+</span> government sources, with real-time monitoring, grounded AI chat, and a 12-language UI — all from one multi-brand codebase.</p>
             <div class="feature__chips cluster"><span class="chip">Next.js 15</span><span class="chip">React 19</span><span class="chip">SQLite</span><span class="chip">Stripe</span><span class="chip">Groq</span></div>
             <div class="feature__actions">
               <a class="btn btn--primary" href="https://regwatch.nyc/" target="_blank" rel="noopener">Open live <span class="arrow" aria-hidden="true">↗</span></a>
@@ -178,7 +221,7 @@
             <div class="feature__meta"><span class="feature__index">03</span><span class="badge badge--live"><span class="dot" aria-hidden="true"></span> Live</span></div>
             <h3 class="feature__title">Tells</h3>
             <p class="feature__role">Real-Time · 3D · WebRTC</p>
-            <p class="feature__desc">Browser-based 3D Texas Hold'em where each player's real webcam face becomes a live 478-point video-textured 3D mesh around the table. An authoritative server runs the game; faces and spatial voice stream peer-to-peer over a LiveKit SFU.</p>
+            <p class="feature__desc">Browser-based 3D Texas Hold'em where each player's real webcam face becomes a live <span class="count" data-count-to="478" data-count-decimals="0">478</span>-point video-textured mesh around the table. An authoritative server runs the game; faces and spatial voice stream peer-to-peer over a LiveKit SFU.</p>
             <div class="feature__chips cluster"><span class="chip">TypeScript</span><span class="chip">Three.js</span><span class="chip">MediaPipe</span><span class="chip">LiveKit</span><span class="chip">Socket.IO</span></div>
             <div class="feature__actions">
               <a class="btn btn--primary" href="https://facer-fti6.onrender.com/" target="_blank" rel="noopener">Open live <span class="arrow" aria-hidden="true">↗</span></a>
@@ -202,7 +245,7 @@
             <div class="feature__meta"><span class="feature__index">04</span><span class="badge badge--live"><span class="dot" aria-hidden="true"></span> Live · in daily use</span></div>
             <h3 class="feature__title">miztips</h3>
             <p class="feature__role">PWA · Mobile-First · Real-Time</p>
-            <p class="feature__desc">A tip-distribution PWA used every shift at a NYC restaurant — role-weighted pooling, shift tracking, branded PDF exports, and real-time sync with an offline fallback. Installable, touch-first, and trusted with people's pay.</p>
+            <p class="feature__desc">A tip-distribution PWA run every shift at a NYC restaurant — role-weighted pooling, shift tracking, branded PDF exports, and real-time sync with an offline fallback. Installable, touch-first, and trusted with people's pay.</p>
             <div class="feature__chips cluster"><span class="chip">React</span><span class="chip">Firebase</span><span class="chip">Tailwind</span><span class="chip">jsPDF</span><span class="chip">PWA</span></div>
             <div class="feature__actions">
               <a class="btn btn--primary" href="https://miztips.vercel.app/" target="_blank" rel="noopener">Open live <span class="arrow" aria-hidden="true">↗</span></a>
@@ -229,13 +272,11 @@
       </div>
     </section>
 
-    <hr class="divider wrap wrap--wide" />
-
     <!-- ===================== About ===================== -->
     <section id="about" class="section wrap" aria-labelledby="about-title">
       <div class="sec-head reveal">
+        <p class="sec-head__meta"><span class="sec-head__n">02</span> The engineer</p>
         <h2 id="about-title" class="sec-head__title">About</h2>
-        <p class="sec-head__meta">02 — The engineer</p>
       </div>
       <div class="about__grid reveal">
         <div class="about__shape" aria-hidden="true">
@@ -247,20 +288,18 @@
           </span>
         </div>
         <div class="about__body">
-          <p>I'm a <strong>software and AI engineer</strong> based in New York. I like building things people actually use — and shipping them all the way to production, not just to a demo.</p>
-          <p>My work spans the whole stack: type-safe frontends, authoritative real-time game servers, large civic-data pipelines, and LLM features engineered to stay grounded in real data. I care about the parts that never show up in a screenshot — test coverage, offline behavior, accessibility, and interfaces that read like they were <strong>typeset, not assembled</strong>.</p>
-          <p>Lately that has meant a prediction-market newsroom, a property-intelligence platform serving millions of parcels, a real-time 3D poker table, and a tip calculator a restaurant runs on every night.</p>
+          <p>I'm a <strong>software and AI engineer</strong> in New York. I like building things people actually use, and taking them all the way to production — not just to a demo.</p>
+          <p>My work spans the whole stack: type-safe frontends, real-time game servers, large civic-data pipelines, and LLM features engineered to stay grounded in real data. I care about the parts that never show up in a screenshot — test coverage, offline behavior, accessibility, and interfaces that feel considered down to the last pixel.</p>
+          <p>Lately that has meant a prediction-market newsroom, a property-intelligence platform over millions of parcels, a real-time 3D poker table, and a tip calculator a restaurant runs on every night.</p>
         </div>
       </div>
     </section>
 
-    <hr class="divider wrap wrap--wide" />
-
-    <!-- ===================== Skills ===================== -->
-    <section class="section wrap wrap--wide" aria-labelledby="skills-title">
+    <!-- ===================== Capabilities ===================== -->
+    <section id="capabilities" class="section wrap wrap--wide" aria-labelledby="cap-title">
       <div class="sec-head reveal">
-        <h2 id="skills-title" class="sec-head__title">Tools of the trade.</h2>
-        <p class="sec-head__meta">03 — Capabilities</p>
+        <p class="sec-head__meta"><span class="sec-head__n">03</span> Capabilities</p>
+        <h2 id="cap-title" class="sec-head__title">What I reach for.</h2>
       </div>
       <div class="cap-feature reveal">
         <div class="cap-feature__head">
@@ -280,7 +319,7 @@
           <span class="cap-chip">Browser automation · Playwright</span>
           <span class="cap-chip">Grounded generation</span>
           <span class="cap-chip">NLP — summarize · classify</span>
-          <span class="cap-chip">AI evaluation &amp; eval harnesses</span>
+          <span class="cap-chip">Evals &amp; eval harnesses</span>
           <span class="cap-chip">Ranking &amp; MMR</span>
           <span class="cap-chip">MediaPipe vision</span>
           <span class="cap-chip">Streaming · JSON mode</span>
@@ -288,25 +327,25 @@
       </div>
       <div class="skills-grid">
         <div class="skill-group reveal" data-proj="crowdtells">
-          <p class="skill-group__head"><span>Languages</span><span class="n">6</span></p>
+          <p class="skill-group__head"><span>Languages</span><span class="n"><span class="count" data-count-to="6" data-count-decimals="0">6</span></span></p>
           <ul class="skill-list">
             <li><b>TypeScript</b> / JavaScript</li><li><b>Python</b></li><li>C#</li><li>SQL</li><li>HTML &amp; CSS</li><li>Bash</li>
           </ul>
         </div>
         <div class="skill-group reveal" data-proj="miztips" data-delay="1">
-          <p class="skill-group__head"><span>Frontend</span><span class="n">7</span></p>
+          <p class="skill-group__head"><span>Frontend</span><span class="n"><span class="count" data-count-to="7" data-count-decimals="0">7</span></span></p>
           <ul class="skill-list">
             <li><b>React</b> / Next.js</li><li>Vite</li><li><b>Three.js</b></li><li>Tailwind</li><li>Pretext</li><li>PWAs</li><li>Accessibility</li>
           </ul>
         </div>
         <div class="skill-group reveal" data-proj="tells" data-delay="2">
-          <p class="skill-group__head"><span>Backend &amp; Infra</span><span class="n">9</span></p>
+          <p class="skill-group__head"><span>Backend &amp; Infra</span><span class="n"><span class="count" data-count-to="9" data-count-decimals="0">9</span></span></p>
           <ul class="skill-list">
             <li><b>Node</b> / Express</li><li>Socket.IO · WebRTC</li><li>SQLite · Postgres</li><li>Firebase · Supabase</li><li>Stripe</li><li>Cloudflare · Vercel</li><li>Render · VPS / PM2</li><li>CI/CD · GH Actions</li><li>Playwright · Vitest</li>
           </ul>
         </div>
         <div class="skill-group reveal" data-proj="regwatch" data-delay="3">
-          <p class="skill-group__head"><span>Data</span><span class="n">6</span></p>
+          <p class="skill-group__head"><span>Data</span><span class="n"><span class="count" data-count-to="6" data-count-decimals="0">6</span></span></p>
           <ul class="skill-list">
             <li><b>Data pipelines</b> / ETL</li><li>FTS / search</li><li>Schema design</li><li>WAL tuning · indexes</li><li>i18n at scale</li><li>Cron / scheduled jobs</li>
           </ul>
@@ -314,16 +353,14 @@
       </div>
     </section>
 
-    <hr class="divider wrap wrap--wide" />
-
     <!-- ===================== The Craft ===================== -->
     <section id="craft" class="craft section">
       <div class="wrap wrap--wide">
         <div class="craft__head sec-head reveal">
-          <h2 class="craft__title sec-head__title">Built to be used — not just demoed.</h2>
-          <p class="sec-head__meta">04 — The craft</p>
+          <p class="sec-head__meta"><span class="sec-head__n">04</span> The craft</p>
+          <h2 class="craft__title sec-head__title">Built to be used, not just demoed.</h2>
         </div>
-        <div class="craft__flow reveal">
+        <div class="craft__flow reveal" data-craft-flow>
           <span class="craft__disc" aria-hidden="true">
             <span class="seal">
               <svg viewBox="0 0 100 100" aria-hidden="true">
@@ -337,37 +374,22 @@
               <span class="seal__center"><span class="seal__mark"></span></span>
             </span>
           </span>
-          <span class="craft__disc craft__disc--right" aria-hidden="true">
-            <span class="seal seal--alt">
-              <svg viewBox="0 0 100 100" aria-hidden="true">
-                <defs><path id="seal-path-2" d="M50,50 m-37,0 a37,37 0 1,1 74,0 a37,37 0 1,1 -74,0"/></defs>
-                <g class="seal__ring">
-                  <circle class="seal__edge" cx="50" cy="50" r="45.5"/>
-                  <circle class="seal__edge seal__edge--dash" cx="50" cy="50" r="27.5"/>
-                  <text class="seal__text"><textPath href="#seal-path-2" startOffset="0">· BUILT TO BE USED · SHIPPED TO PRODUCTION · NYC&#160;</textPath></text>
-                </g>
-              </svg>
-              <span class="seal__center"><span class="seal__mark"></span></span>
-            </span>
-          </span>
-          <p>Most portfolios are full of demos. Mine is full of <strong>products people open every day</strong>. The bar I hold isn't novelty — it's <strong>trust</strong>: a tip calculator a restaurant runs on every night, a property platform with paying customers, an LLM newsroom that can't contradict its own data. I sweat the parts that never show up in a screenshot — test coverage, offline behavior, accessibility, and type that reads like it was <strong>typeset, not assembled</strong>. Even the giant name at the top of this page isn't an image: <strong>Pretext</strong> measured it and sized it to fill its column, live in your browser.</p>
+          <p>Most portfolios are full of demos. Mine is full of <strong>products people open every day</strong>. The bar I hold isn't novelty — it's <strong>trust</strong>: a tip calculator a restaurant runs on every night, a property platform with paying customers, an LLM newsroom that can't contradict its own data. I sweat the parts that never show up in a screenshot — test coverage, offline behavior, accessibility, and type that's <strong>set, not just styled</strong>. Even the giant name at the top of this page isn't an image: <strong>Pretext</strong> measured it and sized it to fill its column, live in your browser — and these very lines are flowing around the seal the same way.</p>
         </div>
         <div class="craft__principles reveal">
           <div class="principle"><span class="principle__n">01</span><h3>Ship to production</h3><p>Not to a demo. All four are live and in real-world use.</p></div>
           <div class="principle"><span class="principle__n">02</span><h3>Grounded AI</h3><p>LLMs kept honest by the data behind them — no invented numbers.</p></div>
-          <div class="principle"><span class="principle__n">03</span><h3>Typeset, not assembled</h3><p>Editorial type, real measurement, details at every zoom.</p></div>
+          <div class="principle"><span class="principle__n">03</span><h3>Set, not styled</h3><p>Real measurement, editorial type, details that hold at every zoom.</p></div>
           <div class="principle"><span class="principle__n">04</span><h3>Tested &amp; accessible</h3><p>Coverage, offline paths, keyboard &amp; reduced-motion by default.</p></div>
         </div>
       </div>
     </section>
 
-    <hr class="divider wrap wrap--wide" />
-
     <!-- ===================== Play ===================== -->
     <section id="play" class="play section wrap">
-      <div class="sec-head reveal" style="flex-direction:column;align-items:center;text-align:center">
-        <h2 class="sec-head__title" style="max-width:none">Deal me in.</h2>
-        <p class="sec-head__meta">05 — Play</p>
+      <div class="sec-head sec-head--center reveal">
+        <p class="sec-head__meta"><span class="sec-head__n">05</span> Play</p>
+        <h2 class="sec-head__title">Deal me in.</h2>
       </div>
       <p class="play__lead reveal">A nod to <a href="/work/tells.html">Tells</a>. Real five-card draw — hold the cards you want, draw the rest, and the same hand-evaluator that runs inside Tells scores the payout. Live in your browser.</p>
       <div class="play__hud reveal">
@@ -383,11 +405,9 @@
       <p class="play__note reveal">Hold-and-draw · client-side · <a href="/work/tells.html">see the real engine →</a></p>
     </section>
 
-    <hr class="divider wrap wrap--wide" />
-
     <!-- ===================== Contact ===================== -->
     <section id="contact" class="section wrap contact" aria-labelledby="contact-title">
-      <p class="kicker" style="justify-content:center"><span class="kicker__dot"></span> 06 — Contact</p>
+      <p class="kicker kicker--center"><span class="kicker__dot"></span> 06 — Contact</p>
       <h2 id="contact-title" class="contact__title display" data-fit data-fit-max="150" data-fit-min="34" style="margin-top:1rem">Let's build something.</h2>
       <p class="contact__lead">Email is the fastest way to reach me — I read everything. If you're building something interesting, I'd like to hear about it.</p>
       <div class="contact__actions">
@@ -395,6 +415,7 @@
         <a class="btn btn--ghost" href="https://github.com/squireaintready" target="_blank" rel="noopener">GitHub <span class="arrow" aria-hidden="true">↗</span></a>
         <a class="btn btn--ghost" href="https://www.linkedin.com/in/samuel-jo/" target="_blank" rel="noopener">LinkedIn <span class="arrow" aria-hidden="true">↗</span></a>
       </div>
+      <p class="contact__alt">or press <button class="kbd-inline" type="button" data-cmdk-open><kbd>⌘</kbd><kbd>K</kbd></button> anywhere to jump around</p>
     </section>
   </main>
 

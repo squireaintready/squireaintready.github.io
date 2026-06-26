@@ -16,7 +16,7 @@
   <link rel="canonical" href="https://samjo.me/work/regwatch.html" />
   <meta name="color-scheme" content="light dark" />
   <meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#13110c" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#0b1310" media="(prefers-color-scheme: dark)" />
   <meta property="og:type" content="article" />
   <meta property="og:title" content="RegWatch — every building has a record" />
   <meta property="og:description" content="Instant property intelligence for NY, NJ & CT over 9.6M+ parcels. Founder, design & engineering." />
@@ -32,6 +32,7 @@
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
+  <div class="scroll-progress" aria-hidden="true"><span class="scroll-progress__bar" data-progress></span></div>
   <header class="site-nav">
     <nav class="wrap wrap--wide site-nav__inner" aria-label="Primary">
       <a class="brand" href="/" aria-label="Samuel Jo — home"><span class="brand__mark" aria-hidden="true"></span> Samuel&nbsp;Jo</a>
@@ -39,6 +40,10 @@
         <a href="/#work">Work</a>
         <a href="/#about">About</a>
         <a href="/#contact">Contact</a>
+        <button class="cmdk-trigger" type="button" data-cmdk-open aria-label="Open command menu â search and jump anywhere">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <span class="cmdk-trigger__hint"><kbd>⌘</kbd><kbd>K</kbd></span>
+        </button>
         <button class="theme-toggle" type="button" aria-label="Switch theme" title="Switch theme">
           <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></svg>
           <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 14.2A8.2 8.2 0 0 1 9.8 3.5a.6.6 0 0 0-.82-.74 9.3 9.3 0 1 0 12.26 12.26.6.6 0 0 0-.74-.82Z"/></svg>
@@ -101,10 +106,10 @@
           <section class="case-section reveal">
             <div class="case-section__head"><span class="case-section__n">03</span><h2>By the numbers</h2></div>
             <dl class="case-stats">
-              <div class="stat"><dt class="visually-hidden">Parcels</dt><dd class="stat__num"><b>9.6M+</b></dd><p class="stat__label">parcels indexed</p></div>
-              <div class="stat"><dt class="visually-hidden">Sources</dt><dd class="stat__num"><b>86+</b></dd><p class="stat__label">government sources</p></div>
-              <div class="stat"><dt class="visually-hidden">Records</dt><dd class="stat__num"><b>42M+</b></dd><p class="stat__label">records, synced nightly</p></div>
-              <div class="stat"><dt class="visually-hidden">Languages</dt><dd class="stat__num"><b>12</b></dd><p class="stat__label">locales, incl. RTL</p></div>
+              <div class="stat"><dt class="visually-hidden">Parcels</dt><dd class="stat__num"><b><span class="count" data-count-to="9.6" data-count-decimals="1" data-count-suffix="M+">9.6M+</span></b></dd><p class="stat__label">parcels indexed</p></div>
+              <div class="stat"><dt class="visually-hidden">Sources</dt><dd class="stat__num"><b><span class="count" data-count-to="86" data-count-decimals="0" data-count-suffix="+">86+</span></b></dd><p class="stat__label">government sources</p></div>
+              <div class="stat"><dt class="visually-hidden">Records</dt><dd class="stat__num"><b><span class="count" data-count-to="42" data-count-decimals="0" data-count-suffix="M+">42M+</span></b></dd><p class="stat__label">records, synced nightly</p></div>
+              <div class="stat"><dt class="visually-hidden">Languages</dt><dd class="stat__num"><b><span class="count" data-count-to="12" data-count-decimals="0">12</span></b></dd><p class="stat__label">locales, incl. RTL</p></div>
             </dl>
           </section>
         </div>
@@ -119,7 +124,7 @@
 
   <footer class="site-footer">
     <div class="wrap wrap--wide footer-grid">
-      <div><a class="brand" href="/"><span class="brand__mark" aria-hidden="true"></span> Samuel&nbsp;Jo</a><p class="footer-cred" style="margin-top:.6rem; max-width:34ch">Software &amp; AI engineer in New York. Open to new roles.</p></div>
+      <div><a class="brand" href="/"><span class="brand__mark" aria-hidden="true"></span> Samuel&nbsp;Jo</a><p class="footer-cred" style="margin-top:.6rem; max-width:34ch">Software &amp; AI engineer in New York. Building products people use every day.</p></div>
       <nav class="cluster" style="--cluster-gap:1.2rem" aria-label="Footer">
         <a href="/#work">Work</a><a href="/#about">About</a><a href="/#contact">Contact</a>
         <a href="https://github.com/squireaintready" target="_blank" rel="noopener">GitHub</a>

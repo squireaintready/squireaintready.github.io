@@ -61,16 +61,20 @@
 
 /* highlights */
 .highlights { margin-top: 0.5rem; }
-.highlight { padding: 1.25rem 0; border-top: 1px solid var(--border); display: grid; grid-template-columns: auto 1fr; gap: 0.4rem 1.1rem; }
+.highlight { padding: 1.25rem 0.6rem 1.25rem 0.9rem; border-top: 1px solid var(--border); display: grid; grid-template-columns: auto 1fr; gap: 0.4rem 1.1rem; position: relative; transition: background var(--t); }
+.highlight::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--proj, var(--accent)); transform: scaleY(0); transform-origin: top; transition: transform var(--t-slow) var(--ease-out); }
+.highlight:hover { background: color-mix(in srgb, var(--proj) 5%, transparent); }
+.highlight:hover::before { transform: scaleY(1); }
 .highlight:last-child { border-bottom: 1px solid var(--border); }
 .highlight__n { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--proj-ink, var(--accent)); padding-top: 0.3rem; }
 .highlight h3 { font-family: var(--font-display); font-weight: 460; font-size: var(--fs-lg); letter-spacing: -0.01em; line-height: 1.2; }
 .highlight p { grid-column: 2; color: var(--text-dim); font-size: var(--fs-base); line-height: 1.55; max-width: 58ch; }
 
-/* stat strip */
+/* stat strip — small, contextual "by the numbers" (not big cards), animated count-up */
 .case-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem 1rem; padding: 1.75rem 0; border-block: 1px solid var(--border); }
 @media (min-width: 620px) { .case-stats { grid-template-columns: repeat(4, 1fr); } }
 .case-stats .stat__num { font-size: var(--fs-2xl); }
+.case-stats .stat__num b { color: var(--proj-ink, var(--accent)); }
 
 /* prev / next */
 .case-nav { border-top: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr; }

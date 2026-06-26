@@ -73,9 +73,18 @@
   --t-fast: 130ms;
   --t: 240ms;
   --t-slow: 460ms;
+  --t-slower: 760ms;
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);  /* symmetric, for ambient drift */
   --ease-spring: cubic-bezier(0.2, 1.3, 0.4, 1);
+
+  /* ---- Instrument / signal layer (auto-themes via accent) ---- */
+  --signal: var(--accent);                                  /* hero signal stroke */
+  --signal-soft: color-mix(in srgb, var(--accent) 14%, transparent);
+  --grid-line: color-mix(in srgb, var(--text) 7%, transparent);
+  --glass: color-mix(in srgb, var(--bg) 78%, transparent);  /* nav / palette backdrop */
+  --live: var(--up);                                        /* live pulse dot */
 
   /* ---- Color: LIGHT (ink on warm paper) ---- */
   --bg: #fbfaf7;
@@ -111,6 +120,12 @@
   --proj-ink: var(--accent);    /* text-safe default */
 }
 
+/* Fallback for browsers without color-mix(): keep nav/palette/signal from breaking.
+   These tokens are inherited, so one rule covers every theme (--glass tracks --bg). */
+@supports not (color: color-mix(in srgb, white, black)) {
+  :root { --signal-soft: rgba(127,127,127,0.12); --grid-line: rgba(127,127,127,0.14); --glass: var(--bg); }
+}
+
 /* Per-project accent application (set data-proj on a card or <body> of a case study) */
 [data-proj="crowdtells"] { --proj: var(--proj-crowdtells); --proj-ink: var(--proj-crowdtells-ink); }
 [data-proj="regwatch"]   { --proj: var(--proj-regwatch);   --proj-ink: var(--proj-regwatch-ink); }
@@ -132,7 +147,7 @@
   --proj-tells:      #5fc995;  --proj-tells-ink:      #6fd1a1;
 }
 
-/* Dossier — warm dark-green + brass (the RegWatch / Tells night look) */
+/* Ember — warm dark & brass (data-theme key stays "dark" for saved prefs) */
 [data-theme="dark"] {
   --bg: #13110c; --bg-tint: #181510; --surface: #1b1813; --surface-2: #221e18;
   --border: #322c22; --border-strong: #463e30; --rule: #efe9dc;

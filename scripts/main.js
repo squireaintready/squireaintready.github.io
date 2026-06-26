@@ -1,34 +1,42 @@
 /* ============================================================================
    main.js — progressive enhancement for the portfolio.
    The site is fully functional with JS disabled; this layer adds:
-     • theme toggle (light / dark) with persistence
-     • sticky-nav scrolled state + active section link
-     • reveal-on-scroll
-     • Pretext: exact-fit display type ([data-fit]) so headings fill their column
+     • theme picker (5 themes) with persistence
+     • sticky nav: scrolled state, active-section links, scroll progress
+     • reveal-on-scroll, exact-fit display type (Pretext), inline count-ups
+     • live NY clock, generative hero signal (canvas)
+     • ⌘K command palette (jump / open / theme / connect)
+     • The Craft: prose that genuinely flows around the seal (Pretext flowAround)
    ========================================================================== */
-import { readyFonts, fitFontSize } from "../assets/vendor/lib.js";
+import { readyFonts, fitFontSize, flowAround } from "../assets/vendor/lib.js";
 
 const prefersReduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const debounce = (fn, ms = 160) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+const escapeHTML = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+const EMAIL = "sungjohak@gmail.com";
+const LINKS = { github: "https://github.com/squireaintready", linkedin: "https://www.linkedin.com/in/samuel-jo/" };
+
+/* shared live telemetry from the hero physics field → read by the signal readout */
+const FIELD = { n: 0, v: 0, e: 0, hits: 0, peak: 0 };
 
 /* ---------- Theme ---------- */
-function systemTheme() {
-  return matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-}
-function currentTheme() {
-  return document.documentElement.getAttribute("data-theme") || systemTheme();
-}
+function systemTheme() { return matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; }
+function currentTheme() { return document.documentElement.getAttribute("data-theme") || systemTheme(); }
 const THEMES = [
-  { id: "light", name: "Paper" },
-  { id: "forest", name: "Forest" },
-  { id: "dark", name: "Dossier" },
-  { id: "midnight", name: "Midnight" },
-  { id: "bordeaux", name: "Bordeaux" },
+  { id: "light", name: "Paper", note: "Ink on warm paper" },
+  { id: "forest", name: "Forest", note: "Bottle-green & tan" },
+  { id: "dark", name: "Ember", note: "Warm dark & brass" },
+  { id: "midnight", name: "Midnight", note: "Deep navy & blue" },
+  { id: "bordeaux", name: "Bordeaux", note: "Wine-black & brass" },
 ];
 function applyTheme(id) {
   document.documentElement.setAttribute("data-theme", id);
   try { localStorage.setItem("theme", id); } catch (e) {}
+  document.dispatchEvent(new CustomEvent("themechanged", { detail: id }));
 }
 function initTheme() {
   const btn = $(".theme-toggle");
@@ -76,54 +84,60 @@ function initTheme() {
     removeEventListener("keydown", onKey); removeEventListener("click", onDoc);
   }
   btn.addEventListener("click", (e) => { e.stopPropagation(); pop.hidden ? open() : close(); });
+  document.addEventListener("themechanged", sync);
   sync();
 }
 
-/* ---------- Sticky nav: scrolled state + active link ---------- */
+/* ---------- Sticky nav: scrolled state + active links + scroll progress ---------- */
 function initNav() {
   const nav = $(".site-nav");
-  if (nav) {
-    const onScroll = () => nav.classList.toggle("is-scrolled", window.scrollY > 8);
+  const bar = $("[data-progress]");
+  if (nav || bar) {
+    let raf = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        if (nav) nav.classList.toggle("is-scrolled", window.scrollY > 8);
+        if (bar) {
+          const h = document.documentElement.scrollHeight - window.innerHeight;
+          bar.style.width = (h > 0 ? (window.scrollY / h) * 100 : 0) + "%";
+        }
+      });
+    };
     onScroll();
     addEventListener("scroll", onScroll, { passive: true });
+    addEventListener("resize", onScroll, { passive: true });
   }
 
-  const links = $$(".nav-links a[href^='#']");
-  const map = new Map();
+  const links = $$(".nav-links a[href^='#'], .index-rail a[href^='#']");
+  const bySection = new Map();
   links.forEach((a) => {
     const id = a.getAttribute("href").slice(1);
     const sec = id && document.getElementById(id);
-    if (sec) map.set(sec, a);
+    if (!sec) return;
+    if (!bySection.has(sec)) bySection.set(sec, []);
+    bySection.get(sec).push(a);
   });
-  if (!map.size || !("IntersectionObserver" in window)) return;
+  if (!bySection.size || !("IntersectionObserver" in window)) return;
   const obs = new IntersectionObserver(
     (entries) => {
       entries.forEach((e) => {
-        if (e.isIntersecting) {
-          links.forEach((l) => l.removeAttribute("aria-current"));
-          const a = map.get(e.target);
-          if (a) a.setAttribute("aria-current", "page");
-        }
+        if (!e.isIntersecting) return;
+        links.forEach((l) => l.removeAttribute("aria-current"));
+        (bySection.get(e.target) || []).forEach((a) => a.setAttribute("aria-current", "page"));
       });
     },
     { rootMargin: "-45% 0px -50% 0px", threshold: 0 }
   );
-  map.forEach((_, sec) => obs.observe(sec));
+  bySection.forEach((_, sec) => obs.observe(sec));
 }
 
 /* ---------- Reveal on scroll ---------- */
 function initReveals() {
   const items = $$(".reveal");
-  if (prefersReduced || !("IntersectionObserver" in window)) {
-    items.forEach((el) => el.classList.add("is-in"));
-    return;
-  }
+  if (prefersReduced || !("IntersectionObserver" in window)) { items.forEach((el) => el.classList.add("is-in")); return; }
   const obs = new IntersectionObserver(
-    (entries, o) => {
-      entries.forEach((e) => {
-        if (e.isIntersecting) { e.target.classList.add("is-in"); o.unobserve(e.target); }
-      });
-    },
+    (entries, o) => { entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("is-in"); o.unobserve(e.target); } }); },
     { rootMargin: "0px 0px -10% 0px", threshold: 0.08 }
   );
   items.forEach((el) => obs.observe(el));
@@ -152,17 +166,508 @@ async function initFit() {
   run();
   let raf;
   addEventListener("resize", () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(run); }, { passive: true });
-  // Re-fit once more after first paint settles (covers late font swaps)
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(run);
 }
 
-/* ---------- Year stamp ---------- */
-function initYear() {
-  $$("[data-year]").forEach((el) => { el.textContent = new Date().getFullYear(); });
+/* ---------- Year + live New York clock ---------- */
+function initYear() { $$("[data-year]").forEach((el) => { el.textContent = new Date().getFullYear(); }); }
+function initClock() {
+  const els = $$("[data-clock]");
+  if (!els.length) return;
+  let fmt;
+  try { fmt = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "2-digit", minute: "2-digit", hour12: false }); }
+  catch (e) { return; }
+  const tick = () => { const t = fmt.format(new Date()); els.forEach((e) => (e.textContent = t)); };
+  tick();
+  setInterval(tick, 15000);
+}
+
+/* ---------- Inline count-ups (woven into context, never big cards) ---------- */
+function initCounters() {
+  const els = $$(".count[data-count-to]");
+  if (!els.length) return;
+  const fmt = (v, dec) => v.toLocaleString("en-US", { minimumFractionDigits: dec, maximumFractionDigits: dec });
+  const final = (el) => { const dec = +(el.dataset.countDecimals || 0); el.textContent = fmt(+el.dataset.countTo, dec) + (el.dataset.countSuffix || ""); };
+  if (prefersReduced || !("IntersectionObserver" in window)) { els.forEach(final); return; }
+  const animate = (el) => {
+    const to = +el.dataset.countTo, dec = +(el.dataset.countDecimals || 0), suffix = el.dataset.countSuffix || "", dur = 1100;
+    let start;
+    const step = (ts) => {
+      if (start == null) start = ts;
+      const p = Math.min(1, (ts - start) / dur), e = 1 - Math.pow(1 - p, 3), val = to * e;
+      el.textContent = fmt(dec ? val : Math.round(val), dec) + suffix;
+      if (p < 1) requestAnimationFrame(step); else final(el);
+    };
+    requestAnimationFrame(step);
+  };
+  const obs = new IntersectionObserver((ents, o) => { ents.forEach((e) => { if (e.isIntersecting) { animate(e.target); o.unobserve(e.target); } }); }, { threshold: 0.6 });
+  els.forEach((el) => { const dec = +(el.dataset.countDecimals || 0); el.textContent = fmt(0, dec) + (el.dataset.countSuffix || ""); obs.observe(el); });
+}
+
+/* ---------- Live hero signal (canvas) ---------- */
+function resolveColor(expr) {
+  const p = document.createElement("span");
+  p.style.cssText = "position:absolute;visibility:hidden;color:" + expr;
+  document.body.appendChild(p);
+  const c = getComputedStyle(p).color; p.remove();
+  return c;
+}
+const parseRGB = (s) => (s.match(/\d+(\.\d+)?/g) || [0, 0, 0]).slice(0, 3).map(Number);
+const rgba = (rgb, a) => `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a})`;
+
+function initHeroSignal() {
+  const canvas = $("[data-signal]");
+  if (!canvas) return;
+  const wrap = canvas.parentElement, ctx = canvas.getContext("2d");
+  const readout = $("[data-signal-readout]");
+  const sigE = $("[data-sig-e]"), sigC = $("[data-sig-c]"), sigN = $("[data-sig-n]");
+  if (!ctx) return;
+  let W = 0, H = 0, dpr = 1;
+  const N = 100, data = new Array(N).fill(0.5);
+  let v = 0.5, target = 0.55, pointerX = null, frac = 0, COL = readColors();
+  const STEP = 6; // frames between new samples — higher = calmer scroll
+
+  function readColors() {
+    const stroke = parseRGB(resolveColor("var(--accent)"));
+    const grid = resolveColor("var(--grid-line)");
+    const text = parseRGB(resolveColor("var(--text)"));
+    return { stroke, grid, text };
+  }
+  function resize() {
+    const r = wrap.getBoundingClientRect();
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    W = r.width; H = r.height;
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  function path(n, xAt, yAt) {
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) {
+      const x = xAt(i), y = yAt(data[i]);
+      if (i === 0) { ctx.moveTo(x, y); continue; }
+      const px = xAt(i - 1), py = yAt(data[i - 1]), mx = (px + x) / 2, my = (py + y) / 2;
+      ctx.quadraticCurveTo(px, py, mx, my);
+    }
+  }
+  function draw(fr = 0) {
+    ctx.clearRect(0, 0, W, H);
+    const padTop = 38, padBot = 14, gh = H - padTop - padBot, n = data.length;
+    const stepW = W / (n - 1);
+    const xAt = (i) => i * stepW - fr * stepW, yAt = (val) => padTop + (1 - val) * gh;
+    // grid
+    ctx.strokeStyle = COL.grid; ctx.lineWidth = 1; ctx.beginPath();
+    for (let i = 0; i <= 4; i++) { const y = Math.round(padTop + (gh * i) / 4) + 0.5; ctx.moveTo(0, y); ctx.lineTo(W, y); }
+    ctx.stroke();
+    // area
+    path(n, xAt, yAt); ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
+    const g = ctx.createLinearGradient(0, padTop, 0, H);
+    g.addColorStop(0, rgba(COL.stroke, 0.16)); g.addColorStop(1, rgba(COL.stroke, 0));
+    ctx.fillStyle = g; ctx.fill();
+    // line
+    path(n, xAt, yAt); ctx.strokeStyle = rgba(COL.stroke, 0.92); ctx.lineWidth = 1.8; ctx.lineJoin = "round"; ctx.stroke();
+    // leading dot
+    const lx = xAt(n - 1), ly = yAt(data[n - 1]);
+    ctx.beginPath(); ctx.arc(lx, ly, 9, 0, Math.PI * 2); ctx.fillStyle = rgba(COL.stroke, 0.14); ctx.fill();
+    ctx.beginPath(); ctx.arc(lx, ly, 3.2, 0, Math.PI * 2); ctx.fillStyle = rgba(COL.stroke, 1); ctx.fill();
+  }
+  function advance() {
+    // the signal IS the physics field: kinetic energy → line height; live stats → readouts
+    const push = FIELD.n ? clamp(0.06 + Math.sqrt(FIELD.e) / 13, 0.05, 0.98) : 0.5;
+    data.push(push); data.shift();
+    if (readout) readout.textContent = (push * 100).toFixed(1);
+    if (sigE) sigE.textContent = Math.round(FIELD.e);
+    if (sigC) sigC.textContent = FIELD.hits.toLocaleString("en-US");
+    if (sigN) sigN.textContent = FIELD.n;
+  }
+
+  resize();
+  document.addEventListener("themechanged", () => { COL = readColors(); draw(); });
+  addEventListener("resize", debounce(() => { resize(); draw(); }, 150));
+
+  if (prefersReduced) {
+    for (let i = 0; i < N; i++) data[i] = clamp(0.5 + 0.26 * Math.sin(i / 9) + 0.08 * Math.sin(i / 3.3), 0.05, 0.95);
+    draw();
+    setTimeout(() => { if (readout) readout.textContent = (clamp(0.06 + Math.sqrt(FIELD.e) / 13, 0.05, 0.98) * 100).toFixed(1); if (sigE) sigE.textContent = Math.round(FIELD.e); if (sigC) sigC.textContent = FIELD.hits.toLocaleString("en-US"); if (sigN) sigN.textContent = FIELD.n; }, 120);
+    return;
+  }
+  wrap.addEventListener("pointermove", (e) => { const r = wrap.getBoundingClientRect(); pointerX = (e.clientX - r.left) / r.width; }, { passive: true });
+  wrap.addEventListener("pointerleave", () => { pointerX = null; });
+
+  let raf = 0, visible = true;
+  const loop = () => { frac += 1 / STEP; if (frac >= 1) { frac -= 1; advance(); } draw(frac); raf = requestAnimationFrame(loop); };
+  const start = () => { if (!raf && visible && !document.hidden) raf = requestAnimationFrame(loop); };
+  const stop = () => { if (raf) { cancelAnimationFrame(raf); raf = 0; } };
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver((es) => { visible = es[0].isIntersecting; visible ? start() : stop(); }, { threshold: 0 }).observe(wrap);
+  } else start();
+  document.addEventListener("visibilitychange", () => { document.hidden ? stop() : start(); });
+}
+
+/* ---------- Hero physics field (hand-rolled 2D engine: gravity, collisions, cursor-repel, grab-to-fling) ---------- */
+function initPhysics() {
+  const canvas = $("[data-physics]");
+  if (!canvas) return;
+  const wrap = canvas.parentElement, ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  let W = 0, H = 0, dpr = 1, bodies = [], COL = readPhysColors();
+
+  function readPhysColors() {
+    const p = (e) => parseRGB(resolveColor(e));
+    return { palette: [p("var(--accent)"), p("var(--proj-crowdtells)"), p("var(--proj-regwatch)"), p("var(--proj-miztips)"), p("var(--proj-tells)")] };
+  }
+  function makeBodies() {
+    const n = W < 640 ? 9 : 15;
+    bodies = [];
+    for (let i = 0; i < n; i++) {
+      const r = 9 + Math.random() * (W < 640 ? 15 : 25);
+      const kind = i % 5 === 0 ? "diamond" : i % 2 === 0 ? "ring" : "disc";
+      bodies.push({ x: r + Math.random() * (W - 2 * r), y: r + Math.random() * (H - 2 * r), vx: (Math.random() - 0.5) * 1.1, vy: (Math.random() - 0.5) * 1.1, r, kind, color: COL.palette[i % COL.palette.length], rot: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 0.03 });
+    }
+  }
+
+  /* glyph collision: rasterize the name to an offscreen mask, then collide shapes
+     against the real letterforms (a handful of pixel lookups per shape per frame). */
+  const nameEl = document.querySelector(".hero__name");
+  const maskC = document.createElement("canvas");
+  const mctx = maskC.getContext("2d", { willReadFrequently: true });
+  let mask = null, nameBottom = -1;
+  function buildMask() {
+    if (!nameEl || !mctx || !W || !H) { mask = null; return; }
+    maskC.width = W; maskC.height = H;
+    mctx.clearRect(0, 0, W, H);
+    mctx.fillStyle = "#000"; mctx.textBaseline = "middle"; mctx.textAlign = "left";
+    const cr = canvas.getBoundingClientRect();
+    let bottom = 0;
+    nameEl.querySelectorAll(".hero__name-l").forEach((ln) => {
+      const r = ln.getBoundingClientRect(), cs = getComputedStyle(ln);
+      const fam = cs.fontFamily.split(",")[0].replace(/["']/g, "").trim();
+      mctx.font = `${cs.fontWeight} ${parseFloat(cs.fontSize)}px '${fam}'`;
+      mctx.fillText(ln.textContent.trim(), r.left - cr.left, r.top - cr.top + r.height / 2);
+      bottom = Math.max(bottom, r.bottom - cr.top);
+    });
+    const rule = nameEl.querySelector(".hero__name-rule");
+    if (rule) { const r = rule.getBoundingClientRect(); mctx.fillRect(r.left - cr.left, r.top - cr.top, r.width, Math.max(2, r.height)); }
+    try {
+      const d = mctx.getImageData(0, 0, W, H).data, m = new Uint8Array(W * H);
+      for (let i = 0; i < m.length; i++) m[i] = d[i * 4 + 3] > 24 ? 1 : 0;
+      mask = m; nameBottom = bottom + 6;
+    } catch (e) { mask = null; }
+  }
+  const solidAt = (x, y) => (!mask || x < 0 || y < 0 || x >= W || y >= H) ? 0 : mask[(y | 0) * W + (x | 0)];
+  function maskCollide(b) {
+    if (!mask || b.y - b.r > nameBottom) return;
+    let nx = 0, ny = 0, hits = 0;
+    for (let k = 0; k < 8; k++) { const a = k * 0.7854, sx = b.x + Math.cos(a) * b.r, sy = b.y + Math.sin(a) * b.r; if (solidAt(sx, sy)) { nx += b.x - sx; ny += b.y - sy; hits++; } }
+    if (!hits) { if (solidAt(b.x, b.y)) { ny = -1; hits = 1; } else return; }
+    const len = Math.hypot(nx, ny) || 1; nx /= len; ny /= len;
+    b.x += nx * 2.2; b.y += ny * 2.2;
+    const vn = b.vx * nx + b.vy * ny;
+    if (vn < 0) { FIELD.hits++; b.vx -= (1 + REST) * vn * nx; b.vy -= (1 + REST) * vn * ny; }
+  }
+
+  function resize() {
+    const rect = wrap.getBoundingClientRect();
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    W = rect.width; H = rect.height;
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (!bodies.length) makeBodies();
+    else for (const b of bodies) { b.r = Math.min(b.r, Math.min(W, H) / 2 - 1); b.x = clamp(b.x, b.r, W - b.r); b.y = clamp(b.y, b.r, H - b.r); }
+  }
+
+  let px = -1e4, py = -1e4, drag = null, gx = 0, gy = 0, lpx = 0, lpy = 0;
+  const REST = 0.86, AIR = 0.997, MAXV = 13; // floating field — no gravity, gentle damping, bouncy walls
+
+  function physics() {
+    for (const b of bodies) {
+      if (b === drag) continue;
+      const dx = b.x - px, dy = b.y - py, d2 = dx * dx + dy * dy, R = 130;
+      if (d2 < R * R && d2 > 0.5) { const d = Math.sqrt(d2), f = (1 - d / R) * 1.5; b.vx += (dx / d) * f; b.vy += (dy / d) * f; }
+      b.vx *= AIR; b.vy *= AIR;
+      const sp = Math.hypot(b.vx, b.vy); if (sp > MAXV) { b.vx *= MAXV / sp; b.vy *= MAXV / sp; }
+      b.x += b.vx; b.y += b.vy; b.rot += b.vr;
+      if (b.x < b.r) { b.x = b.r; b.vx = -b.vx * REST; }
+      if (b.x > W - b.r) { b.x = W - b.r; b.vx = -b.vx * REST; }
+      if (b.y < b.r) { b.y = b.r; b.vy = -b.vy * REST; }
+      if (b.y > H - b.r) { b.y = H - b.r; b.vy = -b.vy * REST; }
+    }
+    for (let i = 0; i < bodies.length; i++) for (let j = i + 1; j < bodies.length; j++) {
+      const a = bodies[i], b = bodies[j], dx = b.x - a.x, dy = b.y - a.y, d2 = dx * dx + dy * dy, rs = a.r + b.r;
+      if (d2 < rs * rs && d2 > 0.5) {
+        const d = Math.sqrt(d2), nx = dx / d, ny = dy / d, ov = (rs - d) / 2;
+        if (a !== drag) { a.x -= nx * ov; a.y -= ny * ov; } if (b !== drag) { b.x += nx * ov; b.y += ny * ov; }
+        const relv = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+        if (relv < 0) { FIELD.hits++; const imp = relv * REST; if (a !== drag) { a.vx += nx * imp; a.vy += ny * imp; } if (b !== drag) { b.vx -= nx * imp; b.vy -= ny * imp; } }
+      }
+    }
+    if (drag) { drag.vx = px - lpx; drag.vy = py - lpy; drag.x = px - gx; drag.y = py - gy; lpx = px; lpy = py; }
+    // live telemetry for the signal readout
+    let sv = 0, en = 0;
+    for (const b of bodies) { const s = Math.hypot(b.vx, b.vy); sv += s; en += s * s; }
+    FIELD.n = bodies.length; FIELD.v = bodies.length ? sv / bodies.length : 0; FIELD.e = en; if (en > FIELD.peak) FIELD.peak = en;
+    // keep the field subtly alive when it would otherwise fall asleep
+    if (FIELD.v < 0.32 && Math.random() < 0.045) { const b = bodies[(Math.random() * bodies.length) | 0]; if (b && b !== drag) { b.vx += (Math.random() - 0.5) * 1.9; b.vy += (Math.random() - 0.5) * 1.9; } }
+  }
+  function drawBody(b) {
+    ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(b.rot);
+    if (b.kind === "disc") { ctx.beginPath(); ctx.arc(0, 0, b.r, 0, 6.2832); ctx.fillStyle = rgba(b.color, 0.15); ctx.fill(); ctx.lineWidth = 1.2; ctx.strokeStyle = rgba(b.color, 0.5); ctx.stroke(); }
+    else if (b.kind === "ring") { ctx.beginPath(); ctx.arc(0, 0, b.r, 0, 6.2832); ctx.lineWidth = 1.6; ctx.strokeStyle = rgba(b.color, 0.6); ctx.stroke(); }
+    else { const s = b.r * 0.9; ctx.lineWidth = 1.6; ctx.strokeStyle = rgba(b.color, 0.55); ctx.strokeRect(-s, -s, 2 * s, 2 * s); }
+    ctx.restore();
+  }
+  function draw() { ctx.clearRect(0, 0, W, H); for (const b of bodies) drawBody(b); }
+
+  const at = (e) => { const r = canvas.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  wrap.addEventListener("pointermove", (e) => { [px, py] = at(e); }, { passive: true });
+  wrap.addEventListener("pointerleave", () => { px = py = -1e4; });
+  wrap.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "touch") return; // never hijack touch scroll; shapes still float ambiently
+    if (e.target.closest && e.target.closest("a, button, input")) return;
+    const [x, y] = at(e); let hit = null;
+    for (let i = bodies.length - 1; i >= 0; i--) { const b = bodies[i]; if ((b.x - x) ** 2 + (b.y - y) ** 2 < b.r * b.r) { hit = b; break; } }
+    if (!hit) return;
+    e.preventDefault(); // we grabbed a shape — suppress text selection
+    drag = hit; gx = x - hit.x; gy = y - hit.y; px = lpx = x; py = lpy = y;
+  });
+  const release = () => { drag = null; };
+  addEventListener("pointerup", release); addEventListener("pointercancel", release);
+
+  resize();
+  document.addEventListener("themechanged", () => { COL = readPhysColors(); bodies.forEach((b, i) => (b.color = COL.palette[i % COL.palette.length])); });
+  addEventListener("resize", debounce(resize, 200));
+
+  if (prefersReduced) { for (let i = 0; i < 260; i++) physics(); draw(); return; }
+  let raf = 0, visible = true;
+  const loop = () => { physics(); draw(); raf = requestAnimationFrame(loop); };
+  const start = () => { if (!raf && visible && !document.hidden) raf = requestAnimationFrame(loop); };
+  const stop = () => { if (raf) { cancelAnimationFrame(raf); raf = 0; } };
+  if ("IntersectionObserver" in window) new IntersectionObserver((es) => { visible = es[0].isIntersecting; visible ? start() : stop(); }, { threshold: 0 }).observe(wrap);
+  else start();
+  document.addEventListener("visibilitychange", () => { document.hidden ? stop() : start(); });
+}
+
+/* ---------- The Craft: real Pretext flow of prose around the seal ---------- */
+async function initCraftFlow() {
+  const flow = $("[data-craft-flow]");
+  if (!flow) return;
+  const p = flow.querySelector("p"), disc = flow.querySelector(".craft__disc");
+  if (!p || !disc) return;
+
+  // build a plain string + per-character bold mask from the paragraph's DOM
+  const runs = [];
+  p.childNodes.forEach((node) => {
+    const bold = node.nodeType === 1 && node.tagName === "STRONG";
+    const text = node.textContent;
+    if (text) runs.push({ text, bold });
+  });
+  let plain = "", mask = [];
+  runs.forEach((r) => { plain += r.text; for (let i = 0; i < r.text.length; i++) mask.push(r.bold); });
+
+  try { await readyFonts(); } catch (e) {}
+  let lineEls = [];
+
+  function lineHTML(text, offset) {
+    // wrap consecutive bold chars in <strong>, escaping HTML; trims trailing space
+    const t = text.replace(/\s+$/, "");
+    let html = "", buf = "", cur = null;
+    const flush = () => { if (!buf) return; html += cur ? `<strong>${escapeHTML(buf)}</strong>` : escapeHTML(buf); buf = ""; };
+    for (let i = 0; i < t.length; i++) {
+      const b = !!mask[offset + i];
+      if (b !== cur) { flush(); cur = b; }
+      buf += t[i];
+    }
+    flush();
+    return html;
+  }
+
+  function build() {
+    lineEls.forEach((e) => e.remove()); lineEls = [];
+    flow.classList.remove("is-flowing");
+    flow.style.height = "";
+    disc.style.position = ""; disc.style.left = ""; disc.style.top = ""; disc.style.width = ""; disc.style.height = "";
+
+    const W = flow.clientWidth;
+    if (W < 680) return; // narrow screens: normal flow (seal centered above via CSS)
+
+    const cs = getComputedStyle(flow);
+    const family = cs.fontFamily.split(",")[0].replace(/["']/g, "").trim();
+    const weight = parseInt(cs.fontWeight, 10) || 400;
+    const fontPx = parseFloat(cs.fontSize);
+    const realLh = fontPx * 1.72; // matches .craft__flow line-height (getComputedStyle lineHeight is unreliable cross-browser)
+    const font = `${weight} ${fontPx}px '${family}'`;
+
+    const D = clamp(Math.round(W * 0.2), 122, 150);
+    const r = D / 2, gap = 20, cx = r, cy = r;
+    const contour = (yMid) => { // horizontal extent of the seal disc at a given y
+      if (yMid > D) return 0;
+      const dy = Math.abs(yMid - cy);
+      return dy < r ? Math.sqrt(r * r - dy * dy) : 0;
+    };
+    const widthAt = (yMid) => (yMid <= D ? Math.max(60, W - (cx + contour(yMid) + gap)) : W);
+
+    const res = flowAround(plain, font, { lineHeight: realLh, widthAt, minWidth: 60 });
+    if (!res.lines.length) return;
+
+    flow.classList.add("is-flowing");
+    disc.style.width = D + "px"; disc.style.height = D + "px";
+    disc.style.position = "absolute"; disc.style.left = "0"; disc.style.top = "0";
+
+    let offset = 0;
+    res.lines.forEach((ln) => {
+      const yMid = ln.y + realLh * 0.5;
+      const x = yMid <= D ? cx + contour(yMid) + gap : 0;
+      const d = document.createElement("div");
+      d.className = "craft__line"; d.setAttribute("aria-hidden", "true");
+      d.innerHTML = lineHTML(ln.text, offset);
+      d.style.transform = `translate(${x.toFixed(1)}px, ${ln.y.toFixed(1)}px)`;
+      d.style.width = (W - x) + "px";
+      flow.appendChild(d); lineEls.push(d);
+      offset += ln.text.length;
+    });
+    flow.style.height = Math.ceil(res.height + realLh * 0.4) + "px";
+  }
+
+  build();
+  addEventListener("resize", debounce(build, 180));
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(build);
+}
+
+/* ---------- Command palette (⌘K) ---------- */
+const IC = {
+  jump: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+  ext: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>',
+  doc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/></svg>',
+  mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>',
+  copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>',
+  gh: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2A10 10 0 0 0 8.8 21.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.3-1.1.6-1.3-2.2-.300-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.7 1a9.4 9.4 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.6 5 .3.3.6.9.6 1.8v2.7c0 .3.2.6.7.5A10 10 0 0 0 12 2Z"/></svg>',
+  li: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.94 5a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM3.5 8.5h3v12h-3zM10 8.5h2.9v1.6h.04c.4-.75 1.4-1.6 2.96-1.6 3.1 0 3.7 2 3.7 4.7v6.8h-3v-6c0-1.4 0-3.3-2-3.3s-2.3 1.6-2.3 3.2v6.1H10z"/></svg>',
+};
+function initCommandPalette() {
+  const openers = $$("[data-cmdk-open]");
+  if (!openers.length) return;
+
+  const onHome = !!document.getElementById("work");
+  const nav = (id, label) => ({ group: onHome ? "Jump to" : "Go to", icon: IC.jump, title: label, sub: onHome ? "#" + id : "/#" + id, kw: id + " " + label, run: () => (document.getElementById(id) ? goTo(id) : location.assign("/#" + id)) });
+  const live = (title, url) => ({ group: "Open live", icon: IC.ext, title, sub: url.replace(/^https?:\/\//, "").replace(/\/$/, ""), kw: title + " live open site", run: () => openExt(url) });
+  const study = (title, url) => ({ group: "Case studies", icon: IC.doc, title: title + " — case study", sub: url, kw: title + " case study read", run: () => location.assign(url) });
+  const theme = (t) => ({ group: "Theme", iconHTML: `<span class="sw sw-${t.id}"></span>`, title: t.name, sub: t.note, kw: "theme " + t.name + " " + t.note, keepOpen: true, run: () => { applyTheme(t.id); render(input.value); } });
+
+  const COMMANDS = [
+    nav("work", "Work"), nav("about", "About"), nav("capabilities", "Capabilities"), nav("craft", "The Craft"), nav("play", "Play"), nav("contact", "Contact"),
+    live("Crowdtells", "https://crowdtells.com/"), live("RegWatch", "https://regwatch.nyc/"), live("Tells", "https://facer-fti6.onrender.com/"), live("miztips", "https://miztips.vercel.app/"),
+    study("Crowdtells", "/work/crowdtells.html"), study("RegWatch", "/work/regwatch.html"), study("Tells", "/work/tells.html"), study("miztips", "/work/miztips.html"),
+    ...THEMES.map(theme),
+    { group: "Connect", icon: IC.copy, title: "Copy email", sub: EMAIL, kw: "copy email address clipboard", run: () => copyEmail() },
+    { group: "Connect", icon: IC.mail, title: "Email me", sub: EMAIL, kw: "email contact write", run: () => openExt("mailto:" + EMAIL) },
+    { group: "Connect", icon: IC.gh, title: "GitHub", sub: "@squireaintready", kw: "github code repos", run: () => openExt(LINKS.github) },
+    { group: "Connect", icon: IC.li, title: "LinkedIn", sub: "Samuel Jo", kw: "linkedin connect", run: () => openExt(LINKS.linkedin) },
+  ];
+
+  // overlay DOM
+  const overlay = document.createElement("div");
+  overlay.className = "cmdk"; overlay.hidden = true; overlay.setAttribute("role", "dialog");
+  overlay.setAttribute("aria-modal", "true"); overlay.setAttribute("aria-label", "Command menu");
+  overlay.innerHTML =
+    '<div class="cmdk__panel">' +
+      '<div class="cmdk__field">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>' +
+        '<input class="cmdk__input" type="text" role="combobox" aria-expanded="true" aria-autocomplete="list" aria-controls="cmdk-list" placeholder="Search or jump anywhere…" />' +
+        '<span class="cmdk__esc">esc</span>' +
+      '</div>' +
+      '<div class="cmdk__list" id="cmdk-list" role="listbox" aria-label="Commands"></div>' +
+      '<div class="cmdk__foot"><span><kbd>↑</kbd><kbd>↓</kbd> Navigate</span><span><kbd>↵</kbd> Open</span><span><kbd>esc</kbd> Close</span></div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+  const panel = $(".cmdk__panel", overlay), input = $(".cmdk__input", overlay), list = $("#cmdk-list", overlay);
+
+  let filtered = [], active = 0, lastFocus = null;
+
+  const match = (q, c) => {
+    if (!q) return true;
+    q = q.toLowerCase(); const hay = (c.title + " " + c.sub + " " + c.kw).toLowerCase();
+    if (hay.includes(q)) return true;
+    let i = 0; for (const ch of q) { i = hay.indexOf(ch, i); if (i < 0) return false; i++; } return true; // subsequence
+  };
+  function render(q) {
+    filtered = COMMANDS.filter((c) => match(q, c));
+    list.innerHTML = "";
+    if (!filtered.length) { list.innerHTML = '<p class="cmdk__empty">No matches.</p>'; input.removeAttribute("aria-activedescendant"); return; }
+    let lastGroup = null, idx = 0;
+    filtered.forEach((c) => {
+      if (c.group !== lastGroup) { const g = document.createElement("p"); g.className = "cmdk__group"; g.textContent = c.group; list.appendChild(g); lastGroup = c.group; }
+      const item = document.createElement("button");
+      item.type = "button"; item.className = "cmdk__item"; item.id = "cmdk-opt-" + idx; item.setAttribute("role", "option");
+      item.tabIndex = -1; // arrow-navigated via aria-activedescendant; keeps Tab on the input
+      item.dataset.i = idx;
+      const isTheme = c.group === "Theme" && c.iconHTML ? "" : "";
+      item.innerHTML = `<span class="cmdk__item-ic">${c.iconHTML || c.icon}</span><span class="cmdk__item-tx"><b>${escapeHTML(c.title)}</b><span>${escapeHTML(c.sub)}</span></span><span class="cmdk__item-go">↵</span>`;
+      item.addEventListener("click", () => exec(+item.dataset.i));
+      item.addEventListener("pointermove", () => setActive(+item.dataset.i));
+      list.appendChild(item); idx++;
+    });
+    active = 0; paint();
+  }
+  function paint() {
+    $$(".cmdk__item", list).forEach((el) => {
+      const on = +el.dataset.i === active;
+      el.setAttribute("aria-selected", String(on));
+      if (on) { input.setAttribute("aria-activedescendant", el.id); el.scrollIntoView({ block: "nearest" }); }
+    });
+  }
+  function setActive(i) { active = clamp(i, 0, filtered.length - 1); paint(); }
+  function exec(i) { const c = filtered[i]; if (!c) return; const keep = c.keepOpen; c.run(); if (!keep) close(); }
+
+  function open() {
+    if (!overlay.hidden) return;
+    lastFocus = document.activeElement;
+    overlay.hidden = false; document.documentElement.style.overflow = "hidden";
+    input.value = ""; render(""); input.focus();
+  }
+  function close() {
+    if (overlay.hidden) return;
+    overlay.hidden = true; document.documentElement.style.overflow = "";
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  const toggle = () => (overlay.hidden ? open() : close());
+
+  input.addEventListener("input", () => render(input.value));
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown") { e.preventDefault(); setActive(active + 1); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setActive(active - 1); }
+    else if (e.key === "Home") { e.preventDefault(); setActive(0); }
+    else if (e.key === "End") { e.preventDefault(); setActive(filtered.length - 1); }
+    else if (e.key === "Enter") { e.preventDefault(); exec(active); }
+    else if (e.key === "Escape") { e.preventDefault(); close(); }
+  });
+  overlay.addEventListener("pointerdown", (e) => { if (e.target === overlay) close(); });
+  openers.forEach((b) => b.addEventListener("click", (e) => { e.preventDefault(); open(); }));
+
+  const isTyping = (el) => el && (/^(input|textarea|select)$/i.test(el.tagName) || el.isContentEditable);
+  addEventListener("keydown", (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); toggle(); }
+    else if (e.key === "/" && overlay.hidden && !isTyping(e.target)) { e.preventDefault(); open(); }
+  });
+
+  function goTo(id) { const el = document.getElementById(id); close(); if (el) { el.scrollIntoView({ behavior: prefersReduced ? "auto" : "smooth", block: "start" }); history.replaceState(null, "", "#" + id); } }
+  function openExt(url) { close(); window.open(url, url.startsWith("mailto:") ? "_self" : "_blank", "noopener"); }
+  async function copyEmail() {
+    try { await navigator.clipboard.writeText(EMAIL); toast("Email copied — " + EMAIL); }
+    catch (e) { openExt("mailto:" + EMAIL); return; }
+    close();
+  }
+}
+
+/* tiny toast */
+let toastT;
+function toast(msg) {
+  let el = $(".toast");
+  if (!el) { el = document.createElement("div"); el.className = "toast"; el.setAttribute("role", "status"); document.body.appendChild(el); }
+  el.textContent = msg; el.classList.add("is-on");
+  clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove("is-on"), 2200);
 }
 
 /* ---------- Play: poker mini-game (nods to Tells) ---------- */
-const SUITS = [ { s: "♠", red: false }, { s: "♥", red: true }, { s: "♦", red: true }, { s: "♣", red: false } ];
+const SUITS = [{ s: "♠", red: false }, { s: "♥", red: true }, { s: "♦", red: true }, { s: "♣", red: false }];
 const RANKS = [
   { r: 2, l: "2" }, { r: 3, l: "3" }, { r: 4, l: "4" }, { r: 5, l: "5" }, { r: 6, l: "6" },
   { r: 7, l: "7" }, { r: 8, l: "8" }, { r: 9, l: "9" }, { r: 10, l: "10" },
@@ -172,7 +677,6 @@ const SUIT_NAME = { "♠": "Spades", "♥": "Hearts", "♦": "Diamonds", "♣": 
 const RANK_NAME = { J: "Jack", Q: "Queen", K: "King", A: "Ace" };
 const cardName = (c) => `${RANK_NAME[c.l] || c.l} of ${SUIT_NAME[c.s]}`;
 
-/* Same hand ranking the real Tells engine uses, plus a Jacks-or-Better paytable. */
 function analyze(cards) {
   const ranks = cards.map((c) => c.r).sort((a, b) => a - b);
   const suits = cards.map((c) => c.s);
@@ -182,7 +686,7 @@ function analyze(cards) {
   const flush = suits.every((s) => s === suits[0]);
   const uniq = [...new Set(ranks)];
   let straight = uniq.length === 5 && uniq[4] - uniq[0] === 4;
-  const wheel = uniq.length === 5 && uniq[0] === 2 && uniq[4] === 14 && uniq[3] === 5; // A-2-3-4-5
+  const wheel = uniq.length === 5 && uniq[0] === 2 && uniq[4] === 14 && uniq[3] === 5;
   if (wheel) straight = true;
   if (straight && flush && uniq[0] === 10) return { name: "Royal Flush", mult: 250 };
   if (straight && flush) return { name: "Straight Flush", mult: 50 };
@@ -288,15 +792,14 @@ function initPlay() {
   deal();
 }
 
-/* ---------- Interactive monogram orb (About): float + cursor tilt + click pop ---------- */
-const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+/* ---------- Interactive monogram orb (About) ---------- */
 function initOrb() {
   const face = $("[data-orb]");
   if (!face) return;
   const mono = face.querySelector(".about__monogram");
   if (!prefersReduced) {
     const zone = face.closest("section") || face;
-    const MAX = 9; // degrees of tilt at the edges
+    const MAX = 9;
     let raf = 0;
     zone.addEventListener("pointermove", (e) => {
       const r = face.getBoundingClientRect();
@@ -308,23 +811,18 @@ function initOrb() {
         face.style.setProperty("--rx", (-py * MAX).toFixed(2) + "deg");
       });
     }, { passive: true });
-    zone.addEventListener("pointerleave", () => {
-      face.style.setProperty("--rx", "0deg");
-      face.style.setProperty("--ry", "0deg");
-    });
+    zone.addEventListener("pointerleave", () => { face.style.setProperty("--rx", "0deg"); face.style.setProperty("--ry", "0deg"); });
   }
   if (mono) {
     face.addEventListener("click", () => {
       if (prefersReduced) return;
-      mono.classList.remove("is-pop");
-      void mono.offsetWidth; // restart the keyframe
-      mono.classList.add("is-pop");
+      mono.classList.remove("is-pop"); void mono.offsetWidth; mono.classList.add("is-pop");
     });
     mono.addEventListener("animationend", () => mono.classList.remove("is-pop"));
   }
 }
 
-/* ---------- Seals (The Craft): drag to move, click to reverse the spin ---------- */
+/* ---------- Seal (The Craft): drag to move, click to reverse the spin ---------- */
 function initSeals() {
   $$(".craft__disc").forEach((disc) => {
     const seal = disc.querySelector(".seal");
@@ -342,17 +840,14 @@ function initSeals() {
       if (!dragging) return;
       const mvx = e.clientX - sx, mvy = e.clientY - sy;
       moved = Math.max(moved, Math.abs(mvx) + Math.abs(mvy));
-      dx = clamp(ox + mvx, -150, 150);
-      dy = clamp(oy + mvy, -110, 110);
-      disc.style.setProperty("--dx", dx + "px");
-      disc.style.setProperty("--dy", dy + "px");
+      dx = clamp(ox + mvx, -150, 150); dy = clamp(oy + mvy, -110, 110);
+      disc.style.setProperty("--dx", dx + "px"); disc.style.setProperty("--dy", dy + "px");
     });
     const end = () => {
       if (!dragging) return;
-      dragging = false;
-      disc.classList.remove("is-grabbing");
+      dragging = false; disc.classList.remove("is-grabbing");
       if (pid != null) { try { disc.releasePointerCapture(pid); } catch (_) {} pid = null; }
-      if (moved < 6) { // a click, not a drag -> flip spin direction + quick burst
+      if (moved < 6) {
         reversed = !reversed;
         ring.style.animationDirection = reversed ? "reverse" : "normal";
         seal.classList.add("is-spun");
@@ -365,12 +860,84 @@ function initSeals() {
   });
 }
 
+/* ---------- Drive-able car on the name's underline (←/→ or A/D, or drag) ---------- */
+function initCar() {
+  const car = $("[data-car]"), hero = $(".hero"), rule = $(".hero__name-rule");
+  if (!car || !hero || !rule) return;
+  const wheels = $$("[data-wheel]", car);
+  let x = 0, v = 0, minX = 0, maxX = 0, baseY = 0, rot = 0, raf = 0, heroVis = true, driven = false;
+  let dragging = false, lastX = 0, dragV = 0;
+  const L = {}, R = {};
+  const ACC = 0.5, FR = 0.86, MAXV = 8;
+
+  function layout() {
+    const hr = hero.getBoundingClientRect(), rr = rule.getBoundingClientRect();
+    const w = car.offsetWidth || 56, h = car.offsetHeight || 26;
+    minX = rr.left - hr.left + 1;
+    maxX = Math.max(minX, rr.right - hr.left - w);
+    baseY = rr.top - hr.top - h * 0.92;
+    if (!x) x = minX + Math.min(12, (maxX - minX) * 0.05);
+    x = clamp(x, minX, maxX);
+    place();
+  }
+  function place() {
+    car.style.transform = `translate(${x.toFixed(1)}px, ${baseY.toFixed(1)}px)`;
+    const t = `rotate(${rot.toFixed(1)}deg)`;
+    for (const wl of wheels) wl.style.transform = t;
+  }
+  const mark = () => { if (!driven) { driven = true; car.classList.add("is-driven"); } };
+  function step() {
+    if (!dragging) {
+      if (L.on) v -= ACC; if (R.on) v += ACC;
+      if (!L.on && !R.on) v *= FR;
+      v = clamp(v, -MAXV, MAXV);
+      if (Math.abs(v) < 0.04) v = 0;
+      x = clamp(x + v, minX, maxX);
+      if (x === minX || x === maxX) v = 0;
+    }
+    rot += (dragging ? dragV : v) * 6;
+    place();
+    if (dragging || v !== 0 || L.on || R.on) raf = requestAnimationFrame(step); else raf = 0;
+  }
+  const kick = () => { if (!raf && heroVis) raf = requestAnimationFrame(step); };
+  const typing = (el) => el && (/^(input|textarea|select)$/i.test(el.tagName) || el.isContentEditable);
+
+  addEventListener("keydown", (e) => {
+    if (!heroVis || typing(e.target)) return;
+    const k = e.key;
+    if (k === "ArrowLeft" || k === "a" || k === "A") { L.on = true; e.preventDefault(); mark(); kick(); }
+    else if (k === "ArrowRight" || k === "d" || k === "D") { R.on = true; e.preventDefault(); mark(); kick(); }
+  });
+  addEventListener("keyup", (e) => {
+    const k = e.key;
+    if (k === "ArrowLeft" || k === "a" || k === "A") L.on = false;
+    if (k === "ArrowRight" || k === "d" || k === "D") R.on = false;
+  });
+  car.addEventListener("pointerdown", (e) => { dragging = true; lastX = e.clientX; dragV = 0; mark(); try { car.setPointerCapture(e.pointerId); } catch (_) {} e.preventDefault(); kick(); });
+  addEventListener("pointermove", (e) => { if (!dragging) return; dragV = e.clientX - lastX; lastX = e.clientX; x = clamp(x + dragV, minX, maxX); });
+  const end = () => { if (!dragging) return; dragging = false; v = clamp(dragV, -MAXV, MAXV); kick(); };
+  addEventListener("pointerup", end); addEventListener("pointercancel", end);
+
+  layout();
+  addEventListener("resize", debounce(layout, 180));
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => setTimeout(layout, 80));
+  setTimeout(layout, 640);
+  if ("IntersectionObserver" in window) new IntersectionObserver((es) => { heroVis = es[0].isIntersecting; if (!heroVis && raf) { cancelAnimationFrame(raf); raf = 0; } }, { threshold: 0 }).observe(hero);
+}
+
 function init() {
   initTheme();
   initNav();
   initReveals();
   initYear();
+  initClock();
+  initCounters();
   initFit();
+  initHeroSignal();
+  initPhysics();
+  initCar();
+  initCraftFlow();
+  initCommandPalette();
   initPlay();
   initOrb();
   initSeals();
