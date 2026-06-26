@@ -22,6 +22,8 @@ const LINKS = { github: "https://github.com/squireaintready", linkedin: "https:/
 
 /* shared live telemetry from the hero physics field → read by the signal readout */
 const FIELD = { n: 0, v: 0, e: 0, hits: 0, peak: 0 };
+/* shared car box → the physics field collides shapes against it (one unified world) */
+const CAR = { x: -1e4, y: -1e4, w: 0, h: 0, vx: 0 };
 
 /* ---------- Theme ---------- */
 function systemTheme() { return matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; }
@@ -323,7 +325,7 @@ function initPhysics() {
     return { palette: [p("var(--accent)"), p("var(--proj-crowdtells)"), p("var(--proj-regwatch)"), p("var(--proj-miztips)"), p("var(--proj-tells)")] };
   }
   function makeBodies() {
-    const n = W < 640 ? 9 : 15;
+    const n = W < 640 ? 6 : 14;
     bodies = [];
     for (let i = 0; i < n; i++) {
       const r = 9 + Math.random() * (W < 640 ? 15 : 25);
@@ -337,9 +339,11 @@ function initPhysics() {
   const nameEl = document.querySelector(".hero__name");
   const maskC = document.createElement("canvas");
   const mctx = maskC.getContext("2d", { willReadFrequently: true });
-  let mask = null, nameBottom = -1;
+  let mask = null, nameBottom = -1, lastMaskW = -1;
   function buildMask() {
     if (!nameEl || !mctx || !W || !H) { mask = null; return; }
+    if (W === lastMaskW && mask) return; // width unchanged (e.g. mobile URL-bar resize) → keep mask, skip costly rebuild
+    lastMaskW = W;
     maskC.width = W; maskC.height = H;
     mctx.clearRect(0, 0, W, H);
     mctx.fillStyle = "#000"; mctx.textBaseline = "middle"; mctx.textAlign = "left";
@@ -371,15 +375,29 @@ function initPhysics() {
     const vn = b.vx * nx + b.vy * ny;
     if (vn < 0) { FIELD.hits++; b.vx -= (1 + REST) * vn * nx; b.vy -= (1 + REST) * vn * ny; }
   }
+  // unified world: shapes also collide with the drivable car (an AABB it shares via CAR)
+  function carCollide(b) {
+    if (CAR.w <= 0) return;
+    const cx = clamp(b.x, CAR.x, CAR.x + CAR.w), cy = clamp(b.y, CAR.y, CAR.y + CAR.h);
+    const dx = b.x - cx, dy = b.y - cy, d2 = dx * dx + dy * dy;
+    if (d2 >= b.r * b.r) return;
+    const d = Math.sqrt(d2), nx = d > 0.01 ? dx / d : 0, ny = d > 0.01 ? dy / d : -1;
+    b.x = cx + nx * b.r; b.y = cy + ny * b.r;
+    const vn = b.vx * nx + b.vy * ny;
+    if (vn < 0) { b.vx -= (1 + REST) * vn * nx; b.vy -= (1 + REST) * vn * ny; }
+    b.vx += CAR.vx * 0.7; // the car shoves shapes along its travel
+    FIELD.hits++;
+  }
 
   function resize() {
     const rect = wrap.getBoundingClientRect();
-    dpr = Math.min(2, window.devicePixelRatio || 1);
     W = rect.width; H = rect.height;
+    dpr = Math.min(W < 640 ? 1.5 : 2, window.devicePixelRatio || 1); // cap lower on phones for perf
     canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     if (!bodies.length) makeBodies();
     else for (const b of bodies) { b.r = Math.min(b.r, Math.min(W, H) / 2 - 1); b.x = clamp(b.x, b.r, W - b.r); b.y = clamp(b.y, b.r, H - b.r); }
+    buildMask();
   }
 
   let px = -1e4, py = -1e4, drag = null, gx = 0, gy = 0, lpx = 0, lpy = 0;
@@ -397,6 +415,8 @@ function initPhysics() {
       if (b.x > W - b.r) { b.x = W - b.r; b.vx = -b.vx * REST; }
       if (b.y < b.r) { b.y = b.r; b.vy = -b.vy * REST; }
       if (b.y > H - b.r) { b.y = H - b.r; b.vy = -b.vy * REST; }
+      maskCollide(b); // bounce off the actual name letterforms
+      carCollide(b);  // bounce off / get shoved by the car
     }
     for (let i = 0; i < bodies.length; i++) for (let j = i + 1; j < bodies.length; j++) {
       const a = bodies[i], b = bodies[j], dx = b.x - a.x, dy = b.y - a.y, d2 = dx * dx + dy * dy, rs = a.r + b.r;
@@ -442,6 +462,9 @@ function initPhysics() {
   resize();
   document.addEventListener("themechanged", () => { COL = readPhysColors(); bodies.forEach((b, i) => (b.color = COL.palette[i % COL.palette.length])); });
   addEventListener("resize", debounce(resize, 200));
+  // build the glyph mask once the Pretext fit has sized the name
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => setTimeout(buildMask, 90));
+  setTimeout(buildMask, 680);
 
   if (prefersReduced) { for (let i = 0; i < 260; i++) physics(); draw(); return; }
   let raf = 0, visible = true;
@@ -457,8 +480,9 @@ function initPhysics() {
 async function initCraftFlow() {
   const flow = $("[data-craft-flow]");
   if (!flow) return;
-  const p = flow.querySelector("p"), disc = flow.querySelector(".craft__disc");
-  if (!p || !disc) return;
+  const p = flow.querySelector("p");
+  const discs = $$(".craft__disc", flow);
+  if (!p || !discs.length) return;
 
   // build a plain string + per-character bold mask from the paragraph's DOM
   const runs = [];
@@ -472,6 +496,7 @@ async function initCraftFlow() {
 
   try { await readyFonts(); } catch (e) {}
   let lineEls = [];
+  const seals = discs.map(() => ({ dx: 0, dy: 0 })); // per-seal drag offset
 
   function lineHTML(text, offset) {
     // wrap consecutive bold chars in <strong>, escaping HTML; trims trailing space
@@ -491,10 +516,10 @@ async function initCraftFlow() {
     lineEls.forEach((e) => e.remove()); lineEls = [];
     flow.classList.remove("is-flowing");
     flow.style.height = "";
-    disc.style.position = ""; disc.style.left = ""; disc.style.top = ""; disc.style.width = ""; disc.style.height = "";
+    discs.forEach((d) => { d.style.position = ""; d.style.left = ""; d.style.top = ""; d.style.width = ""; d.style.height = ""; d.style.transform = ""; });
 
     const W = flow.clientWidth;
-    if (W < 680) return; // narrow screens: normal flow (seal centered above via CSS)
+    if (W < 680) return; // narrow screens: normal stacked flow (CSS handles the seals)
 
     const cs = getComputedStyle(flow);
     const family = cs.fontFamily.split(",")[0].replace(/["']/g, "").trim();
@@ -503,36 +528,56 @@ async function initCraftFlow() {
     const realLh = fontPx * 1.72; // matches .craft__flow line-height (getComputedStyle lineHeight is unreliable cross-browser)
     const font = `${weight} ${fontPx}px '${family}'`;
 
-    const D = clamp(Math.round(W * 0.2), 122, 150);
-    const r = D / 2, gap = 20, cx = r, cy = r;
-    const contour = (yMid) => { // horizontal extent of the seal disc at a given y
-      if (yMid > D) return 0;
-      const dy = Math.abs(yMid - cy);
-      return dy < r ? Math.sqrt(r * r - dy * dy) : 0;
-    };
-    const widthAt = (yMid) => (yMid <= D ? Math.max(60, W - (cx + contour(yMid) + gap)) : W);
+    const D = clamp(Math.round(W * 0.15), 112, 146), r = D / 2, gap = 20;
+    const homes = [{ x: 0, y: 0 }, { x: W - D, y: realLh * 5 }];
+    const centers = seals.map((s, i) => { const h = homes[i] || { x: (i % 2) ? W - D : 0, y: realLh * (3 + i * 3) }; return { cx: h.x + r + s.dx, cy: h.y + r + s.dy }; });
 
-    const res = flowAround(plain, font, { lineHeight: realLh, widthAt, minWidth: 60 });
+    discs.forEach((d, i) => {
+      const c = centers[i];
+      d.style.position = "absolute"; d.style.left = "0"; d.style.top = "0"; d.style.width = D + "px"; d.style.height = D + "px";
+      d.style.transform = `translate(${(c.cx - r).toFixed(1)}px, ${(c.cy - r).toFixed(1)}px)`;
+    });
+
+    const halfAt = (cy, yMid) => { const dy = Math.abs(yMid - cy); return dy < r ? Math.sqrt(r * r - dy * dy) : 0; };
+    const bounds = (yMid) => {
+      let xs = 0, xe = W;
+      for (const c of centers) { const hw = halfAt(c.cy, yMid); if (!hw) continue; if (c.cx < W / 2) xs = Math.max(xs, c.cx + hw + gap); else xe = Math.min(xe, c.cx - hw - gap); }
+      return { xs: Math.max(0, xs), xe: Math.min(W, xe) };
+    };
+
+    const res = flowAround(plain, font, { lineHeight: realLh, widthAt: (yMid) => { const b = bounds(yMid); return Math.max(50, b.xe - b.xs); }, minWidth: 50 });
     if (!res.lines.length) return;
 
     flow.classList.add("is-flowing");
-    disc.style.width = D + "px"; disc.style.height = D + "px";
-    disc.style.position = "absolute"; disc.style.left = "0"; disc.style.top = "0";
-
     let offset = 0;
     res.lines.forEach((ln) => {
-      const yMid = ln.y + realLh * 0.5;
-      const x = yMid <= D ? cx + contour(yMid) + gap : 0;
+      const yMid = ln.y + realLh * 0.5, b = bounds(yMid);
       const d = document.createElement("div");
       d.className = "craft__line"; d.setAttribute("aria-hidden", "true");
       d.innerHTML = lineHTML(ln.text, offset);
-      d.style.transform = `translate(${x.toFixed(1)}px, ${ln.y.toFixed(1)}px)`;
-      d.style.width = (W - x) + "px";
+      d.style.transform = `translate(${b.xs.toFixed(1)}px, ${ln.y.toFixed(1)}px)`;
+      d.style.width = (b.xe - b.xs) + "px";
       flow.appendChild(d); lineEls.push(d);
       offset += ln.text.length;
     });
     flow.style.height = Math.ceil(res.height + realLh * 0.4) + "px";
   }
+
+  // drag a seal → reflow the prose around it (throttled); click → reverse its spin
+  let raf = 0;
+  const schedule = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; build(); }); };
+  discs.forEach((disc, i) => {
+    const s = seals[i], seal = disc.querySelector(".seal"), ring = disc.querySelector(".seal__ring");
+    let dragging = false, sx = 0, sy = 0, ox = 0, oy = 0, moved = 0, pid = null, rev = false;
+    disc.addEventListener("pointerdown", (e) => { dragging = true; moved = 0; pid = e.pointerId; sx = e.clientX; sy = e.clientY; ox = s.dx; oy = s.dy; disc.classList.add("is-grabbing"); try { disc.setPointerCapture(pid); } catch (_) {} });
+    disc.addEventListener("pointermove", (e) => { if (!dragging) return; const mvx = e.clientX - sx, mvy = e.clientY - sy; moved = Math.max(moved, Math.abs(mvx) + Math.abs(mvy)); s.dx = ox + mvx; s.dy = oy + mvy; schedule(); });
+    const end = () => {
+      if (!dragging) return; dragging = false; disc.classList.remove("is-grabbing");
+      if (pid != null) { try { disc.releasePointerCapture(pid); } catch (_) {} pid = null; }
+      if (moved < 6 && ring && seal) { rev = !rev; ring.style.animationDirection = rev ? "reverse" : "normal"; seal.classList.add("is-spun"); clearTimeout(seal._t); seal._t = setTimeout(() => seal.classList.remove("is-spun"), 1200); }
+    };
+    disc.addEventListener("pointerup", end); disc.addEventListener("pointercancel", end);
+  });
 
   build();
   addEventListener("resize", debounce(build, 180));
@@ -880,6 +925,7 @@ function initCar() {
   function layout() {
     const hr = hero.getBoundingClientRect(), rr = rule.getBoundingClientRect();
     const w = car.offsetWidth || 56, h = car.offsetHeight || 26;
+    CAR.w = w; CAR.h = h;
     minX = rr.left - hr.left + 1;
     maxX = Math.max(minX, rr.right - hr.left - w);
     baseY = rr.top - hr.top - h * 0.92;
@@ -891,6 +937,7 @@ function initCar() {
     car.style.transform = `translate(${x.toFixed(1)}px, ${baseY.toFixed(1)}px)`;
     const t = `rotate(${rot.toFixed(1)}deg)`;
     for (const wl of wheels) wl.style.transform = t;
+    CAR.x = x; CAR.y = baseY; CAR.vx = dragging ? dragV : v; // share with the physics field
   }
   const mark = () => { if (!driven) { driven = true; car.classList.add("is-driven"); } };
   function step() {
@@ -947,7 +994,6 @@ function init() {
   initCommandPalette();
   initPlay();
   initOrb();
-  initSeals();
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
 else init();
