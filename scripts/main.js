@@ -154,7 +154,9 @@ function fitOne(el) {
   const weight = parseInt(cs.fontWeight, 10) || 360;
   const target = el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
   if (target <= 0) return;
-  const max = parseFloat(el.dataset.fitMax) || 280;
+  let max = parseFloat(el.dataset.fitMax) || 280;
+  const vh = parseFloat(el.dataset.fitVh);          // optional: cap size to a fraction of viewport height
+  if (vh) max = Math.min(max, innerHeight * vh);    // keeps a full-screen hero from overflowing on short laptops
   const min = parseFloat(el.dataset.fitMin) || 22;
   const size = fitFontSize(text, { family: `'${family}'`, weight, target, min, max });
   el.style.fontSize = size.toFixed(2) + "px";
@@ -912,48 +914,98 @@ function initSeals() {
   });
 }
 
-/* ---------- Drive-able car on the name's underline (←/→ or A/D, or drag) ---------- */
+/* ---------- Drive-able car: gravity + text-block platforms, hop, fall-off-map + reset ----------
+   Drive ←/→ (or A/D) along whatever it's standing on; ↑/W to hop; drag it anywhere.
+   It rests on the name rule, the name lines, the statement and the lead (one-way platforms),
+   drives off their edges and falls. Off the bottom = off the map -> auto-recovers, or hit reset. */
 function initCar() {
-  const car = $("[data-car]"), hero = $(".hero"), rule = $(".hero__name-rule");
-  if (!car || !hero || !rule) return;
+  const car = $("[data-car]"), hero = $(".hero");
+  if (!car || !hero) return;
   const wheels = $$("[data-wheel]", car);
-  let x = 0, v = 0, minX = 0, maxX = 0, baseY = 0, rot = 0, raf = 0, heroVis = true, driven = false;
-  let dragging = false, lastX = 0, dragV = 0;
-  const L = {}, R = {};
-  const ACC = 0.5, FR = 0.86, MAXV = 8;
+  const hint = $("[data-car-hint]", car);
+  const resetBtn = $("[data-car-reset]");
+  const coarse = matchMedia("(hover: none)").matches;
 
-  function layout() {
-    const hr = hero.getBoundingClientRect(), rr = rule.getBoundingClientRect();
-    const w = car.offsetWidth || 56, h = car.offsetHeight || 26;
-    CAR.w = w; CAR.h = h;
-    minX = rr.left - hr.left + 1;
-    maxX = Math.max(minX, rr.right - hr.left - w);
-    baseY = rr.top - hr.top - h * 0.92;
-    if (!x) x = minX + Math.min(12, (maxX - minX) * 0.05);
-    x = clamp(x, minX, maxX);
-    place();
+  let x = 0, y = 0, vx = 0, vy = 0, rot = 0, bodyRot = 0, lastDir = 1, cw = 56, ch = 24, fo = 22, heroW = 0, heroH = 0;
+  let grounded = false, wasGrounded = true, off = false, driven = false, raf = 0, heroVis = true;
+  let dragging = false, lastX = 0, lastY = 0, dvx = 0, dvy = 0, offTimer = 0;
+  let platforms = [], home = { x: 0, y: 0 };
+  const L = {}, R = {};
+  const ACC = 0.5, FR = 0.82, AIRFR = 0.99, MAXVX = 8, G = 0.6, JUMP = 11.5, MAXVY = 18, FOOT = 0.9, TOL = 9;
+
+  function measure() {
+    const hr = hero.getBoundingClientRect();
+    heroW = hr.width; heroH = hr.height;
+    cw = car.offsetWidth || 56; ch = car.offsetHeight || 24; fo = ch * FOOT;
+    CAR.w = cw; CAR.h = ch;
+    const rectOf = (el) => { const r = el.getBoundingClientRect(); return { x: r.left - hr.left, y: r.top - hr.top, w: r.width }; };
+    platforms = [];
+    // text-block platforms (one-way, land on top): name lines, statement, lead
+    [$(".hero__name-l:not(.hero__name-l2)"), $(".hero__name-l2 > span:first-child"), $(".hero__statement"), $(".hero__lead")]
+      .forEach((el) => { if (el) { const p = rectOf(el); if (p.w > 16) platforms.push(p); } });
+    const rule = $(".hero__name-rule");
+    if (rule) { const r = rectOf(rule); platforms.push(r); home = { x: r.x + 6, y: r.y - fo }; }
+    else home = { x: heroW * 0.4, y: heroH * 0.45 };
+    platforms.sort((a, b) => a.y - b.y);
+    if (!driven && !dragging && !off) { x = home.x; y = home.y; place(); }
   }
   function place() {
-    car.style.transform = `translate(${x.toFixed(1)}px, ${baseY.toFixed(1)}px)`;
+    car.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${bodyRot.toFixed(1)}deg)`;
     const t = `rotate(${rot.toFixed(1)}deg)`;
     for (const wl of wheels) wl.style.transform = t;
-    CAR.x = x; CAR.y = baseY; CAR.vx = dragging ? dragV : v; // share with the physics field
+    if (!off) { CAR.x = x; CAR.y = y; CAR.vx = dragging ? dvx : vx; } // share with the physics field
   }
   const mark = () => { if (!driven) { driven = true; car.classList.add("is-driven"); } };
+
   function step() {
-    if (!dragging) {
-      if (L.on) v -= ACC; if (R.on) v += ACC;
-      if (!L.on && !R.on) v *= FR;
-      v = clamp(v, -MAXV, MAXV);
-      if (Math.abs(v) < 0.04) v = 0;
-      x = clamp(x + v, minX, maxX);
-      if (x === minX || x === maxX) v = 0;
+    if (dragging) { rot += dvx * 3; bodyRot += (clamp(dvx * 1.4, -24, 24) - bodyRot) * 0.25; place(); raf = requestAnimationFrame(step); return; }
+    if (L.on) vx -= ACC;
+    if (R.on) vx += ACC;
+    vx = clamp(vx, -MAXVX, MAXVX);
+    vy = clamp(vy + G, -MAXVY, MAXVY);
+    const prevFoot = y + fo;
+    x = clamp(x + vx, -cw * 0.5, heroW - cw * 0.5);
+    y += vy;
+    vx *= grounded ? FR : AIRFR;
+    if (Math.abs(vx) < 0.03) vx = 0;
+    // land on the first platform the wheels cross from above
+    grounded = false;
+    const cx = x + cw / 2, foot = y + fo;
+    for (const p of platforms) {
+      if (cx < p.x - 2 || cx > p.x + p.w + 2) continue;
+      if (vy >= 0 && foot >= p.y && prevFoot <= p.y + TOL) { y = p.y - fo; vy = 0; grounded = true; break; }
     }
-    rot += (dragging ? dragV : v) * 6;
+    if (vx > 0.2) lastDir = 1; else if (vx < -0.2) lastDir = -1;
+    if (grounded) {
+      rot += vx * 6;                            // wheels roll along the surface
+      bodyRot += (0 - bodyRot) * 0.28;          // settle level on landing
+      if (Math.abs(bodyRot) < 0.25) bodyRot = 0;
+    } else {
+      rot += vx * 4;
+      bodyRot += (clamp(vy * 2.6 * lastDir, -54, 54) - bodyRot) * 0.12; // nose pitches into the fall
+    }
+    if (grounded !== wasGrounded) { car.classList.toggle("is-air", !grounded); wasGrounded = grounded; }
     place();
-    if (dragging || v !== 0 || L.on || R.on) raf = requestAnimationFrame(step); else raf = 0;
+    if (y > heroH + 80) { goOff(); return; }                  // fell off the bottom of the map
+    if (!grounded || vx !== 0 || vy !== 0 || L.on || R.on) raf = requestAnimationFrame(step); else raf = 0;
   }
-  const kick = () => { if (!raf && heroVis) raf = requestAnimationFrame(step); };
+  const kick = () => { if (!raf && heroVis && !off) raf = requestAnimationFrame(step); };
+  function hop() { if (grounded && !dragging && !off) { vy = -JUMP; grounded = false; mark(); kick(); } }
+  function goOff() {
+    off = true; raf = 0;
+    car.classList.add("is-off"); hero.classList.add("car-lost");
+    CAR.x = -1e4; CAR.y = -1e4; CAR.vx = 0;                    // drop it from the physics field
+    clearTimeout(offTimer); offTimer = setTimeout(reset, 1500); // self-recover (reset button also pulses)
+  }
+  function reset() {
+    clearTimeout(offTimer);
+    off = false; dragging = false; L.on = R.on = false;
+    car.classList.remove("is-off"); hero.classList.remove("car-lost");
+    x = home.x; y = home.y - clamp(heroH * 0.16, 80, 150);     // drop in from above so the return reads
+    vx = 0; vy = 0; rot = 0; bodyRot = 0; grounded = false; wasGrounded = false;
+    car.classList.add("is-air");                              // glows on the way back down
+    place(); kick();
+  }
   const typing = (el) => el && (/^(input|textarea|select)$/i.test(el.tagName) || el.isContentEditable);
 
   addEventListener("keydown", (e) => {
@@ -961,22 +1013,37 @@ function initCar() {
     const k = e.key;
     if (k === "ArrowLeft" || k === "a" || k === "A") { L.on = true; e.preventDefault(); mark(); kick(); }
     else if (k === "ArrowRight" || k === "d" || k === "D") { R.on = true; e.preventDefault(); mark(); kick(); }
+    else if (k === "ArrowUp" || k === "w" || k === "W") { e.preventDefault(); hop(); }
   });
   addEventListener("keyup", (e) => {
     const k = e.key;
     if (k === "ArrowLeft" || k === "a" || k === "A") L.on = false;
     if (k === "ArrowRight" || k === "d" || k === "D") R.on = false;
   });
-  car.addEventListener("pointerdown", (e) => { dragging = true; lastX = e.clientX; dragV = 0; mark(); try { car.setPointerCapture(e.pointerId); } catch (_) {} e.preventDefault(); kick(); });
-  addEventListener("pointermove", (e) => { if (!dragging) return; dragV = e.clientX - lastX; lastX = e.clientX; x = clamp(x + dragV, minX, maxX); });
-  const end = () => { if (!dragging) return; dragging = false; v = clamp(dragV, -MAXV, MAXV); kick(); };
-  addEventListener("pointerup", end); addEventListener("pointercancel", end);
+  car.addEventListener("pointerdown", (e) => {
+    dragging = true; lastX = e.clientX; lastY = e.clientY; dvx = dvy = 0; mark();
+    try { car.setPointerCapture(e.pointerId); } catch (_) {}
+    e.preventDefault(); kick();
+  });
+  addEventListener("pointermove", (e) => {
+    if (!dragging) return;
+    dvx = e.clientX - lastX; dvy = e.clientY - lastY; lastX = e.clientX; lastY = e.clientY;
+    x = clamp(x + dvx, -cw * 0.5, heroW - cw * 0.5); y += dvy; place();
+  });
+  const endDrag = () => { if (!dragging) return; dragging = false; vx = clamp(dvx, -MAXVX, MAXVX); vy = clamp(dvy, -MAXVY, MAXVY); grounded = false; kick(); };
+  addEventListener("pointerup", endDrag); addEventListener("pointercancel", endDrag);
+  if (resetBtn) resetBtn.addEventListener("click", () => { reset(); resetBtn.blur(); });
+  if (hint) hint.textContent = coarse ? "drag me · or reset →" : "← → drive · ↑ hop";
 
-  layout();
-  addEventListener("resize", debounce(layout, 180));
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => setTimeout(layout, 80));
-  setTimeout(layout, 640);
-  if ("IntersectionObserver" in window) new IntersectionObserver((es) => { heroVis = es[0].isIntersecting; if (!heroVis && raf) { cancelAnimationFrame(raf); raf = 0; } }, { threshold: 0 }).observe(hero);
+  measure(); kick();
+  addEventListener("resize", debounce(() => { measure(); kick(); }, 180));
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => setTimeout(() => { measure(); kick(); }, 80));
+  setTimeout(() => { measure(); kick(); }, 640);
+  if ("IntersectionObserver" in window) new IntersectionObserver((es) => {
+    heroVis = es[0].isIntersecting;
+    if (!heroVis && raf) { cancelAnimationFrame(raf); raf = 0; }
+    else if (heroVis) kick();
+  }, { threshold: 0 }).observe(hero);
 }
 
 function init() {
