@@ -465,7 +465,7 @@ function toast(msg) {
   clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove("is-on"), 2200);
 }
 
-/* ---------- Play: poker mini-game (nods to Tells) ---------- */
+/* ---------- Play: heads-up Texas Hold'em vs. the house (the game behind Tells) ---------- */
 const SUITS = [{ s: "♠", red: false }, { s: "♥", red: true }, { s: "♦", red: true }, { s: "♣", red: false }];
 const RANKS = [
   { r: 2, l: "2" }, { r: 3, l: "3" }, { r: 4, l: "4" }, { r: 5, l: "5" }, { r: 6, l: "6" },
@@ -475,120 +475,146 @@ const RANKS = [
 const SUIT_NAME = { "♠": "Spades", "♥": "Hearts", "♦": "Diamonds", "♣": "Clubs" };
 const RANK_NAME = { J: "Jack", Q: "Queen", K: "King", A: "Ace" };
 const cardName = (c) => `${RANK_NAME[c.l] || c.l} of ${SUIT_NAME[c.s]}`;
+const HAND_NAMES = ["High Card", "Pair", "Two Pair", "Three of a Kind", "Straight", "Flush", "Full House", "Four of a Kind", "Straight Flush"];
 
-function analyze(cards) {
-  const ranks = cards.map((c) => c.r).sort((a, b) => a - b);
-  const suits = cards.map((c) => c.s);
-  const counts = {};
-  ranks.forEach((r) => (counts[r] = (counts[r] || 0) + 1));
-  const vals = Object.values(counts).sort((a, b) => b - a);
+// Score a 5-card hand as a comparable array [category, ...tiebreakers] — the same ranking
+// (categories + kickers) the Tells engine uses to settle a showdown.
+function rank5(cards) {
+  const rs = cards.map((c) => c.r), suits = cards.map((c) => c.s);
   const flush = suits.every((s) => s === suits[0]);
-  const uniq = [...new Set(ranks)];
-  let straight = uniq.length === 5 && uniq[4] - uniq[0] === 4;
-  const wheel = uniq.length === 5 && uniq[0] === 2 && uniq[4] === 14 && uniq[3] === 5;
-  if (wheel) straight = true;
-  if (straight && flush && uniq[0] === 10) return { name: "Royal Flush", mult: 250 };
-  if (straight && flush) return { name: "Straight Flush", mult: 50 };
-  if (vals[0] === 4) return { name: "Four of a Kind", mult: 25 };
-  if (vals[0] === 3 && vals[1] === 2) return { name: "Full House", mult: 9 };
-  if (flush) return { name: "Flush", mult: 6 };
-  if (straight) return { name: "Straight", mult: 4 };
-  if (vals[0] === 3) return { name: "Three of a Kind", mult: 3 };
-  if (vals[0] === 2 && vals[1] === 2) return { name: "Two Pair", mult: 2 };
-  if (vals[0] === 2) {
-    const pairRank = +Object.keys(counts).find((r) => counts[r] === 2);
-    return pairRank >= 11 ? { name: "Jacks or Better", mult: 1 } : { name: "Pair", mult: 0 };
+  const cnt = {};
+  rs.forEach((r) => (cnt[r] = (cnt[r] || 0) + 1));
+  const ordered = Object.keys(cnt).map(Number).sort((a, b) => cnt[b] - cnt[a] || b - a); // by count, then rank
+  const pat = ordered.map((r) => cnt[r]);                                                 // e.g. [4,1] [3,2] [2,2,1] [2,1,1,1]
+  const uniq = [...new Set(rs)].sort((a, b) => b - a);
+  let straight = false, high = 0;
+  if (uniq.length === 5) {
+    if (uniq[0] - uniq[4] === 4) { straight = true; high = uniq[0]; }
+    else if (uniq[0] === 14 && uniq[1] === 5) { straight = true; high = 5; }              // A-2-3-4-5 wheel
   }
-  return { name: "High Card", mult: 0 };
+  let cat;
+  if (straight && flush) cat = 8;
+  else if (pat[0] === 4) cat = 7;
+  else if (pat[0] === 3 && pat[1] === 2) cat = 6;
+  else if (flush) cat = 5;
+  else if (straight) cat = 4;
+  else if (pat[0] === 3) cat = 3;
+  else if (pat[0] === 2 && pat[1] === 2) cat = 2;
+  else if (pat[0] === 2) cat = 1;
+  else cat = 0;
+  return [cat, ...((cat === 8 || cat === 4) ? [high] : ordered)];                          // straights tie on high card only
+}
+const cmpScore = (a, b) => { for (let i = 0, n = Math.max(a.length, b.length); i < n; i++) { const d = (a[i] || 0) - (b[i] || 0); if (d) return d; } return 0; };
+const HOLDEM_EXCL = (() => { const e = []; for (let i = 0; i < 7; i++) for (let j = i + 1; j < 7; j++) e.push([i, j]); return e; })(); // 21 ways to drop 2 of 7
+// Best 5-card hand out of 7 (2 hole + 5 board) → { score, cat, cards }.
+function best7(seven) {
+  let score = null, cards = null;
+  for (const [a, b] of HOLDEM_EXCL) {
+    const five = seven.filter((_, k) => k !== a && k !== b);
+    const s = rank5(five);
+    if (!score || cmpScore(s, score) > 0) { score = s; cards = five; }
+  }
+  return { score, cat: score[0], cards };
 }
 function initPlay() {
-  const deck = $("#deck"), btn = $("#deal-btn"), result = $("#play-result");
-  const chipsEl = $("#play-chips"), hint = $("#play-hint");
-  if (!deck || !btn || !result) return;
+  const youEl = $("#you-cards"), boardEl = $("#board-cards"), dealerEl = $("#dealer-cards");
+  const btn = $("#deal-btn"), foldBtn = $("#fold-btn"), result = $("#play-result");
+  const chipsEl = $("#play-chips"), potEl = $("#play-pot"), hint = $("#play-hint");
+  if (!youEl || !boardEl || !dealerEl || !btn || !foldBtn) return;
 
-  const FULL = [];
-  SUITS.forEach((su) => RANKS.forEach((rk) => FULL.push({ ...rk, ...su })));
-  const BET = 5;
-  const flipWait = prefersReduced ? 0 : 70 * 5 + 420;
+  const DECK = [];
+  SUITS.forEach((su) => RANKS.forEach((rk) => DECK.push({ ...rk, ...su })));
+  const ANTE = 5, T = prefersReduced ? 0 : 1;   // T scales every animation delay (0 ⇒ instant)
 
-  let chips = 100, hand = [], rest = [], phase = "idle", busy = false, freeHand = true;
-  let onClick = deal;
+  let chips = 100, you = [], dealer = [], board = [], pot = 0, phase = "idle", busy = false, onPrimary = deal;
 
   const setChips = (v) => { chips = Math.max(0, v); if (chipsEl) chipsEl.textContent = chips; };
+  const setPot = (v) => { pot = v; if (potEl) potEl.textContent = v; };
   const setHint = (t) => { if (hint) hint.textContent = t; };
-  const setBtn = (label) => { btn.innerHTML = `${label} <span class="arrow" aria-hidden="true">→</span>`; };
+  const setBtn = (label) => { btn.innerHTML = `${label} <span class="arrow" aria-hidden="true">→</span>`; btn.hidden = false; btn.disabled = false; };
   const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const key = (c) => c.l + c.s;
 
-  function render() {
-    deck.innerHTML = "";
-    hand.forEach((h, i) => {
-      const slot = document.createElement("div");
-      slot.className = "pslot" + (h.held ? " held" : "");
-      const card = document.createElement("div");
-      card.className = "pcard" + (h.card.red ? " red" : "");
-      card.setAttribute("role", "button");
-      card.tabIndex = 0;
-      card.setAttribute("aria-pressed", String(h.held));
-      card.setAttribute("aria-label", cardName(h.card) + (phase === "hold" ? " — press to hold" : ""));
-      card.innerHTML = `<span class="pcard__side pcard__back"></span><span class="pcard__side pcard__face"><span class="rank">${h.card.l}</span><span class="suit">${h.card.s}</span></span>`;
-      const tab = document.createElement("span");
-      tab.className = "pslot__hold"; tab.textContent = "Hold"; tab.setAttribute("aria-hidden", "true");
-      slot.append(tab, card);
-      deck.appendChild(slot);
-      if (h.fresh) setTimeout(() => card.classList.add("in"), prefersReduced ? 0 : 70 * i + 40);
-      else card.classList.add("in");
-      const toggle = () => {
-        if (phase !== "hold" || busy) return;
-        h.held = !h.held;
-        slot.classList.toggle("held", h.held);
-        card.setAttribute("aria-pressed", String(h.held));
-      };
-      card.addEventListener("click", toggle);
-      card.addEventListener("keydown", (e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); toggle(); } });
-    });
+  // one card element; faceUp=false renders the back, flipping up later when .in is added
+  function cardEl(card, faceUp, delay) {
+    const c = document.createElement("div");
+    c.className = "pcard" + (card.red ? " red" : "");
+    c._card = card;
+    c.setAttribute("role", "img");
+    c.setAttribute("aria-label", faceUp ? cardName(card) : "Face-down card");
+    c.innerHTML = `<span class="pcard__side pcard__back"></span><span class="pcard__side pcard__face"><span class="rank">${card.l}</span><span class="suit">${card.s}</span></span>`;
+    if (faceUp) { if (delay && T) setTimeout(() => c.classList.add("in"), delay); else c.classList.add("in"); }
+    return c;
+  }
+  const fill = (el, cards, faceUp, base = 0) => { el.innerHTML = ""; cards.forEach((card, i) => el.appendChild(cardEl(card, faceUp, base + i * 90 * T))); };
+  const flip = (el) => { if (!el) return; el.classList.add("in"); if (el._card) el.setAttribute("aria-label", cardName(el._card)); };
+
+  function rest() {                              // resting "table set" — nine face-down backs
+    phase = "idle"; you = []; dealer = []; board = []; setPot(0);
+    fill(dealerEl, [DECK[0], DECK[0]], false);
+    fill(boardEl, [DECK[0], DECK[0], DECK[0], DECK[0], DECK[0]], false);
+    fill(youEl, [DECK[0], DECK[0]], false);
+    result.innerHTML = ""; setHint("Heads-up vs. the house — ante 5 to play."); foldBtn.hidden = true;
+    setBtn("Deal me in"); onPrimary = deal;
   }
 
   function deal() {
     if (busy) return;
-    if (freeHand) freeHand = false;
-    else { if (chips < BET) setChips(100); setChips(chips - BET); }
-    busy = true; btn.disabled = true;
-    const d = shuffle(FULL.slice());
-    hand = d.slice(0, 5).map((card) => ({ card, held: false, fresh: true }));
-    rest = d.slice(5);
-    phase = "hold";
-    render();
-    result.innerHTML = "";
-    setHint("Tap the cards you want to keep, then draw.");
+    if (chips < ANTE * 2) setChips(100);        // need the ante plus a possible play-bet; top up if short
+    busy = true; result.innerHTML = ""; foldBtn.hidden = true; btn.disabled = true;
+    setChips(chips - ANTE); setPot(ANTE);
+    const d = shuffle(DECK.slice());
+    you = [d[0], d[1]]; dealer = [d[2], d[3]]; board = [d[4], d[5], d[6], d[7], d[8]];
+    fill(dealerEl, dealer, false);              // dealer hole cards face-down
+    fill(youEl, you, true, 60);                 // your hole cards
+    boardEl.innerHTML = "";
+    board.forEach((card, i) => boardEl.appendChild(cardEl(card, i < 3, i < 3 ? 220 + i * 90 * T : 0))); // flop up, turn+river down
+    phase = "decision"; onPrimary = play;
     setTimeout(() => {
-      const a = analyze(hand.map((h) => h.card));
-      result.innerHTML = `<span class="muted">Holding · ${a.name}</span>`;
-      setBtn("Draw"); onClick = draw;
-      btn.disabled = false; busy = false;
-    }, flipWait);
+      const made = rank5([...you, ...board.slice(0, 3)]);
+      setHint("Your two cards + the flop. Play the hand or fold?");
+      result.innerHTML = `<span class="play__hands">You're holding <b>${HAND_NAMES[made[0]]}</b></span>`;
+      foldBtn.hidden = false; setBtn("Play"); busy = false;
+    }, 620 * T);
   }
 
-  function draw() {
-    if (busy) return;
-    busy = true; btn.disabled = true;
-    hand.forEach((h) => { if (!h.held) { h.card = rest.pop(); h.fresh = true; } else h.fresh = false; });
-    phase = "show";
-    render();
-    setHint("");
-    setTimeout(() => {
-      const a = analyze(hand.map((h) => h.card));
-      const pay = a.mult * BET;
-      if (pay > 0) setChips(chips + pay);
-      result.innerHTML = pay > 0
-        ? `${a.name} <span class="play__win">+${pay}</span>`
-        : `${a.name} <span class="muted">— no pay</span>`;
-      setBtn(chips < BET ? "Reset chips" : "Deal again"); onClick = deal;
-      btn.disabled = false; busy = false;
-    }, flipWait);
+  function fold() {
+    if (busy || phase !== "decision") return;
+    foldBtn.hidden = true; phase = "done"; setPot(0);
+    result.innerHTML = `<span class="muted">You folded — −${ANTE}</span>`;
+    setHint(""); setBtn(chips < ANTE * 2 ? "Reset chips" : "Deal again"); onPrimary = deal;
   }
 
-  btn.addEventListener("click", () => onClick());
-  deal();
+  function play() {
+    if (busy || phase !== "decision") return;
+    busy = true; foldBtn.hidden = true; btn.disabled = true; setHint("Running it out…");
+    setChips(chips - ANTE); setPot(pot + ANTE);  // commit the play-bet → pot = 2×ante
+    phase = "reveal";
+    const turn = boardEl.children[3], river = boardEl.children[4];
+    setTimeout(() => flip(turn), 250 * T);
+    setTimeout(() => flip(river), 700 * T);
+    setTimeout(() => $$(".pcard", dealerEl).forEach((c, i) => setTimeout(() => flip(c), i * 140 * T)), 1150 * T);
+    setTimeout(showdown, 1650 * T);
+  }
+
+  function showdown() {
+    $$(".pcard", dealerEl).forEach(flip);
+    const yb = best7([...you, ...board]), db = best7([...dealer, ...board]);
+    const win5 = new Set(yb.cards.map(key));     // highlight the five cards that make your hand
+    [youEl, boardEl].forEach((el) => $$(".pcard", el).forEach((c) => { if (c._card && win5.has(key(c._card))) c.classList.add("is-best"); }));
+    const cmp = cmpScore(yb.score, db.score);
+    let out;
+    if (cmp > 0) { setChips(chips + pot * 2); out = `<span class="play__win">You win +${pot}</span>`; }
+    else if (cmp < 0) { out = `<span class="play__lose">Dealer wins −${pot}</span>`; }
+    else { setChips(chips + pot); out = `<span class="muted">Split pot — push</span>`; }
+    result.innerHTML = `<span class="play__hands">You <b>${HAND_NAMES[yb.cat]}</b> · Dealer <b>${HAND_NAMES[db.cat]}</b></span>${out}`;
+    setPot(0); setHint(""); phase = "done";
+    setBtn(chips < ANTE * 2 ? "Reset chips" : "Deal again"); onPrimary = deal; busy = false;
+  }
+
+  btn.addEventListener("click", () => { if (!busy) onPrimary(); });
+  foldBtn.addEventListener("click", fold);
+  rest();
 }
 
 /* ---------- Interactive monogram orb (About) ---------- */

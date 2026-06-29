@@ -384,18 +384,33 @@
         <p class="sec-head__meta"><span class="sec-head__n">05</span> Play</p>
         <h2 class="sec-head__title">Deal me in.</h2>
       </div>
-      <p class="play__lead reveal">A nod to <a href="/work/tells.html">Tells</a>. Real five-card draw — hold the cards you want, draw the rest, and the same hand-evaluator that runs inside Tells scores the payout. Live in your browser.</p>
+      <p class="play__lead reveal">Heads-up <a href="/work/tells.html">Texas Hold'em</a> — you versus the house. You each get two hole cards and share the five-card board; play the hand or fold, and the same hand-ranking engine that runs <a href="/work/tells.html">Tells</a> calls the showdown. Live in your browser.</p>
       <div class="play__hud reveal">
-        <span class="play__chips">♦ <b id="play-chips">100</b> chips</span>
-        <span class="play__bet">Bet <b>5</b></span>
+        <span class="play__stat">♦ <b id="play-chips">100</b> chips</span>
+        <span class="play__stat">Ante <b>5</b></span>
+        <span class="play__stat">Pot <b id="play-pot">0</b></span>
       </div>
-      <div class="deck reveal" id="deck" role="group" aria-label="Your five-card hand"></div>
+      <div class="holdem reveal" role="group" aria-label="Heads-up Texas Hold'em table">
+        <div class="holdem__row">
+          <span class="holdem__tag">Dealer</span>
+          <div class="hcards" id="dealer-cards"></div>
+        </div>
+        <div class="holdem__row holdem__row--board">
+          <span class="holdem__tag">Board</span>
+          <div class="hcards" id="board-cards"></div>
+        </div>
+        <div class="holdem__row">
+          <span class="holdem__tag">You</span>
+          <div class="hcards" id="you-cards"></div>
+        </div>
+      </div>
       <p class="play__result reveal" id="play-result" role="status" aria-live="polite"></p>
       <div class="play__actions reveal">
-        <button class="btn btn--primary" id="deal-btn" type="button">Deal a hand <span class="arrow" aria-hidden="true">→</span></button>
+        <button class="btn btn--ghost" id="fold-btn" type="button" hidden>Fold</button>
+        <button class="btn btn--primary" id="deal-btn" type="button">Deal me in <span class="arrow" aria-hidden="true">→</span></button>
       </div>
       <p class="play__hint" id="play-hint" aria-live="polite"></p>
-      <p class="play__note reveal">Hold-and-draw · client-side · <a href="/work/tells.html">see the real engine →</a></p>
+      <p class="play__note reveal">Heads-up vs. the house · client-side · <a href="/work/tells.html">see the real engine →</a></p>
     </section>
 
     <!-- ===================== Contact ===================== -->

@@ -290,6 +290,7 @@ kbd {
   border: 1px solid transparent; white-space: nowrap;
   transition: transform var(--t-fast) var(--ease), background var(--t), color var(--t), border-color var(--t), box-shadow var(--t);
 }
+.btn[hidden] { display: none; }   /* the `hidden` attribute must win over display:inline-flex */
 .btn:active { transform: translateY(1px); }
 .btn--primary { background: var(--accent); color: var(--on-accent); }
 .btn--primary:hover { background: var(--accent-strong); box-shadow: var(--shadow-2); }
