@@ -4,9 +4,11 @@
      • theme picker (5 themes) with persistence
      • sticky nav: scrolled state, active-section links, scroll progress
      • reveal-on-scroll, exact-fit display type (Pretext), inline count-ups
-     • live NY clock, generative hero signal (canvas)
+     • live New York clock + current year
      • ⌘K command palette (jump / open / theme / connect)
-     • The Craft: prose that genuinely flows around the seal (Pretext flowAround)
+     • The Craft: prose that genuinely flows around the seals (Pretext flowAround),
+       which you can drag to re-flow (wide) or reposition (narrow)
+     • interactive monogram orb (About) and a poker mini-game (Play)
    ========================================================================== */
 import { readyFonts, fitFontSize, flowAround } from "../assets/vendor/lib.js";
 
@@ -97,7 +99,7 @@ function initNav() {
         if (nav) nav.classList.toggle("is-scrolled", window.scrollY > 8);
         if (bar) {
           const h = document.documentElement.scrollHeight - window.innerHeight;
-          bar.style.width = (h > 0 ? (window.scrollY / h) * 100 : 0) + "%";
+          bar.style.transform = "scaleX(" + (h > 0 ? clamp(window.scrollY / h, 0, 1) : 0) + ")";
         }
       });
     };
@@ -290,14 +292,33 @@ async function initCraftFlow() {
     flow.style.height = Math.ceil(res.height + realLh * 0.4) + "px";
   }
 
-  // drag a seal → reflow the prose around it (throttled); click → reverse its spin
+  // Drag a seal. Wide screens (flowing): move its center and reflow the prose around it.
+  // Narrow screens (stacked, no flow): translate it directly via --dx/--dy, clamped on-screen.
+  // A tap (no real drag, in either mode) reverses the spin.
   let raf = 0;
   const schedule = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; build(); }); };
   discs.forEach((disc, i) => {
     const s = seals[i], seal = disc.querySelector(".seal"), ring = disc.querySelector(".seal__ring");
-    let dragging = false, sx = 0, sy = 0, ox = 0, oy = 0, moved = 0, pid = null, rev = false;
-    disc.addEventListener("pointerdown", (e) => { dragging = true; moved = 0; pid = e.pointerId; sx = e.clientX; sy = e.clientY; ox = s.dx; oy = s.dy; disc.classList.add("is-grabbing"); try { disc.setPointerCapture(pid); } catch (_) {} });
-    disc.addEventListener("pointermove", (e) => { if (!dragging) return; const mvx = e.clientX - sx, mvy = e.clientY - sy; moved = Math.max(moved, Math.abs(mvx) + Math.abs(mvy)); s.dx = ox + mvx; s.dy = oy + mvy; schedule(); });
+    // s.dx/s.dy = flow offset (wide, drives reflow); tx/ty = translate offset (narrow, drives --dx/--dy).
+    // Kept separate so a resize across the breakpoint never carries one mode's offset into the other.
+    let dragging = false, sx = 0, sy = 0, ox = 0, oy = 0, moved = 0, pid = null, rev = false, mx = 0, my = 0, tx = 0, ty = 0;
+    disc.addEventListener("pointerdown", (e) => {
+      dragging = true; moved = 0; pid = e.pointerId; sx = e.clientX; sy = e.clientY;
+      const flowing = flow.classList.contains("is-flowing");
+      ox = flowing ? s.dx : tx; oy = flowing ? s.dy : ty;
+      const D = disc.offsetWidth || 130; mx = Math.max(40, (flow.clientWidth - D) / 2 - 4); my = 132; // clamp range (narrow mode)
+      disc.classList.add("is-grabbing"); try { disc.setPointerCapture(pid); } catch (_) {}
+    });
+    disc.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+      const mvx = e.clientX - sx, mvy = e.clientY - sy;
+      moved = Math.max(moved, Math.abs(mvx) + Math.abs(mvy));
+      if (flow.classList.contains("is-flowing")) { s.dx = ox + mvx; s.dy = oy + mvy; schedule(); }       // wide: reflow
+      else {                                                                                              // narrow: translate, clamped
+        tx = clamp(ox + mvx, -mx, mx); ty = clamp(oy + mvy, -my, my);
+        disc.style.setProperty("--dx", tx.toFixed(1) + "px"); disc.style.setProperty("--dy", ty.toFixed(1) + "px");
+      }
+    });
     const end = () => {
       if (!dragging) return; dragging = false; disc.classList.remove("is-grabbing");
       if (pid != null) { try { disc.releasePointerCapture(pid); } catch (_) {} pid = null; }
@@ -378,7 +399,6 @@ function initCommandPalette() {
       item.type = "button"; item.className = "cmdk__item"; item.id = "cmdk-opt-" + idx; item.setAttribute("role", "option");
       item.tabIndex = -1; // arrow-navigated via aria-activedescendant; keeps Tab on the input
       item.dataset.i = idx;
-      const isTheme = c.group === "Theme" && c.iconHTML ? "" : "";
       item.innerHTML = `<span class="cmdk__item-ic">${c.iconHTML || c.icon}</span><span class="cmdk__item-tx"><b>${escapeHTML(c.title)}</b><span>${escapeHTML(c.sub)}</span></span><span class="cmdk__item-go">↵</span>`;
       item.addEventListener("click", () => exec(+item.dataset.i));
       item.addEventListener("pointermove", () => setActive(+item.dataset.i));
@@ -599,44 +619,6 @@ function initOrb() {
     });
     mono.addEventListener("animationend", () => mono.classList.remove("is-pop"));
   }
-}
-
-/* ---------- Seal (The Craft): drag to move, click to reverse the spin ---------- */
-function initSeals() {
-  $$(".craft__disc").forEach((disc) => {
-    const seal = disc.querySelector(".seal");
-    const ring = disc.querySelector(".seal__ring");
-    if (!seal || !ring) return;
-    let dx = 0, dy = 0, ox = 0, oy = 0, sx = 0, sy = 0, moved = 0, dragging = false, pid = null, reversed = false;
-
-    disc.addEventListener("pointerdown", (e) => {
-      dragging = true; moved = 0; pid = e.pointerId;
-      sx = e.clientX; sy = e.clientY; ox = dx; oy = dy;
-      disc.classList.add("is-grabbing");
-      try { disc.setPointerCapture(pid); } catch (_) {}
-    });
-    disc.addEventListener("pointermove", (e) => {
-      if (!dragging) return;
-      const mvx = e.clientX - sx, mvy = e.clientY - sy;
-      moved = Math.max(moved, Math.abs(mvx) + Math.abs(mvy));
-      dx = clamp(ox + mvx, -150, 150); dy = clamp(oy + mvy, -110, 110);
-      disc.style.setProperty("--dx", dx + "px"); disc.style.setProperty("--dy", dy + "px");
-    });
-    const end = () => {
-      if (!dragging) return;
-      dragging = false; disc.classList.remove("is-grabbing");
-      if (pid != null) { try { disc.releasePointerCapture(pid); } catch (_) {} pid = null; }
-      if (moved < 6) {
-        reversed = !reversed;
-        ring.style.animationDirection = reversed ? "reverse" : "normal";
-        seal.classList.add("is-spun");
-        clearTimeout(seal._spin);
-        seal._spin = setTimeout(() => seal.classList.remove("is-spun"), 1200);
-      }
-    };
-    disc.addEventListener("pointerup", end);
-    disc.addEventListener("pointercancel", end);
-  });
 }
 
 function init() {

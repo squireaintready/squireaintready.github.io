@@ -1,8 +1,8 @@
 /* ============================================================================
    tokens.css — design system for Samuel Jo's portfolio
    One editorial language (Pretext "ink on warm paper") reconciling four apps.
-   Light is the default; [data-theme="dark"] is the "dossier" night mode.
-   All values flow through CSS custom properties — components never hardcode.
+   Light ("Paper") is the default; four warm dark themes layer on (Ember = [data-theme="dark"],
+   plus Midnight, Bordeaux, Forest). All values flow through CSS custom properties — never hardcode.
    ========================================================================== */
 
 /* ---- Fonts (self-hosted variable woff2; families match Pretext readyFonts) -- */

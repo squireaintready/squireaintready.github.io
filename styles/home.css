@@ -266,6 +266,11 @@
 }
 .craft__flow strong { color: var(--text); font-weight: 600; }
 .craft__flow > p { margin: 0; }
+/* The self-referential "flow around the seals" clause is only literally true while the prose
+   actually flows (wide / JS flow mode ≥680px). On narrow screens the seals stack, so hide it —
+   on wide screens the flowed lines render it from the source <p>, so its display is moot there. */
+.craft__wide-note { display: none; }
+@media (min-width: 680px) { .craft__wide-note { display: inline; } }
 
 /* the seal */
 .craft__disc {

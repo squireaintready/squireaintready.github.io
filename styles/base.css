@@ -73,9 +73,9 @@ ul, ol { list-style: none; padding: 0; }
   background: transparent; pointer-events: none;
 }
 .scroll-progress__bar {
-  display: block; height: 100%; width: 0%;
+  display: block; height: 100%; width: 100%;
   background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 55%, var(--proj-regwatch)));
-  transform-origin: left; transition: width 90ms linear;
+  transform: scaleX(0); transform-origin: left; transition: transform 90ms linear; will-change: transform;
 }
 
 /* ---------- Typography ---------- */
@@ -346,10 +346,13 @@ kbd {
 /* ---------- Touch / coarse-pointer polish ---------- */
 a, button { -webkit-tap-highlight-color: transparent; }
 @media (pointer: coarse) {
-  .theme-toggle { width: 42px; height: 42px; }
-  .cmdk-trigger { height: 42px; }
+  .theme-toggle { width: 44px; height: 44px; }
+  .cmdk-trigger { height: 44px; }                 /* pill keeps its auto width where the ⌘K hint shows */
   .nav-links > a { padding-block: 0.6rem; }
   .index-rail a { padding-block: 0.5rem; }
+}
+@media (pointer: coarse) and (max-width: 660px) {
+  .cmdk-trigger { width: 44px; }                  /* icon-only on phones → comfortable square target */
 }
 
 /* ---------- Reduced motion ---------- */
