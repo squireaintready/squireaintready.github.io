@@ -365,6 +365,6 @@ a, button { -webkit-tap-highlight-color: transparent; }
 
 /* ---------- Print ---------- */
 @media print {
-  .site-nav, .theme-toggle, .cmdk-trigger, .scroll-progress, .hero__signal, .index-rail, .site-footer .cluster { display: none; }
+  .site-nav, .theme-toggle, .cmdk-trigger, .scroll-progress, .index-rail, .site-footer .cluster { display: none; }
   body { background: #fff; color: #000; }
 }

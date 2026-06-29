@@ -79,9 +79,7 @@
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);  /* symmetric, for ambient drift */
   --ease-spring: cubic-bezier(0.2, 1.3, 0.4, 1);
 
-  /* ---- Instrument / signal layer (auto-themes via accent) ---- */
-  --signal: var(--accent);                                  /* hero signal stroke */
-  --signal-soft: color-mix(in srgb, var(--accent) 14%, transparent);
+  /* ---- Subtle section texture (auto-themes) ---- */
   --grid-line: color-mix(in srgb, var(--text) 7%, transparent);
   --glass: color-mix(in srgb, var(--bg) 78%, transparent);  /* nav / palette backdrop */
   --live: var(--up);                                        /* live pulse dot */
@@ -123,7 +121,7 @@
 /* Fallback for browsers without color-mix(): keep nav/palette/signal from breaking.
    These tokens are inherited, so one rule covers every theme (--glass tracks --bg). */
 @supports not (color: color-mix(in srgb, white, black)) {
-  :root { --signal-soft: rgba(127,127,127,0.12); --grid-line: rgba(127,127,127,0.14); --glass: var(--bg); }
+  :root { --grid-line: rgba(127,127,127,0.14); --glass: var(--bg); }
 }
 
 /* Per-project accent application (set data-proj on a card or <body> of a case study) */
