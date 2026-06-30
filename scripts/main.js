@@ -670,9 +670,56 @@ function initOrb() {
   }
 }
 
+/* ---------- Buttery smooth in-page scrolling (anchor clicks only — never hijacks free scroll) ---------- */
+function initSmoothScroll() {
+  const navH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--nav-h")) || 60;
+  const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2); // easeInOutCubic
+  let raf = 0, stop = null;
+
+  function focusTarget(el) { if (!el.hasAttribute("tabindex")) el.setAttribute("tabindex", "-1"); el.focus({ preventScroll: true }); }
+
+  function glide(targetY, el) {
+    const maxY = document.documentElement.scrollHeight - innerHeight;
+    targetY = Math.max(0, Math.min(targetY, maxY));
+    const startY = window.scrollY, dist = targetY - startY;
+    if (prefersReduced || Math.abs(dist) < 2) { window.scrollTo(0, targetY); if (el) focusTarget(el); return; }
+    const dur = clamp(Math.abs(dist) * 0.5, 380, 720); // distance-scaled, capped — quick but smooth
+    let t0 = null, killed = false;
+    cancelAnimationFrame(raf); if (stop) stop();
+    const cancel = () => { killed = true; cancelAnimationFrame(raf); if (stop) { stop(); stop = null; } };
+    const onKey = (e) => { if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "].includes(e.key)) cancel(); };
+    addEventListener("wheel", cancel, { passive: true });
+    addEventListener("touchstart", cancel, { passive: true });
+    addEventListener("keydown", onKey);
+    stop = () => { removeEventListener("wheel", cancel); removeEventListener("touchstart", cancel); removeEventListener("keydown", onKey); };
+    const step = (now) => {
+      if (killed) return;
+      if (t0 == null) t0 = now;
+      const p = Math.min(1, (now - t0) / dur);
+      window.scrollTo(0, startY + dist * ease(p));
+      if (p < 1) raf = requestAnimationFrame(step);
+      else { if (stop) { stop(); stop = null; } if (el) focusTarget(el); }
+    };
+    raf = requestAnimationFrame(step);
+  }
+
+  document.addEventListener("click", (e) => {
+    if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button) return;
+    const a = e.target.closest('a[href^="#"], a[href^="/#"]');
+    if (!a || a.classList.contains("skip-link")) return;       // skip-link jumps instantly (a11y)
+    const id = a.getAttribute("href").replace(/^\//, "").slice(1);
+    const el = id && document.getElementById(id);
+    if (!el) return;                                            // cross-page hash (e.g. /#work on a case page) → let it navigate
+    e.preventDefault();
+    glide(el.getBoundingClientRect().top + window.scrollY - navH - 12, el);
+    history.replaceState(null, "", "#" + id);
+  });
+}
+
 function init() {
   initTheme();
   initNav();
+  initSmoothScroll();
   initReveals();
   initYear();
   initClock();

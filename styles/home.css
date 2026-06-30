@@ -39,7 +39,7 @@
 }
 .hero__name-l { display: block; }
 .hero__name-l2 { display: flex; align-items: center; gap: clamp(0.5rem, 1.5vw, 1.1rem); }
-.hero__name-rule { flex: 1 1 auto; height: clamp(4px, 0.055em, 9px); background: var(--rule); align-self: center; }
+.hero__name-rule { flex: 1 1 auto; height: clamp(2px, 0.03em, 4px); background: var(--rule); border-radius: 2px; align-self: center; opacity: 0.9; }
 
 .hero__statement { font-family: var(--font-display); font-weight: 360; font-size: var(--fs-2xl); line-height: 1.12; letter-spacing: -0.015em; color: var(--text-dim); max-width: 28ch; text-wrap: balance; margin-top: clamp(0.9rem, 2.2vw, 1.4rem); }
 .hero__statement em { font-style: italic; color: var(--text); }
@@ -70,11 +70,12 @@
   .hero__lead { margin-top: 0.5rem; font-size: var(--fs-sm); line-height: 1.45; }
 }
 
-/* ---------- Section index rail ---------- */
+/* ---------- Section index — the hero's bottom "table of contents" strip ---------- */
 .index-rail {
   display: flex; flex-wrap: wrap; gap: 0.2rem 1.6rem;
-  margin-block: 0 clamp(0.5rem, 2vw, 1rem);
-  padding-block: 1rem; border-bottom: 1px solid var(--border);
+  margin-top: clamp(1.1rem, 3vw, 1.9rem);        /* min gap from hero content when the screen is tight */
+  padding-top: clamp(0.75rem, 1.8vw, 1.05rem);
+  border-top: 1px solid var(--border-strong);
 }
 .index-rail a {
   font-family: var(--font-sans); font-size: var(--fs-sm); font-weight: 500; color: var(--text-dim);

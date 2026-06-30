@@ -10,7 +10,8 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  scroll-behavior: smooth;
+  /* smooth in-page scrolling is JS-driven (eased, cancelable) — see initSmoothScroll();
+     no CSS scroll-behavior so the per-frame scrollTo isn't double-animated. */
   scroll-padding-top: calc(var(--nav-h) + 1rem);
 }
 body {
