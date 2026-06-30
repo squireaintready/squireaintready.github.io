@@ -509,16 +509,47 @@ function rank5(cards) {
   return [cat, ...((cat === 8 || cat === 4) ? [high] : ordered)];                          // straights tie on high card only
 }
 const cmpScore = (a, b) => { for (let i = 0, n = Math.max(a.length, b.length); i < n; i++) { const d = (a[i] || 0) - (b[i] || 0); if (d) return d; } return 0; };
-const HOLDEM_EXCL = (() => { const e = []; for (let i = 0; i < 7; i++) for (let j = i + 1; j < 7; j++) e.push([i, j]); return e; })(); // 21 ways to drop 2 of 7
-// Best 5-card hand out of 7 (2 hole + 5 board) → { score, cat, cards }.
-function best7(seven) {
-  let score = null, cards = null;
-  for (const [a, b] of HOLDEM_EXCL) {
-    const five = seven.filter((_, k) => k !== a && k !== b);
-    const s = rank5(five);
-    if (!score || cmpScore(s, score) > 0) { score = s; cards = five; }
+const DECK = (() => { const d = []; SUITS.forEach((su) => RANKS.forEach((rk) => d.push({ ...rk, ...su }))); return d; })();
+const key = (c) => c.l + c.s;
+const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+// Best 5-card hand out of 5–7 cards → { score, cat, cards }. KEEP[n] memoises the
+// "choose 5 of n" index sets, so this single scorer serves the flop, turn, and river.
+const KEEP = {};
+function keep(n) {
+  if (!KEEP[n]) { const out = []; const rec = (start, acc) => { if (acc.length === 5) { out.push(acc.slice()); return; } for (let i = start; i < n; i++) { acc.push(i); rec(i + 1, acc); acc.pop(); } }; rec(0, []); KEEP[n] = out; }
+  return KEEP[n];
+}
+function bestOf(cards) {
+  let score = null, five = null;
+  for (const ix of keep(cards.length)) { const f = ix.map((i) => cards[i]); const s = rank5(f); if (!score || cmpScore(s, score) > 0) { score = s; five = f; } }
+  return { score, cat: score[0], cards: five };
+}
+
+// Monte-Carlo equity: P(win) for `hole` against `nOpp` unseen hands, averaged over
+// `samples` random runouts of the rest of the board. It scores every runout with the
+// same bestOf that settles the showdown — so an opponent's nerve is the real engine's
+// read. Split pots count fractionally; cards this seat can't see stay live in the deck.
+function equity(hole, board, nOpp, samples) {
+  if (nOpp <= 0) return 1;
+  const dead = new Set([...hole, ...board].map(key));
+  const live = DECK.filter((c) => !dead.has(key(c)));
+  const need = 5 - board.length;
+  let total = 0;
+  for (let s = 0; s < samples; s++) {
+    shuffle(live);
+    let k = need;
+    const full = need ? board.concat(live.slice(0, need)) : board;
+    const me = bestOf([...hole, ...full]).score;
+    let beat = true, tied = 1;
+    for (let o = 0; o < nOpp; o++) {
+      const d = cmpScore(me, bestOf([live[k++], live[k++], ...full]).score);
+      if (d < 0) { beat = false; break; }
+      if (d === 0) tied++;
+    }
+    if (beat) total += 1 / tied;
   }
-  return { score, cat: score[0], cards };
+  return total / samples;
 }
 function initPlay() {
   const oppWrap = $("#opponents"), youEl = $("#you-cards"), boardEl = $("#board-cards");
@@ -526,32 +557,38 @@ function initPlay() {
   const chipsEl = $("#play-chips"), potEl = $("#play-pot"), hint = $("#play-hint");
   if (!oppWrap || !youEl || !boardEl || !btn || !foldBtn || !checkBtn) return;
 
-  const DECK = [];
-  SUITS.forEach((su) => RANKS.forEach((rk) => DECK.push({ ...rk, ...su })));
-  const ANTE = 5, NUM_OPP = 2, MAX_BET = ANTE * 2;   // raise commits up to 2× the ante
-  const T = prefersReduced ? 0 : 1;                   // T scales every animation delay (0 ⇒ instant)
+  const ANTE = 5, NUM_OPP = 2;
+  const BET = { flop: 5, turn: 10, river: 10 };           // fixed-limit bet for each street
+  const MAX_IN = ANTE + BET.flop + BET.turn + BET.river;  // most you can commit in one hand (30) → the broke line
+  const SAMPLES = 220;                                    // Monte-Carlo runouts behind every equity read
+  const T = prefersReduced ? 0 : 1;                       // T scales every delay (0 ⇒ instant)
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms * T));
+  const noop = () => {};
+  const cap = (s) => s[0].toUpperCase() + s.slice(1);
 
-  // build the opponent seats once (cards refilled each hand)
-  const oppEls = [];
+  // opponent seats, built once: two hole cards + a live action label ("bets 5" / "calls" / "folds")
+  const oppEls = [], oppActEls = [], oppSeats = [];
   for (let i = 0; i < NUM_OPP; i++) {
     const seat = document.createElement("div");
     seat.className = "holdem__seat";
     seat.innerHTML = '<span class="holdem__tag">Opponent</span>';
-    const cards = document.createElement("div");
-    cards.className = "hcards";
-    seat.appendChild(cards); oppWrap.appendChild(seat); oppEls.push(cards);
+    const cards = document.createElement("div"); cards.className = "hcards";
+    const act = document.createElement("span"); act.className = "holdem__act";
+    seat.append(cards, act); oppWrap.appendChild(seat);
+    oppEls.push(cards); oppActEls.push(act); oppSeats.push(seat);
   }
 
-  let chips = 100, you = [], opps = [], board = [], stake = 0, phase = "idle", busy = false, onPrimary = deal;
+  let chips = 100, you = [], opps = [], board = [];
+  let pot = 0, youIn = 0, shown = 0, liveOpps = [], handLive = false, busy = false;
+  let onPrimary = deal, onFold = null, onCheck = null;
 
   const setChips = (v) => { chips = Math.max(0, v); if (chipsEl) chipsEl.textContent = chips; };
-  const setPot = (v) => { stake = v; if (potEl) potEl.textContent = v; };
+  const setPot = (v) => { pot = v; if (potEl) potEl.textContent = v; };
   const setHint = (t) => { if (hint) hint.textContent = t; };
-  const setBtn = (label) => { btn.innerHTML = `${label} <span class="arrow" aria-hidden="true">→</span>`; btn.hidden = false; btn.disabled = false; };
-  const decide = (on) => { foldBtn.hidden = !on; checkBtn.hidden = !on; };   // toggle the Fold/Check pair
-  const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-  const key = (c) => c.l + c.s;
-  const broke = () => chips < ANTE + MAX_BET;     // can't cover ante + a full raise → offer a reset
+  const setPrimary = (label, show = true) => { btn.innerHTML = `${label} <span class="arrow" aria-hidden="true">→</span>`; btn.hidden = !show; btn.disabled = !show; };
+  const ghost = (el, label, show) => { el.hidden = !show; el.disabled = !show; if (show) el.textContent = label; };
+  const broke = () => chips < MAX_IN;                     // can't cover a full hand → offer a reset
+  const shownBoard = () => board.slice(0, shown);         // the community cards revealed so far
 
   // one card element; faceUp=false renders the back, flipping up later when .in is added
   function cardEl(card, faceUp, delay) {
@@ -567,80 +604,166 @@ function initPlay() {
   const fill = (el, cards, faceUp, base = 0) => { el.innerHTML = ""; cards.forEach((card, i) => el.appendChild(cardEl(card, faceUp, base + i * 90 * T))); };
   const flip = (el) => { if (!el) return; el.classList.add("in"); if (el._card) el.setAttribute("aria-label", cardName(el._card)); };
 
-  function rest() {                              // resting "table set" — every seat face-down
-    phase = "idle"; you = []; opps = []; board = []; setPot(0);
+  // a face-down "table set" between hands
+  function rest() {
+    handLive = false; busy = false; you = []; opps = []; board = []; liveOpps = []; shown = 0; youIn = 0;
+    setPot(0);
+    oppSeats.forEach((s) => s.classList.remove("is-folded"));
+    oppActEls.forEach((a) => { a.textContent = ""; a.removeAttribute("data-act"); });
     oppEls.forEach((el) => fill(el, [DECK[0], DECK[0]], false));
     fill(boardEl, [DECK[0], DECK[0], DECK[0], DECK[0], DECK[0]], false);
     fill(youEl, [DECK[0], DECK[0]], false);
-    result.innerHTML = ""; setHint(`${NUM_OPP + 1}-handed — ante ${ANTE} to play.`); decide(false);
-    setBtn("Deal me in"); onPrimary = deal;
+    result.innerHTML = "";
+    setHint(`${NUM_OPP + 1}-handed — ante ${ANTE} to play.`);
+    ghost(foldBtn, "Fold", false); ghost(checkBtn, "Check", false);
+    setPrimary("Deal me in"); onPrimary = deal; onFold = onCheck = null;
   }
 
-  function deal() {
-    if (busy) return;
-    if (broke()) setChips(100);                 // top up if you can't cover ante + a raise
-    busy = true; result.innerHTML = ""; decide(false); btn.disabled = true;
-    setChips(chips - ANTE); setPot(ANTE);
+  // ---- the table acts before you, so you always close the street ----
+
+  async function label(o, text, kind) {           // show an opponent's move, then pause so you can read it
+    oppActEls[o].textContent = text;
+    if (kind) oppActEls[o].setAttribute("data-act", kind); else oppActEls[o].removeAttribute("data-act");
+    await sleep(430);
+  }
+  function muck(o) { liveOpps = liveOpps.filter((x) => x !== o); oppSeats[o].classList.add("is-folded"); }
+
+  // one opponent's move from its own seat: value-bet / call by Monte-Carlo equity, priced
+  // against the pot, with a little noise and the occasional bluff so it reads human
+  function oppMove(o, toCall) {
+    const e = equity(opps[o], shownBoard(), liveOpps.length, SAMPLES);   // vs the rest of the live field (incl. you)
+    const r = Math.random();
+    if (toCall > 0) {
+      const odds = toCall / (pot + toCall);                                    // equity it needs to call
+      return r < clamp((e - odds) * 2.2 + 0.2, 0.04, 0.97) ? "call" : "fold";
+    }
+    return r < clamp((e - 0.5) * 1.7, 0, 0.85) + (e < 0.22 ? 0.07 : 0) ? "bet" : "check";
+  }
+  async function respond(o, toCall) {              // an opponent facing a bet
+    if (oppMove(o, toCall) === "call") { setPot(pot + toCall); await label(o, "calls", "in"); }
+    else { muck(o); await label(o, "folds", "fold"); }
+  }
+  // run the table's action for a street; returns the bet that lands on you (0 = checked through)
+  async function opponentsAct(bet) {
+    let toCall = 0; const checked = [];
+    for (const o of liveOpps.slice()) {
+      if (toCall === 0) {
+        if (oppMove(o, 0) === "bet") { toCall = bet; setPot(pot + bet); await label(o, `bets ${bet}`, "in"); }
+        else { checked.push(o); await label(o, "checks", "check"); }
+      } else { await respond(o, toCall); }
+    }
+    if (toCall > 0) for (const o of checked) await respond(o, toCall);          // earlier checkers now face the bet
+    return toCall;
+  }
+
+  // ---- you ----
+
+  function payYou(amt) { setChips(chips - amt); youIn += amt; setPot(pot + amt); }
+
+  function showYou(toCall) {                       // surface your made hand + live equity, then the prompt
+    const made = bestOf([...you, ...shownBoard()]);
+    const e = Math.round(equity(you, shownBoard(), liveOpps.length, SAMPLES) * 100);
+    result.innerHTML = `<span class="play__hands">You hold <b>${HAND_NAMES[made.cat]}</b> · <b>${e}%</b> to win</span>`;
+    setHint(toCall > 0 ? `Facing a bet of ${toCall} — call or fold.` : "Checked to you — check or bet.");
+  }
+
+  // your decision; resolves with "fold" | "check" | "call" | "bet" when you click
+  function youAct(toCall, bet) {
+    return new Promise((resolve) => {
+      const facing = toCall > 0;
+      ghost(foldBtn, "Fold", facing); ghost(checkBtn, "Check", !facing);
+      setPrimary(facing ? `Call ${toCall}` : `Bet ${bet}`);
+      const done = (kind) => { ghost(foldBtn, "Fold", false); ghost(checkBtn, "Check", false); btn.hidden = true; onFold = onCheck = null; onPrimary = noop; resolve(kind); };
+      onPrimary = () => done(facing ? "call" : "bet");
+      onFold = () => done("fold");
+      onCheck = () => done("check");
+    });
+  }
+
+  // one street: reveal the new card(s) → the table acts → you act
+  async function playStreet(name) {
+    shown = name === "flop" ? 3 : name === "turn" ? 4 : 5;
+    const bet = BET[name];
+    if (name !== "flop") { flip(boardEl.children[shown - 1]); await sleep(560); }   // turn / river card
+    setHint(`${cap(name)} — the table acts…`);
+    await sleep(360);
+    const toCall = await opponentsAct(bet);
+    showYou(toCall);
+    const choice = await youAct(toCall, bet);
+    if (choice === "fold") return finishFold();
+    if (choice === "call") payYou(toCall);
+    else if (choice === "bet") {
+      payYou(bet); setHint("You bet — the table decides…");
+      for (const o of liveOpps.slice()) await respond(o, bet);
+      if (!liveOpps.length) return finishUncontested();
+    }
+    // check / call / called-bet → on to the next street
+  }
+
+  // ---- endings ----
+  function endHand() {
+    busy = false; handLive = false;
+    ghost(foldBtn, "Fold", false); ghost(checkBtn, "Check", false); onFold = onCheck = null;
+    setPrimary(broke() ? "Reset chips" : "Deal again"); onPrimary = deal;
+  }
+  function finishFold() {
+    result.innerHTML = `<span class="muted">You fold — −${youIn}</span>`;
+    setHint(""); setPot(0); endHand();
+  }
+  function finishUncontested() {                   // everyone folded to your bet — you take it down, no cards shown
+    const won = pot - youIn; setChips(chips + pot);
+    result.innerHTML = `<span class="play__hands">The table folds — you take it down.</span><span class="play__win">You win +${won}</span>`;
+    setHint(""); setPot(0); endHand();
+  }
+  async function showdown() {                       // among the seats still live → best hand wins, ties split
+    setHint("Showdown.");
+    for (const o of liveOpps) $$(".pcard", oppEls[o]).forEach(flip);
+    await sleep(320);
+    const yb = bestOf([...you, ...board]);
+    const obs = liveOpps.map((o) => bestOf([...opps[o], ...board]));
+    let best = yb.score; obs.forEach((h) => { if (cmpScore(h.score, best) > 0) best = h.score; });
+    const bestOpp = obs.reduce((m, h) => (!m || cmpScore(h.score, m.score) > 0 ? h : m), null);
+    const youWin = cmpScore(yb.score, best) === 0;
+    const winners = (youWin ? 1 : 0) + obs.filter((h) => cmpScore(h.score, best) === 0).length;
+    const win5 = new Set(yb.cards.map(key));         // lift the five that make your hand
+    [youEl, boardEl].forEach((el) => $$(".pcard", el).forEach((c) => { if (c._card && win5.has(key(c._card))) c.classList.add("is-best"); }));
+    let out;
+    if (youWin) { const share = Math.round(pot / winners), net = share - youIn; setChips(chips + share); out = net > 0 ? `<span class="play__win">You win +${net}</span>` : `<span class="muted">Split — push</span>`; }
+    else out = `<span class="play__lose">You lose −${youIn}</span>`;
+    result.innerHTML = `<span class="play__hands">You <b>${HAND_NAMES[yb.cat]}</b> · Best opp <b>${HAND_NAMES[bestOpp.cat]}</b></span>${out}`;
+    setPot(0); endHand();
+  }
+
+  // deal a fresh hand and run it flop → turn → river → showdown
+  async function deal() {
+    if (busy || handLive) return;
+    if (broke()) setChips(100);                      // top up when you can't cover a full hand
+    busy = true; handLive = true;
+    oppSeats.forEach((s) => s.classList.remove("is-folded"));
+    oppActEls.forEach((a) => { a.textContent = ""; a.removeAttribute("data-act"); });
+    result.innerHTML = ""; ghost(foldBtn, "Fold", false); ghost(checkBtn, "Check", false);
+    setPrimary("Deal me in", false);
     const d = shuffle(DECK.slice()); let k = 0;
     you = [d[k++], d[k++]];
     opps = oppEls.map(() => [d[k++], d[k++]]);
     board = [d[k++], d[k++], d[k++], d[k++], d[k++]];
+    liveOpps = oppEls.map((_, i) => i);
+    setChips(chips - ANTE); youIn = ANTE; setPot(ANTE * (NUM_OPP + 1));         // everyone antes
     oppEls.forEach((el, i) => fill(el, opps[i], false));   // opponents' hole cards face-down
     fill(youEl, you, true, 60);
     boardEl.innerHTML = "";
-    board.forEach((card, i) => boardEl.appendChild(cardEl(card, i < 3, i < 3 ? 220 + i * 90 * T : 0))); // flop up, turn+river down
-    phase = "decision"; onPrimary = () => play(2);          // the primary button raises
-    setTimeout(() => {
-      const made = rank5([...you, ...board.slice(0, 3)]);
-      setHint("Your hand + the flop. Fold, check, or raise?");
-      result.innerHTML = `<span class="play__hands">You're holding <b>${HAND_NAMES[made[0]]}</b></span>`;
-      decide(true); setBtn("Raise"); busy = false;
-    }, 620 * T);
+    board.forEach((card, i) => boardEl.appendChild(cardEl(card, i < 3, i < 3 ? 220 + i * 90 * T : 0)));  // flop up, turn+river down
+    await sleep(720);
+    for (const name of ["flop", "turn", "river"]) {
+      await playStreet(name);
+      if (!handLive) return;                         // folded or won uncontested
+    }
+    await showdown();
   }
 
-  function fold() {
-    if (busy || phase !== "decision") return;
-    decide(false); phase = "done"; setPot(0);
-    result.innerHTML = `<span class="muted">You folded — −${ANTE}</span>`;
-    setHint(""); setBtn(broke() ? "Reset chips" : "Deal again"); onPrimary = deal;
-  }
-
-  function play(mult) {                          // mult: 1 = check, 2 = raise (extra ante×mult into the pot)
-    if (busy || phase !== "decision") return;
-    busy = true; decide(false); btn.disabled = true; setHint("Running it out…");
-    setChips(chips - ANTE * mult); setPot(stake + ANTE * mult);  // your total wager = ante + play-bet
-    phase = "reveal";
-    const turn = boardEl.children[3], river = boardEl.children[4];
-    setTimeout(() => flip(turn), 250 * T);
-    setTimeout(() => flip(river), 700 * T);
-    setTimeout(() => oppEls.forEach((el, s) => $$(".pcard", el).forEach((c, i) => setTimeout(() => flip(c), (s * 2 + i) * 120 * T))), 1150 * T);
-    setTimeout(showdown, 1750 * T);
-  }
-
-  function showdown() {
-    oppEls.forEach((el) => $$(".pcard", el).forEach(flip));
-    const yb = best7([...you, ...board]);
-    let beaten = 0, lost = false, bestOpp = null;
-    opps.forEach((o) => {
-      const ob = best7([...o, ...board]);
-      const c = cmpScore(yb.score, ob.score);
-      if (c > 0) beaten++; else if (c < 0) lost = true;
-      if (!bestOpp || cmpScore(ob.score, bestOpp.score) > 0) bestOpp = ob;
-    });
-    const win5 = new Set(yb.cards.map(key));     // highlight the five cards that make your hand
-    [youEl, boardEl].forEach((el) => $$(".pcard", el).forEach((c) => { if (c._card && win5.has(key(c._card))) c.classList.add("is-best"); }));
-    let out;
-    if (lost) { out = `<span class="play__lose">You lose −${stake}</span>`; }                       // any opponent outranks you → lose your wager
-    else if (beaten > 0) { const won = beaten * stake; setChips(chips + stake + won); out = `<span class="play__win">You win +${won}</span>`; } // collect a wager from each beaten seat
-    else { setChips(chips + stake); out = `<span class="muted">Split — push</span>`; }              // tie for best, beat no one
-    result.innerHTML = `<span class="play__hands">You <b>${HAND_NAMES[yb.cat]}</b> · Best opp <b>${HAND_NAMES[bestOpp.cat]}</b></span>${out}`;
-    setPot(0); setHint(""); phase = "done";
-    setBtn(broke() ? "Reset chips" : "Deal again"); onPrimary = deal; busy = false;
-  }
-
-  btn.addEventListener("click", () => { if (!busy) onPrimary(); });
-  foldBtn.addEventListener("click", fold);
-  checkBtn.addEventListener("click", () => play(1));
+  btn.addEventListener("click", () => { if (!btn.disabled && !btn.hidden) onPrimary(); });
+  foldBtn.addEventListener("click", () => { if (onFold) onFold(); });
+  checkBtn.addEventListener("click", () => { if (onCheck) onCheck(); });
   rest();
 }
 
