@@ -7,7 +7,10 @@
      • live New York clock + current year
      • ⌘K command palette (jump / open / theme / connect)
      • a heads-up Texas Hold'em mini-game (Play) — the engine behind facecard
+     • Pretext exact-fit: the giant hero name is measured + sized to fill its column live
    ========================================================================== */
+import { readyFonts } from "../assets/vendor/lib.js";
+
 const prefersReduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -695,6 +698,46 @@ function initRailFade() {
   addEventListener("resize", debounce(update, 150));
 }
 
+/* ---------- Pretext: exact-fit display type (the giant hero name fills its column live) ---------- */
+function fitOne(el) {
+  const text = (el.dataset.fitText || el.textContent || "").trim();
+  if (!text) return;
+  const cs = getComputedStyle(el);
+  const target = el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  if (target <= 0) return;
+  let max = parseFloat(el.dataset.fitMax) || 280;
+  const vh = parseFloat(el.dataset.fitVh);          // optional: cap size to a fraction of viewport height
+  if (vh) max = Math.min(max, innerHeight * vh);    // keeps a full-screen hero from overflowing on short laptops
+  const min = parseFloat(el.dataset.fitMin) || 22;
+  // Measure the REAL rendered width via a DOM probe: canvas measureText can't express
+  // font-optical-sizing or letter-spacing, so it mis-measures variable display type. The
+  // width is linear in font-size (all metrics are em-based), so one probe gives the exact fit.
+  const PROBE = 100;
+  const lsEm = (parseFloat(cs.letterSpacing) || 0) / (parseFloat(cs.fontSize) || 1);  // px→em so it scales with the probe
+  const probe = document.createElement("span");
+  probe.textContent = text;
+  probe.style.cssText = "position:absolute;left:-9999px;top:-9999px;white-space:nowrap;visibility:hidden;" +
+    `font:${cs.fontStyle} ${cs.fontWeight} ${PROBE}px/1 ${cs.fontFamily};letter-spacing:${(lsEm * PROBE).toFixed(3)}px;` +
+    `font-optical-sizing:${cs.fontOpticalSizing};font-variation-settings:${cs.fontVariationSettings};text-transform:${cs.textTransform};`;
+  document.body.appendChild(probe);
+  const w = probe.getBoundingClientRect().width;
+  probe.remove();
+  if (w <= 0) return;
+  const size = Math.max(min, Math.min(max, target * PROBE / w));
+  el.style.fontSize = size.toFixed(2) + "px";
+  el.classList.add("is-fitted");
+}
+async function initFit() {
+  const els = $$("[data-fit]");
+  if (!els.length) return;
+  try { await readyFonts(); } catch (e) {}
+  const run = () => els.forEach(fitOne);
+  run();
+  let raf;
+  addEventListener("resize", () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(run); }, { passive: true });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(run);
+}
+
 function init() {
   initTheme();
   initNav();
@@ -704,6 +747,7 @@ function init() {
   initYear();
   initClock();
   initCounters();
+  initFit();
   initCommandPalette();
   initPlay();
   initOrb();

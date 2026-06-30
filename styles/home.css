@@ -3,38 +3,88 @@
    craft, play, contact. Built on tokens.css + base.css.
    ========================================================================== */
 
-/* ---------- Hero (editorial: giant Fraunces name + serif statement) ---------- */
-.hero { position: relative; overflow: hidden; padding-block: clamp(2.25rem, 5.5vw, 3.75rem) clamp(2.25rem, 5vw, 3.5rem); }
-.hero__grid {
-  position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: 34px 34px;
-  -webkit-mask-image: radial-gradient(ellipse 72% 60% at 28% 8%, #000, transparent 76%);
-  mask-image: radial-gradient(ellipse 72% 60% at 28% 8%, #000, transparent 76%);
+/* ---------- Hero (editorial: meta rail + giant exact-fit name + section index) ---------- */
+.hero {
+  position: relative; overflow: hidden;
+  min-height: 100vh;                          /* fallback for browsers without svh */
+  min-height: calc(100svh - var(--nav-h));    /* fill the screen below the sticky nav */
+  display: flex; flex-direction: column;
+  padding-block: clamp(1rem, 2.5vw, 1.75rem) clamp(1.1rem, 2.8vw, 1.9rem);
+  border-bottom: 1px solid var(--border-strong);
 }
-.hero__inner { position: relative; z-index: 1; }
-.hero__status {
-  display: inline-flex; align-items: center; gap: 0.55em;
-  font-family: var(--font-mono); font-size: var(--fs-2xs); font-weight: 500; letter-spacing: 0.13em; text-transform: uppercase; color: var(--text-mute);
-  margin-bottom: clamp(0.9rem, 2.4vw, 1.3rem);
+.hero__inner { position: relative; z-index: 1; flex: 1 1 auto; align-content: center; display: grid; grid-template-columns: 1fr; gap: clamp(1.1rem, 3vw, 1.8rem); }
+@media (min-width: 720px) {
+  .hero__inner { grid-template-columns: clamp(112px, 15vw, 184px) 1fr; gap: clamp(1.25rem, 2.5vw, 2.25rem); align-items: end; }
 }
-.hero__status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--live); box-shadow: 0 0 0 3px color-mix(in srgb, var(--live) 26%, transparent); flex: none; }
+.hero__rail { display: flex; flex-direction: column; gap: 0.7rem; }
+@media (min-width: 720px) { .hero__rail { border-right: 1px solid var(--border-strong); padding-right: clamp(0.9rem, 1.8vw, 1.4rem); padding-bottom: 0.5rem; } }
+@media (max-width: 719px) { .hero__rail { flex-flow: row wrap; gap: 0.5rem 1.4rem; align-items: baseline; } }
+.hero__rail-row { display: flex; flex-direction: column; gap: 1px; font-family: var(--font-sans); font-size: var(--fs-sm); color: var(--text-dim); }
+.hero__rail-k { font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-mute); }
+.hero__rail-row a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--border-strong); transition: text-decoration-color var(--t); }
+.hero__rail-row a:hover { text-decoration-color: var(--accent); }
+.hero__rail .num { color: var(--text); }
+
+.hero__main { min-width: 0; }
+.hero__kicker { margin-bottom: clamp(0.7rem, 1.8vw, 1.1rem); }
 .hero__name {
   margin: 0; color: var(--text);
-  font-family: var(--font-display); font-weight: var(--w-display); font-optical-sizing: auto;
-  font-size: clamp(4.25rem, 20vw, 16.5rem); line-height: 0.84; letter-spacing: -0.02em;
+  font-family: var(--font-display); font-weight: var(--w-display); font-optical-sizing: none;
+  font-size: clamp(3.75rem, min(24vw, 15vh), 190px);   /* CLS fallback (sized under the text cut so it never clips pre-JS); JS fits it exactly */
+  line-height: 0.84; letter-spacing: -0.03em;
 }
-.hero__rule { height: 2px; background: var(--border-strong); margin: 0.45rem 0 clamp(1.4rem, 3vw, 1.9rem); border-radius: 2px; opacity: 0.9; }
-.hero__statement { font-family: var(--font-display); font-weight: var(--w-display); font-size: clamp(1.5rem, 1.1rem + 1.9vw, 2.45rem); line-height: 1.16; letter-spacing: -0.01em; color: var(--text-dim); max-width: 30ch; text-wrap: balance; }
+.hero__name-l { display: block; }
+.hero__name-l2 { display: flex; align-items: center; gap: clamp(0.5rem, 1.5vw, 1.1rem); }
+.hero__name-rule { flex: 1 1 auto; height: clamp(2px, 0.03em, 5px); background: var(--border-strong); border-radius: 2px; align-self: center; opacity: 0.9; }
+
+.hero__statement { font-family: var(--font-display); font-weight: var(--w-display); font-optical-sizing: none; font-size: var(--fs-2xl); line-height: 1.16; letter-spacing: -0.01em; color: var(--text-dim); max-width: 30ch; text-wrap: balance; margin-top: clamp(0.9rem, 2.2vw, 1.4rem); }
 .hero__statement em { font-style: italic; color: var(--accent); }
-.hero__lead { margin-top: clamp(1rem, 2.4vw, 1.4rem); max-width: 56ch; font-family: var(--font-sans); font-size: var(--fs-lg); line-height: 1.5; color: var(--text-dim); text-wrap: pretty; }
+.hero__lead { margin-top: 0.9rem; max-width: 56ch; font-family: var(--font-sans); font-size: var(--fs-lg); line-height: 1.5; color: var(--text-dim); text-wrap: pretty; }
 .hero__lead strong { color: var(--text); font-weight: var(--w-strong); }
-.hero__actions { margin-top: clamp(1.3rem, 3vw, 1.7rem); display: flex; flex-wrap: wrap; gap: 0.8rem; }
-.hero__stats { margin-top: clamp(1.8rem, 4.2vw, 2.5rem); padding-top: clamp(1.3rem, 3vw, 1.7rem); border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: clamp(1.5rem, 5vw, 2.75rem); }
-.hero__stat { display: flex; flex-direction: column; gap: 0.1rem; }
-.hero__stat-n { font-family: var(--font-display); font-weight: var(--w-heading); font-size: var(--fs-2xl); letter-spacing: -0.01em; color: var(--accent); line-height: 1; }
-.hero__stat-l { font-family: var(--font-sans); font-size: var(--fs-xs); color: var(--text-mute); }
-@media (max-width: 600px) { .hero__name { font-size: clamp(3.25rem, 19vw, 5.5rem); } }
+.hero__actions { margin-top: clamp(1.1rem, 2.6vw, 1.6rem); display: flex; flex-wrap: wrap; gap: 0.8rem; }
+
+@media (max-height: 860px) {
+  .hero__kicker { margin-bottom: 0.5rem; }
+  .hero__statement { margin-top: 0.7rem; }
+  .hero__lead { margin-top: 0.55rem; }
+  .hero__actions { margin-top: 0.9rem; }
+}
+@media (max-width: 600px) {
+  .hero__rail { display: none; }                        /* role + location already live in the kicker */
+  .hero__name-l2 { flex-wrap: wrap; row-gap: 0.1em; }
+  .hero__name-rule { flex: 1 1 100%; }
+  .hero__kicker { margin-bottom: 0.8rem; }
+  .hero__statement { margin-top: 1rem; }
+  .hero__lead { margin-top: 0.8rem; }
+  .hero__inner { padding-bottom: clamp(1.5rem, 7vh, 4rem); }
+}
+
+/* ---------- Section index — the hero's bottom "table of contents" strip ---------- */
+.index-rail {
+  display: flex; flex-wrap: wrap; gap: 0.2rem 1.6rem;
+  margin-top: clamp(1.1rem, 3vw, 1.9rem);
+  padding-top: clamp(0.75rem, 1.8vw, 1.05rem);
+  border-top: 1px solid var(--border-strong);
+}
+.index-rail a {
+  font-family: var(--font-sans); font-size: var(--fs-sm); font-weight: 500; color: var(--text-dim);
+  display: inline-flex; align-items: baseline; gap: 0.5em; padding-block: 0.2rem;
+  position: relative; transition: color var(--t);
+}
+.index-rail__n { font-family: var(--font-mono); font-size: var(--fs-2xs); color: var(--text-mute); transition: color var(--t); }
+.index-rail a:hover { color: var(--text); }
+.index-rail a:hover .index-rail__n, .index-rail a[aria-current="page"] .index-rail__n { color: var(--accent); }
+.index-rail a[aria-current="page"] { color: var(--text); }
+@media (max-width: 600px) {
+  .index-rail {
+    flex-wrap: nowrap; overflow-x: auto; gap: 1.3rem; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    --ml: 0px; --mr: 0px;   /* JS fades whichever edge still has items to swipe (initRailFade) */
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--ml), #000 calc(100% - var(--mr)), transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 var(--ml), #000 calc(100% - var(--mr)), transparent 100%);
+  }
+  .index-rail::-webkit-scrollbar { display: none; }
+  .index-rail a { white-space: nowrap; }
+}
 
 /* ---------- Section headers (modern: hairline rule + mono index) ---------- */
 .sec-head { margin-bottom: clamp(2rem, 5vw, 3rem); padding-top: clamp(0.9rem, 2vw, 1.3rem); border-top: 1px solid var(--border); }

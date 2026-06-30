@@ -24,6 +24,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  font-optical-sizing: none;   /* Fraunces: use the calmer text cut at all sizes (the display cut reads wonky) */
   overflow-x: hidden;
   transition: background var(--t) var(--ease), color var(--t) var(--ease);
 }
@@ -84,8 +85,8 @@ ul, ol { list-style: none; padding: 0; }
   font-family: var(--font-display);
   font-weight: var(--w-display);
   line-height: var(--lh-tight);
-  letter-spacing: -0.035em;
-  font-optical-sizing: auto;
+  letter-spacing: -0.025em;
+  font-optical-sizing: none;
 }
 h1, h2, h3 { font-family: var(--font-display); font-weight: var(--w-heading); line-height: var(--lh-snug); letter-spacing: -0.025em; }
 h2 { font-size: var(--fs-2xl); }

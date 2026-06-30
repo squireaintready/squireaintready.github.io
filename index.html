@@ -105,24 +105,34 @@
 
     <!-- ===================== Hero ===================== -->
     <section class="hero" aria-labelledby="hero-name">
-      <span class="hero__grid" aria-hidden="true"></span>
       <div class="hero__inner wrap wrap--wide">
-        <p class="hero__status"><span class="dot" aria-hidden="true"></span> Software &amp; AI Engineer · New York · open to work</p>
-        <h1 id="hero-name" class="hero__name">Samuel Jo</h1>
-        <div class="hero__rule" aria-hidden="true"></div>
-        <p class="hero__statement">I build <em>living products</em> — software that ships, then gets used every day.</p>
-        <p class="hero__lead">Full-stack and AI engineer. I take products from blank repo to production: <strong>type-safe interfaces, real-time game servers, civic-data pipelines over millions of records,</strong> and LLM features kept honest by the data behind them.</p>
-        <div class="hero__actions">
-          <a class="btn btn--primary" href="#work">See the work <span class="arrow" aria-hidden="true">→</span></a>
-          <a class="btn btn--ghost" href="#contact">Get in touch</a>
-        </div>
-        <div class="hero__stats">
-          <div class="hero__stat"><span class="hero__stat-n">5</span><span class="hero__stat-l">live products</span></div>
-          <div class="hero__stat"><span class="hero__stat-n"><span class="count" data-count-to="10.9" data-count-decimals="1" data-count-suffix="M+">10.9M+</span></span><span class="hero__stat-l">records · sub-100ms</span></div>
-          <div class="hero__stat"><span class="hero__stat-n">0→1</span><span class="hero__stat-l">sole engineer</span></div>
-          <div class="hero__stat"><span class="hero__stat-n" data-clock>—:—</span><span class="hero__stat-l">New York, now</span></div>
+        <aside class="hero__rail" aria-hidden="true">
+          <span class="hero__rail-row"><span class="hero__rail-k">Based</span> New York</span>
+          <span class="hero__rail-row"><span class="hero__rail-k">Local</span> <span class="num" data-clock>—:—</span></span>
+          <span class="hero__rail-row"><span class="hero__rail-k">Now</span> <a href="https://regwatch.nyc/" target="_blank" rel="noopener">RegWatch</a></span>
+          <span class="hero__rail-row"><span class="hero__rail-k">Shipped</span> <span class="num"><span class="count" data-count-to="5" data-count-decimals="0">5</span></span> live</span>
+        </aside>
+        <div class="hero__main">
+          <p class="kicker hero__kicker"><span class="kicker__dot kicker__dot--live"></span> Software &amp; AI Engineer · New York</p>
+          <h1 id="hero-name" class="hero__name display" data-fit data-fit-text="Samuel" data-fit-max="190" data-fit-vh="0.165" data-fit-min="44">
+            <span class="hero__name-l">Samuel</span>
+            <span class="hero__name-l hero__name-l2"><span>Jo</span><span class="hero__name-rule"></span></span>
+          </h1>
+          <p class="hero__statement">I build <em>living products</em> — software that ships, then gets used every day.</p>
+          <p class="hero__lead">Full-stack and AI engineer. I take products from blank repo to production: <strong>type-safe interfaces, real-time game servers, civic-data pipelines over millions of records,</strong> and LLM features kept honest by the data behind them.</p>
+          <div class="hero__actions">
+            <a class="btn btn--primary" href="#work">See the work <span class="arrow" aria-hidden="true">→</span></a>
+            <a class="btn btn--ghost" href="#contact">Get in touch</a>
+          </div>
         </div>
       </div>
+      <nav class="index-rail wrap wrap--wide" aria-label="Sections">
+        <a href="#work"><span class="index-rail__n">01</span> Work</a>
+        <a href="#about"><span class="index-rail__n">02</span> About</a>
+        <a href="#capabilities"><span class="index-rail__n">03</span> Capabilities</a>
+        <a href="#play"><span class="index-rail__n">04</span> Play</a>
+        <a href="#contact"><span class="index-rail__n">05</span> Contact</a>
+      </nav>
     </section>
 
     <!-- ===================== Work ===================== -->
@@ -341,7 +351,7 @@
         <p class="sec-head__meta"><span class="sec-head__n">04</span> Play</p>
         <h2 class="sec-head__title">Deal me in.</h2>
       </div>
-      <p class="play__lead reveal">Three-handed <a href="/work/facecard.html">Texas Hold'em</a> — you against the table. Everyone antes, then the betting opens on the flop, turn, and river: the opponents lead, call, or fold by Monte-Carlo equity off the same hand-ranking engine that runs <a href="/work/facecard.html">facecard</a>. Fold the whole table out and you take it down; otherwise the engine calls the showdown. Live in your browser.</p>
+      <p class="play__lead reveal">You vs. two bots that bet by live Monte-Carlo equity — the engine behind <a href="/work/facecard.html">facecard</a>.</p>
       <div class="play__hud reveal">
         <span class="play__stat">♦ <b id="play-chips">100</b> chips</span>
         <span class="play__stat">Ante <b>5</b></span>
