@@ -248,7 +248,7 @@ async function initCraftFlow() {
     discs.forEach((d) => { d.style.position = ""; d.style.left = ""; d.style.top = ""; d.style.width = ""; d.style.height = ""; d.style.transform = ""; });
 
     const W = flow.clientWidth;
-    if (W < 680) return; // narrow screens: normal stacked flow (CSS handles the seals)
+    if (W < 300) return; // ultra-narrow only: let the seals stack (CSS). Phones still flow.
 
     const cs = getComputedStyle(flow);
     const family = cs.fontFamily.split(",")[0].replace(/["']/g, "").trim();
@@ -257,8 +257,12 @@ async function initCraftFlow() {
     const realLh = fontPx * 1.72; // matches .craft__flow line-height (getComputedStyle lineHeight is unreliable cross-browser)
     const font = `${weight} ${fontPx}px '${family}'`;
 
-    const D = clamp(Math.round(W * 0.15), 112, 146), r = D / 2, gap = 20;
-    const homes = [{ x: 0, y: 0 }, { x: W - D, y: realLh * 5 }];
+    // Phones: smaller seals, tighter gap, and the 2nd seal dropped further so the pair
+    // staggers down the taller narrow column (text wraps one edge at a time, never a sliver).
+    const narrow = W < 680;
+    const D = narrow ? clamp(Math.round(W * 0.26), 86, 116) : clamp(Math.round(W * 0.15), 112, 146);
+    const r = D / 2, gap = narrow ? 14 : 20;
+    const homes = [{ x: 0, y: 0 }, { x: W - D, y: realLh * (narrow ? 7 : 5) }];
     const centers = seals.map((s, i) => { const h = homes[i] || { x: (i % 2) ? W - D : 0, y: realLh * (3 + i * 3) }; return { cx: h.x + r + s.dx, cy: h.y + r + s.dy }; });
 
     discs.forEach((d, i) => {
