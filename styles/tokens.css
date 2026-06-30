@@ -20,6 +20,15 @@
   font-style: normal;
   font-display: swap;
 }
+/* Just the capital J (1.6 KB) — Fraunces' J is hooked by design; Newsreader's sits clean
+   and upright. Used only for the "J" in the hero wordmark; everything else stays Fraunces. */
+@font-face {
+  font-family: "Newsreader J";
+  src: url("../assets/fonts/newsreader-j.woff2") format("woff2");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
 @font-face {
   font-family: "Source Serif 4";
   src: url("../assets/fonts/source-serif-4-latin.woff2") format("woff2");

@@ -38,6 +38,7 @@
   font-optical-sizing: auto;
 }
 .hero__name-l { display: block; }
+.hero__j { font-family: "Newsreader J", var(--font-display); font-optical-sizing: auto; font-weight: 500; } /* clean upright J; Fraunces' is hooked */
 .hero__name-l2 { display: flex; align-items: center; gap: clamp(0.5rem, 1.5vw, 1.1rem); }
 .hero__name-rule { flex: 1 1 auto; height: clamp(2px, 0.03em, 4px); background: var(--rule); border-radius: 2px; align-self: center; opacity: 0.9; }
 
