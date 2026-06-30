@@ -62,6 +62,10 @@
   .hero__kicker { margin-bottom: 0.8rem; }
   .hero__statement { margin-top: 1rem; }
   .hero__lead { margin-top: 0.8rem; }
+  /* Bias the (still centered) block up off dead-center so the name owns the top half
+     and the breathing room pools above the section rail. Shrinks the centering box
+     from the bottom; scales with viewport height so taller phones lift a touch more. */
+  .hero__inner { padding-bottom: clamp(1.5rem, 7vh, 4rem); }
 }
 /* very short phones (SE-class): tighten gaps + compact the lead so the full pitch fits one clean screen */
 @media (max-width: 600px) and (max-height: 760px) {
@@ -69,6 +73,7 @@
   .hero__kicker { margin-bottom: 0.45rem; }
   .hero__statement { margin-top: 0.65rem; }
   .hero__lead { margin-top: 0.5rem; font-size: var(--fs-sm); line-height: 1.45; }
+  .hero__inner { padding-bottom: 0; }   /* short screens already fill — keep it centered, no lift */
 }
 
 /* ---------- Section index — the hero's bottom "table of contents" strip ---------- */
@@ -348,6 +353,14 @@
 .holdem__seat { display: flex; flex-direction: column; align-items: center; gap: 0.45rem; }
 .holdem__seats .pcard { width: clamp(38px, 9vw, 58px); }   /* opponents read as "across the table" */
 .hcards { display: flex; justify-content: center; gap: clamp(5px, 1.5vw, 10px); min-height: clamp(67px, 15.4vw, 106px); }
+
+/* live opponent action — "bets 5" / "calls" / "folds" under each seat; a fold mucks the cards */
+.holdem__act { min-height: 1.15em; font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-mute); transition: color var(--t), opacity var(--t); }
+.holdem__act[data-act="in"] { color: var(--proj-ink, var(--accent)); }
+.holdem__act[data-act="fold"] { opacity: 0.5; }
+.holdem__seat .hcards { transition: opacity var(--t-slow) var(--ease), transform var(--t-slow) var(--ease), filter var(--t-slow) var(--ease); }
+.holdem__seat.is-folded .hcards { opacity: 0.3; filter: grayscale(0.55); transform: translateY(8px) scale(0.94); }
+.holdem__seat.is-folded .holdem__tag { opacity: 0.45; }
 
 /* a card: a back that flips to its face when .in is added; .is-best lifts the winning five */
 .pcard { width: clamp(48px, 11vw, 76px); aspect-ratio: 5 / 7; position: relative; transform-style: preserve-3d; transform: rotateY(0deg); transition: transform 0.55s var(--ease-spring), box-shadow var(--t); }
