@@ -352,7 +352,7 @@
 .holdem__seats { display: flex; justify-content: center; align-items: flex-start; gap: clamp(1.1rem, 6vw, 2.75rem); }
 .holdem__seat { display: flex; flex-direction: column; align-items: center; gap: 0.45rem; }
 .holdem__seats .pcard { width: clamp(38px, 9vw, 58px); }   /* opponents read as "across the table" */
-.hcards { display: flex; justify-content: center; gap: clamp(5px, 1.5vw, 10px); min-height: clamp(67px, 15.4vw, 106px); }
+.hcards { display: flex; justify-content: center; align-items: center; gap: clamp(5px, 1.5vw, 10px); min-height: clamp(67px, 15.4vw, 106px); }   /* center, don't stretch: keeps the smaller opponent cards at 5/7 */
 
 /* live opponent action — "bets 5" / "calls" / "folds" under each seat; a fold mucks the cards */
 .holdem__act { min-height: 1.15em; font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-mute); transition: color var(--t), opacity var(--t); }

@@ -673,6 +673,7 @@ function initPlay() {
       const facing = toCall > 0;
       ghost(foldBtn, "Fold", facing); ghost(checkBtn, "Check", !facing);
       setPrimary(facing ? `Call ${toCall}` : `Bet ${bet}`);
+      btn.focus({ preventScroll: true });            // the reused control was just re-shown; keep keyboard focus on it
       const done = (kind) => { ghost(foldBtn, "Fold", false); ghost(checkBtn, "Check", false); btn.hidden = true; onFold = onCheck = null; onPrimary = noop; resolve(kind); };
       onPrimary = () => done(facing ? "call" : "bet");
       onFold = () => done("fold");
@@ -704,7 +705,7 @@ function initPlay() {
   function endHand() {
     busy = false; handLive = false;
     ghost(foldBtn, "Fold", false); ghost(checkBtn, "Check", false); onFold = onCheck = null;
-    setPrimary(broke() ? "Reset chips" : "Deal again"); onPrimary = deal;
+    setPrimary(broke() ? "Reset chips" : "Deal again"); onPrimary = deal; btn.focus({ preventScroll: true });
   }
   function finishFold() {
     result.innerHTML = `<span class="muted">You fold — −${youIn}</span>`;
