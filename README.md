@@ -17,9 +17,9 @@ HTML and CSS with a thin layer of vanilla ES modules, typeset at runtime with
   measured and sized to fill their column exactly with `fitFontSize()`, re-fitting on resize.
 - **5-theme editorial design system** — warm-paper light + four dark themes, persisted in
   `localStorage`, set pre-paint to avoid flash, respects `prefers-color-scheme`.
-- **Interactive, by hand** — a playable five-card-draw poker game (Jacks-or-Better evaluator),
-  draggable wax-seal medallions that reverse spin on click, and a monogram that tilts in 3D
-  toward the cursor. All reduced-motion aware.
+- **Interactive, by hand** — a three-handed Texas Hold'em game (fold / check / raise, a
+  from-scratch best-of-seven hand evaluator), draggable wax-seal medallions that reverse spin
+  on tap, and a monogram that tilts in 3D toward the cursor. All reduced-motion aware.
 - **Accessible & fast** — one `<h1>` per page, landmarks, skip link, visible focus, WCAG-AA
   contrast in every theme, self-hosted fonts, no framework or bundler.
 

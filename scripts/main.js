@@ -465,7 +465,7 @@ function toast(msg) {
   clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove("is-on"), 2200);
 }
 
-/* ---------- Play: heads-up Texas Hold'em vs. the house (the game behind Tells) ---------- */
+/* ---------- Play: three-handed Texas Hold'em (the game behind Tells) ---------- */
 const SUITS = [{ s: "♠", red: false }, { s: "♥", red: true }, { s: "♦", red: true }, { s: "♣", red: false }];
 const RANKS = [
   { r: 2, l: "2" }, { r: 3, l: "3" }, { r: 4, l: "4" }, { r: 5, l: "5" }, { r: 6, l: "6" },
