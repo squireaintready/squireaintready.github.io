@@ -1,11 +1,12 @@
 /* ============================================================================
    tokens.css — design system for Samuel Jo's portfolio
-   One editorial language (Pretext "ink on warm paper") reconciling four apps.
-   Light ("Paper") is the default; four warm dark themes layer on (Ember = [data-theme="dark"],
-   plus Midnight, Bordeaux, Forest). All values flow through CSS custom properties — never hardcode.
+   One modern language across the work. Inter display + UI, system mono for labels.
+   Default theme = FOREST (bottle-green-black + warm tan/gold). Two more ship in the
+   ⌘K theme picker: PAPER (ink on warm paper) and INDIGO (deep indigo + periwinkle).
+   All values flow through CSS custom properties — never hardcode.
    ========================================================================== */
 
-/* ---- Fonts (self-hosted variable woff2; families match Pretext readyFonts) -- */
+/* ---- Fonts (self-hosted variable woff2) ---- */
 @font-face {
   font-family: "Inter Variable";
   src: url("../assets/fonts/inter-latin.woff2") format("woff2");
@@ -13,69 +14,49 @@
   font-style: normal;
   font-display: swap;
 }
-@font-face {
-  font-family: "Fraunces Variable";
-  src: url("../assets/fonts/fraunces-latin-v2.woff2") format("woff2");
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
-/* Just the capital J (1.6 KB) — Fraunces' J is hooked by design; Newsreader's sits clean
-   and upright. Used only for the "J" in the hero wordmark; everything else stays Fraunces. */
-@font-face {
-  font-family: "Newsreader J";
-  src: url("../assets/fonts/newsreader-j.woff2") format("woff2");
-  font-weight: 200 800;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Source Serif 4";
-  src: url("../assets/fonts/source-serif-4-latin.woff2") format("woff2");
-  font-weight: 200 900;
-  font-style: normal;
-  font-display: swap;
-}
 
 :root {
-  color-scheme: light;
-
-  /* ---- Type families ---- */
-  --font-display: "Fraunces Variable", "Fraunces", Georgia, "Times New Roman", serif;
+  /* ---- Type families (modern: Inter throughout, system mono for labels) ---- */
+  --font-display: "Inter Variable", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --font-sans: "Inter Variable", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-  --font-prose: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-prose: "Inter Variable", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Menlo", monospace;
 
   /* ---- Fluid type scale (clamp: min @360px → max @1280px) ---- */
-  --fs-2xs: 0.6875rem;                              /* 11px — mono micro-labels */
+  --fs-2xs: 0.6875rem;                                     /* 11px — mono micro-labels */
   --fs-xs:  clamp(0.75rem, 0.72rem + 0.12vw, 0.8125rem);   /* 12 → 13 */
   --fs-sm:  clamp(0.8125rem, 0.78rem + 0.16vw, 0.9375rem); /* 13 → 15 */
-  --fs-base: clamp(1rem, 0.96rem + 0.22vw, 1.1875rem);     /* 16 → 19 prose */
-  --fs-lg:  clamp(1.125rem, 1.05rem + 0.4vw, 1.375rem);    /* 18 → 22 */
+  --fs-base: clamp(1rem, 0.96rem + 0.22vw, 1.125rem);      /* 16 → 18 prose */
+  --fs-lg:  clamp(1.0625rem, 1rem + 0.32vw, 1.3125rem);    /* 17 → 21 */
   --fs-xl:  clamp(1.375rem, 1.2rem + 0.85vw, 1.875rem);    /* 22 → 30 */
-  --fs-2xl: clamp(1.75rem, 1.4rem + 1.7vw, 2.75rem);       /* 28 → 44 */
-  --fs-3xl: clamp(2.25rem, 1.6rem + 3.1vw, 4rem);          /* 36 → 64 */
-  --fs-display: clamp(3rem, 1.3rem + 8.2vw, 7.5rem);       /* 48 → 120 hero fallback */
+  --fs-2xl: clamp(1.65rem, 1.35rem + 1.55vw, 2.5rem);      /* 26 → 40 */
+  --fs-3xl: clamp(2.1rem, 1.55rem + 2.7vw, 3.5rem);        /* 34 → 56 */
+  --fs-display: clamp(2.75rem, 1.6rem + 5.6vw, 5rem);      /* 44 → 80 hero */
+
+  /* ---- Display weights (Inter wants bold where the old serif went light) ---- */
+  --w-display: 800;
+  --w-heading: 700;
+  --w-strong: 600;
 
   --lh-tight: 1.02;
-  --lh-snug: 1.16;
-  --lh-prose: 1.62;
-  --tracking-label: 0.18em;   /* small-caps kickers */
-  --tracking-wide: 0.28em;    /* wordmark */
+  --lh-snug: 1.1;
+  --lh-prose: 1.6;
+  --tracking-label: 0.14em;   /* mono kickers */
+  --tracking-wide: 0.2em;
 
   /* ---- Spacing (4px base) ---- */
   --s-1: 0.25rem;  --s-2: 0.5rem;  --s-3: 0.75rem; --s-4: 1rem;
   --s-5: 1.5rem;   --s-6: 2rem;    --s-7: 2.5rem;  --s-8: 3rem;
   --s-10: 4rem;    --s-12: 6rem;   --s-16: 8rem;   --s-20: 10rem;
 
-  /* ---- Radii (print-like, small) ---- */
-  --r-sm: 3px; --r: 5px; --r-lg: 8px; --r-xl: 14px; --r-pill: 999px;
+  /* ---- Radii (modern, soft) ---- */
+  --r-sm: 7px; --r: 10px; --r-lg: 12px; --r-xl: 16px; --r-pill: 999px;
 
   /* ---- Layout ---- */
   --maxw: 1080px;
   --maxw-wide: 1180px;
   --prose: 64ch;
-  --nav-h: 60px;
+  --nav-h: 62px;
   --gutter: clamp(1.25rem, 4vw, 2.75rem);
 
   /* ---- Motion ---- */
@@ -85,126 +66,119 @@
   --t-slower: 760ms;
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);  /* symmetric, for ambient drift */
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --ease-spring: cubic-bezier(0.2, 1.3, 0.4, 1);
 
-  /* ---- Subtle section texture (auto-themes) ---- */
-  --grid-line: color-mix(in srgb, var(--text) 7%, transparent);
-  --glass: color-mix(in srgb, var(--bg) 78%, transparent);  /* nav / palette backdrop */
-  --live: var(--up);                                        /* live pulse dot */
+  /* ---- Derived textures ---- */
+  --grid-line: color-mix(in srgb, var(--text) 6%, transparent);
+  --glass: color-mix(in srgb, var(--bg) 80%, transparent);  /* nav / palette backdrop */
+}
 
-  /* ---- Color: LIGHT (ink on warm paper) ---- */
+/* ============================================================================
+   FOREST — default. Bottle-green-black canvas, cream ink, warm tan/gold accent.
+   ========================================================================== */
+:root, [data-theme="forest"] {
+  color-scheme: dark;
+  --bg: #0b1310;
+  --bg-tint: #0f1814;
+  --surface: #121d17;
+  --surface-2: #17241d;
+  --border: #243a30;
+  --border-strong: #34503f;
+  --rule: #34503f;
+  --text: #edf1e7;
+  --text-dim: #b5bdab;
+  --text-mute: #828b79;
+  --accent: #e0bc8c;
+  --accent-strong: #eccfa3;
+  --accent-tint: rgba(224, 188, 140, 0.14);
+  --on-accent: #0b1310;
+  --up: #5bbf86;
+  --down: #e0796b;
+  --live: #5bbf86;
+  --selection: rgba(224, 188, 140, 0.22);
+  --shadow-1: 0 1px 0 rgba(255, 255, 255, 0.04);
+  --shadow-2: 0 22px 46px rgba(0, 0, 0, 0.45);
+  --shadow-3: 0 36px 80px rgba(0, 0, 0, 0.6);
+  /* per-project accents — lightened to read on the dark canvas */
+  --proj-crowdtells: #7aa6cf; --proj-crowdtells-ink: #8fb4d6;
+  --proj-regwatch:   #e2b878; --proj-regwatch-ink:   #e7c187;
+  --proj-miztips:    #8f8bf5; --proj-miztips-ink:    #a6a2f7;
+  --proj-tells:      #5fc995; --proj-tells-ink:      #6fd1a1;
+}
+
+/* ============================================================================
+   PAPER — ink on warm paper, forest-green accent (the light option).
+   ========================================================================== */
+[data-theme="paper"] {
+  color-scheme: light;
   --bg: #fbfaf7;
-  --bg-tint: #f7f4ee;
+  --bg-tint: #f4f1ea;
   --surface: #ffffff;
-  --surface-2: #f4f1ea;
+  --surface-2: #f6f3ec;
   --border: #e7e2d8;
   --border-strong: #d6cfc1;
-  --rule: #1c1a16;
+  --rule: #d6cfc1;
   --text: #1a1813;
   --text-dim: #54504a;
   --text-mute: #6f695e;
-  --accent: #27496d;
-  --accent-strong: #1b3650;
-  --accent-tint: rgba(39, 73, 109, 0.09);
-  --on-accent: #fbfaf7;
+  --accent: #1f6b49;
+  --accent-strong: #175238;
+  --accent-tint: rgba(31, 107, 73, 0.09);
+  --on-accent: #ffffff;
   --up: #1f7a4d;
   --down: #b23a2e;
-  --selection: rgba(39, 73, 109, 0.16);
-
+  --live: #1f7a4d;
+  --selection: rgba(31, 107, 73, 0.16);
   --shadow-1: 0 1px 0 var(--border);
   --shadow-2: 0 18px 40px rgba(28, 26, 22, 0.10);
   --shadow-3: 0 32px 70px rgba(28, 26, 22, 0.16);
-
-  /* ---- Per-project accent hues (distinct, drawn from each real app) ----
-     --proj-*      vivid: decorative fills (dots, rules, borders, hovers)
-     --proj-*-ink  darkened: TEXT, so it meets WCAG AA on warm paper        */
-  --proj-crowdtells: #27496d;  --proj-crowdtells-ink: #27496d;  /* ink-blue */
-  --proj-regwatch:   #c8862f;  --proj-regwatch-ink:   #8a5a16;  /* amber → bronze ink */
-  --proj-miztips:    #4f46e5;  --proj-miztips-ink:    #4338ca;  /* indigo */
-  --proj-tells:      #2f7d5b;  --proj-tells-ink:      #1f5a40;  /* felt green */
-  --proj: var(--accent);        /* default; overridden per [data-proj] */
-  --proj-ink: var(--accent);    /* text-safe default */
+  --proj-crowdtells: #27496d; --proj-crowdtells-ink: #27496d;
+  --proj-regwatch:   #c8862f; --proj-regwatch-ink:   #8a5a16;
+  --proj-miztips:    #4f46e5; --proj-miztips-ink:    #4338ca;
+  --proj-tells:      #2f7d5b; --proj-tells-ink:      #1f5a40;
 }
 
-/* Fallback for browsers without color-mix(): keep nav/palette/signal from breaking.
-   These tokens are inherited, so one rule covers every theme (--glass tracks --bg). */
+/* ============================================================================
+   INDIGO — deep indigo-black canvas, periwinkle accent.
+   ========================================================================== */
+[data-theme="indigo"] {
+  color-scheme: dark;
+  --bg: #0d0f24;
+  --bg-tint: #12152e;
+  --surface: #161a33;
+  --surface-2: #1c2140;
+  --border: #2a2f50;
+  --border-strong: #3a4068;
+  --rule: #3a4068;
+  --text: #ececfb;
+  --text-dim: #b3b4d8;
+  --text-mute: #8284ab;
+  --accent: #a6a2f7;
+  --accent-strong: #c4c1fb;
+  --accent-tint: rgba(166, 162, 247, 0.16);
+  --on-accent: #0d0f24;
+  --up: #6fd1a1;
+  --down: #e0796b;
+  --live: #6fd1a1;
+  --selection: rgba(166, 162, 247, 0.24);
+  --shadow-1: 0 1px 0 rgba(255, 255, 255, 0.04);
+  --shadow-2: 0 22px 46px rgba(0, 0, 0, 0.45);
+  --shadow-3: 0 36px 80px rgba(0, 0, 0, 0.6);
+  --proj-crowdtells: #7aa6cf; --proj-crowdtells-ink: #8fb4d6;
+  --proj-regwatch:   #e2b878; --proj-regwatch-ink:   #e7c187;
+  --proj-miztips:    #8f8bf5; --proj-miztips-ink:    #a6a2f7;
+  --proj-tells:      #5fc995; --proj-tells-ink:      #6fd1a1;
+}
+
+/* color-mix() fallback: keep nav/palette/grid from breaking on old engines */
 @supports not (color: color-mix(in srgb, white, black)) {
-  :root { --grid-line: rgba(127,127,127,0.14); --glass: var(--bg); }
+  :root { --grid-line: rgba(127, 127, 127, 0.12); --glass: var(--bg); }
 }
 
-/* Per-project accent application (set data-proj on a card or <body> of a case study) */
+/* ---- Default live token + per-project application (case studies set data-proj) ---- */
+:root { --proj: var(--accent); --proj-ink: var(--accent); }
 [data-proj="crowdtells"] { --proj: var(--proj-crowdtells); --proj-ink: var(--proj-crowdtells-ink); }
 [data-proj="regwatch"]   { --proj: var(--proj-regwatch);   --proj-ink: var(--proj-regwatch-ink); }
 [data-proj="miztips"]    { --proj: var(--proj-miztips);    --proj-ink: var(--proj-miztips-ink); }
 [data-proj="tells"]      { --proj: var(--proj-tells);      --proj-ink: var(--proj-tells-ink); }
-
-/* ---- Dark themes: shared foundation (semantic colors + per-project accents) ---- */
-[data-theme="dark"], [data-theme="midnight"], [data-theme="bordeaux"], [data-theme="forest"] {
-  color-scheme: dark;
-  --up: #5bbf86;
-  --down: #e0796b;
-  --shadow-1: 0 1px 0 rgba(255, 255, 255, 0.04);
-  --shadow-2: 0 22px 46px rgba(0, 0, 0, 0.45);
-  --shadow-3: 0 36px 80px rgba(0, 0, 0, 0.6);
-  /* lighten per-project accents so they read on dark (vivid + ink both lighten) */
-  --proj-crowdtells: #7aa6cf;  --proj-crowdtells-ink: #8fb4d6;
-  --proj-regwatch:   #e2b878;  --proj-regwatch-ink:   #e7c187;
-  --proj-miztips:    #8f8bf5;  --proj-miztips-ink:    #a6a2f7;
-  --proj-tells:      #5fc995;  --proj-tells-ink:      #6fd1a1;
-}
-
-/* Ember — warm dark & brass (data-theme key stays "dark" for saved prefs) */
-[data-theme="dark"] {
-  --bg: #13110c; --bg-tint: #181510; --surface: #1b1813; --surface-2: #221e18;
-  --border: #322c22; --border-strong: #463e30; --rule: #efe9dc;
-  --text: #f0ebe0; --text-dim: #b8b1a1; --text-mute: #8a8273;
-  --accent: #d6a35b; --accent-strong: #e6bd80; --accent-tint: rgba(214,163,91,0.13); --on-accent: #16130d;
-  --selection: rgba(214,163,91,0.22);
-}
-
-/* Midnight — deep navy + soft blue */
-[data-theme="midnight"] {
-  --bg: #0b1220; --bg-tint: #0f1828; --surface: #121c2e; --surface-2: #182338;
-  --border: #243349; --border-strong: #33455f; --rule: #e7edf6;
-  --text: #eaf0f8; --text-dim: #abb8cc; --text-mute: #7e8ba1;
-  --accent: #6fa8e0; --accent-strong: #8fc0f0; --accent-tint: rgba(111,168,224,0.14); --on-accent: #0a111e;
-  --selection: rgba(111,168,224,0.24);
-}
-
-/* Bordeaux — wine-black + antique brass */
-[data-theme="bordeaux"] {
-  --bg: #0f0608; --bg-tint: #160a0d; --surface: #1a0d11; --surface-2: #231116;
-  --border: #3a1f26; --border-strong: #532e37; --rule: #f1e7e2;
-  --text: #f3e9e6; --text-dim: #c9aeb0; --text-mute: #9c8186;
-  --accent: #d6a35b; --accent-strong: #e6bd80; --accent-tint: rgba(214,163,91,0.14); --on-accent: #140609;
-  --selection: rgba(214,163,91,0.22);
-}
-
-/* Forest — bottle-green-black + warm tan */
-[data-theme="forest"] {
-  --bg: #0b1310; --bg-tint: #0f1814; --surface: #121d17; --surface-2: #17241d;
-  --border: #243a30; --border-strong: #34503f; --rule: #eef1e7;
-  --text: #edf1e7; --text-dim: #b5bdab; --text-mute: #828b79;
-  --accent: #d8b483; --accent-strong: #e7cba0; --accent-tint: rgba(216,180,131,0.15); --on-accent: #0b1310;
-  --selection: rgba(216,180,131,0.22);
-}
-
-/* No-JS / system-preference fallback: when the OS is in dark mode and no explicit
-   theme is chosen, default to Forest (the flagship dark look).
-   (The theme toggle sets data-theme and takes precedence over this.) */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
-    color-scheme: dark;
-    --bg: #0b1310; --bg-tint: #0f1814; --surface: #121d17; --surface-2: #17241d;
-    --border: #243a30; --border-strong: #34503f; --rule: #eef1e7;
-    --text: #edf1e7; --text-dim: #b5bdab; --text-mute: #828b79;
-    --accent: #d8b483; --accent-strong: #e7cba0; --accent-tint: rgba(216,180,131,0.15);
-    --on-accent: #0b1310; --up: #5bbf86; --down: #e0796b; --selection: rgba(216,180,131,0.22);
-    --shadow-1: 0 1px 0 rgba(255,255,255,0.04);
-    --shadow-2: 0 22px 46px rgba(0,0,0,0.45);
-    --shadow-3: 0 36px 80px rgba(0,0,0,0.6);
-    --proj-crowdtells: #7aa6cf; --proj-regwatch: #e2b878; --proj-miztips: #8f8bf5; --proj-tells: #5fc995;
-    --proj-crowdtells-ink: #8fb4d6; --proj-regwatch-ink: #e7c187; --proj-miztips-ink: #a6a2f7; --proj-tells-ink: #6fd1a1;
-  }
-}

@@ -12,8 +12,8 @@
   transition: color var(--t), gap var(--t);
 }
 .case-back:hover { color: var(--proj-ink, var(--accent)); gap: 0.7em; }
-.case-title { font-size: clamp(2.75rem, 1.2rem + 7vw, 6.5rem); font-weight: 340; line-height: 0.95; letter-spacing: -0.03em; }
-.case-tagline { font-family: var(--font-display); font-weight: 360; font-size: var(--fs-xl); line-height: 1.2; color: var(--text-dim); max-width: 30ch; margin-top: clamp(0.9rem, 2vw, 1.4rem); text-wrap: balance; }
+.case-title { font-family: var(--font-display); font-size: clamp(2.75rem, 1.2rem + 6vw, 5.5rem); font-weight: var(--w-display); line-height: 0.98; letter-spacing: -0.04em; }
+.case-tagline { font-family: var(--font-display); font-weight: 500; font-size: var(--fs-xl); line-height: 1.25; color: var(--text-dim); max-width: 30ch; margin-top: clamp(0.9rem, 2vw, 1.4rem); text-wrap: balance; }
 .case-meta { margin-top: clamp(1.4rem, 3vw, 2rem); display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1rem; font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--text-mute); }
 .case-meta .sep { color: var(--border-strong); }
 .case-meta a { color: var(--proj-ink, var(--accent)); display: inline-flex; align-items: center; gap: 0.35em; font-weight: 500; }
@@ -56,7 +56,7 @@
 .case-content > .case-section + .case-section { margin-top: clamp(2.5rem, 6vw, 4rem); }
 .case-section__head { display: flex; align-items: baseline; gap: 0.7rem; margin-bottom: 1.25rem; }
 .case-section__n { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--proj-ink, var(--accent)); }
-.case-section h2 { font-size: var(--fs-2xl); font-weight: 380; }
+.case-section h2 { font-size: var(--fs-2xl); font-weight: var(--w-display); letter-spacing: -0.025em; }
 .case-section .prose { font-size: var(--fs-lg); line-height: 1.6; max-width: 60ch; }
 
 /* highlights */
@@ -67,7 +67,7 @@
 .highlight:hover::before { transform: scaleY(1); }
 .highlight:last-child { border-bottom: 1px solid var(--border); }
 .highlight__n { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--proj-ink, var(--accent)); padding-top: 0.3rem; }
-.highlight h3 { font-family: var(--font-display); font-weight: 460; font-size: var(--fs-lg); letter-spacing: -0.01em; line-height: 1.2; }
+.highlight h3 { font-family: var(--font-display); font-weight: var(--w-heading); font-size: var(--fs-lg); letter-spacing: -0.02em; line-height: 1.2; }
 .highlight p { grid-column: 2; color: var(--text-dim); font-size: var(--fs-base); line-height: 1.55; max-width: 58ch; }
 
 /* stat strip — small, contextual "by the numbers" (not big cards), animated count-up */
@@ -81,6 +81,6 @@
 .case-nav a { padding: clamp(1.75rem, 4vw, 2.75rem) 0; display: flex; flex-direction: column; gap: 0.4rem; transition: color var(--t); }
 .case-nav a:hover { color: var(--proj-ink, var(--accent)); }
 .case-nav .dir { font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-mute); }
-.case-nav .name { font-family: var(--font-display); font-size: var(--fs-xl); font-weight: 400; }
+.case-nav .name { font-family: var(--font-display); font-size: var(--fs-xl); font-weight: var(--w-heading); letter-spacing: -0.02em; }
 .case-nav a.next { text-align: right; align-items: flex-end; border-left: 1px solid var(--border); padding-left: 1.5rem; }
 .case-nav a.prev { padding-right: 1.5rem; }

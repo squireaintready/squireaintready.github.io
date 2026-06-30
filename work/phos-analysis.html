@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-7JHC95DWC3"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-7JHC95DWC3');
+  </script>
+  <title>phos-analysis — Case study · Samuel Jo</title>
+  <meta name="description" content="phos-analysis: an interactive equity-research report on First Phosphate Corp. (CSE: PHOS), read straight from SEDAR+ filings — a live coverage summary, bear-to-bull fair-value range, and a 10-section deep dive. Research &amp; education only." />
+  <link rel="canonical" href="https://samjo.me/work/phos-analysis.html" />
+  <meta property="og:url" content="https://samjo.me/work/phos-analysis.html" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0b1310" media="(prefers-color-scheme: dark)" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="phos-analysis — an interactive equity-research report" />
+  <meta property="og:description" content="Read First Phosphate Corp. straight from its filings — a live coverage summary, fair-value range, and a 10-section deep dive. Research &amp; education only." />
+  <meta property="og:image" content="https://samjo.me/public/img/shot-phos.png" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <script>(function(){try{var t=localStorage.getItem("theme");if(["forest","paper","indigo"].includes(t))document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+  <link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/styles/tokens.css" />
+  <link rel="stylesheet" href="/styles/base.css" />
+  <link rel="stylesheet" href="/styles/case.css" />
+  <script type="module" src="/scripts/main.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="scroll-progress" aria-hidden="true"><span class="scroll-progress__bar" data-progress></span></div>
+  <header class="site-nav">
+    <nav class="wrap wrap--wide site-nav__inner" aria-label="Primary">
+      <a class="brand" href="/" aria-label="Samuel Jo — home"><span class="brand__mark" aria-hidden="true"></span> Samuel&nbsp;Jo</a>
+      <div class="nav-links">
+        <a href="/#work">Work</a>
+        <a href="/#about">About</a>
+        <a href="/#contact">Contact</a>
+        <button class="cmdk-trigger" type="button" data-cmdk-open aria-label="Open command menu — search and jump anywhere">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <span class="cmdk-trigger__hint"><kbd>⌘</kbd><kbd>K</kbd></span>
+        </button>
+        <button class="theme-toggle" type="button" aria-label="Switch theme" title="Switch theme">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 14.2A8.2 8.2 0 0 1 9.8 3.5a.6.6 0 0 0-.82-.74 9.3 9.3 0 1 0 12.26 12.26.6.6 0 0 0-.74-.82Z"/></svg>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <article class="case">
+      <header class="case-hero wrap wrap--wide">
+        <a class="case-back" href="/#work"><span aria-hidden="true">←</span> All work</a>
+        <p class="kicker kicker--accent"><span class="kicker__dot"></span> Equity Research · Data Viz · Front-End</p>
+        <h1 class="case-title display" style="margin-top:1rem">phos-analysis</h1>
+        <p class="case-tagline">An interactive equity-research report — read a company straight from its filings.</p>
+        <div class="case-meta">
+          <span>Solo · research, modeling &amp; build</span><span class="sep">·</span>
+          <span>2026</span><span class="sep">·</span>
+          <span class="badge badge--live"><span class="dot" aria-hidden="true"></span> Live</span>
+          <span class="sep">·</span>
+          <a href="https://phos-analysis.vercel.app/" target="_blank" rel="noopener">phos-analysis.vercel.app <span class="arrow" aria-hidden="true">↗</span></a>
+        </div>
+      </header>
+
+      <figure class="case-shot wrap wrap--wide reveal">
+        <div class="case-shot__frame"><img src="/public/img/shot-phos.png" width="1500" height="940" alt="The phos-analysis report — a First Phosphate Corp. equity-research header with a live coverage-summary card showing share price, fair-value range, market cap, PEA NPV/IRR and cash runway." loading="lazy" /></div>
+        <figcaption>phos-analysis.vercel.app — an equity report read straight from the filings.</figcaption>
+      </figure>
+
+      <div class="case-body wrap wrap--wide">
+        <aside class="case-aside">
+          <div class="fact"><p class="fact__label">Role</p><p class="fact__value">Solo — research, financial modeling &amp; front-end</p></div>
+          <div class="fact"><p class="fact__label">Stack</p><p class="fact__value"><span class="chip">JavaScript</span><span class="chip">Data viz</span><span class="chip">Live market data</span><span class="chip">Vercel</span></p></div>
+          <div class="fact"><p class="fact__label">Scope</p><p class="fact__value">A 10-section interactive report</p></div>
+          <div class="fact"><p class="fact__label">Sources</p><p class="fact__value">SEDAR+ regulatory filings + delayed market data</p></div>
+          <div class="fact"><p class="fact__label">Status</p><p class="fact__value">Live · research &amp; education only</p></div>
+          <div class="fact"><p class="fact__label">Links</p><p class="fact__value"><a class="tlink" href="https://phos-analysis.vercel.app/" target="_blank" rel="noopener">Open the report <span class="arrow" aria-hidden="true">↗</span></a></p></div>
+        </aside>
+
+        <div class="case-content">
+          <section class="case-section reveal">
+            <div class="case-section__head"><span class="case-section__n">01</span><h2>The report</h2></div>
+            <div class="prose">
+              <p>phos-analysis is an interactive equity-research report on <strong>First Phosphate Corp.</strong> (CSE: PHOS / OTCQX: FRSPF / FSE: KD0) — the only pure-play LFP-battery phosphate developer on a North-American exchange. It reads the company straight from its filings: the project, the market, the balance sheet, the peers, and what the price implies.</p>
+              <p>The whole thing is one long, navigable document — ten sections from snapshot and thesis through project, market, supply chain, financials, capital, valuation, management and ESG — with a live coverage summary pinned up top.</p>
+            </div>
+          </section>
+
+          <section class="case-section reveal">
+            <div class="case-section__head"><span class="case-section__n">02</span><h2>Highlights</h2></div>
+            <div class="highlights">
+              <div class="highlight"><span class="highlight__n">01</span><h3>Live coverage summary</h3><p>Share price (15-minute delayed), a bear-to-bull fair-value range, market cap, market-cap-to-NAV, PEA NPV and IRR, and cash runway — the whole picture at a glance.</p></div>
+              <div class="highlight"><span class="highlight__n">02</span><h3>Straight from the filings</h3><p>Every figure is sourced from SEDAR+ regulatory filings through Q3 FY2026, not press releases — so the numbers trace back to a primary document.</p></div>
+              <div class="highlight"><span class="highlight__n">03</span><h3>Built like a product</h3><p>A ⌘K command palette, section navigation, the same modern type system, and a fully responsive layout — a research report that behaves like software.</p></div>
+              <div class="highlight"><span class="highlight__n">04</span><h3>Honest by design</h3><p>Clearly labeled <strong>research &amp; education only — not investment advice</strong>, with every data vintage shown.</p></div>
+            </div>
+          </section>
+
+          <section class="case-section reveal">
+            <div class="case-section__head"><span class="case-section__n">03</span><h2>How it's built</h2></div>
+            <div class="prose">
+              <p>A vanilla-JavaScript front end pulls delayed market data, renders the fair-value range and financial tables as lightweight data-viz, and deploys on Vercel. No framework — just the data, the filings, and a clean reading experience.</p>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <nav class="case-nav wrap wrap--wide" aria-label="More work">
+        <a class="prev" href="/work/miztips.html"><span class="dir">← Prev</span><span class="name">miztips</span></a>
+        <a class="next" href="/work/crowdtells.html"><span class="dir">Next →</span><span class="name">Crowdtells</span></a>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap wrap--wide footer-grid">
+      <div><a class="brand" href="/"><span class="brand__mark" aria-hidden="true"></span> Samuel&nbsp;Jo</a><p class="footer-cred" style="margin-top:.6rem; max-width:34ch">Software &amp; AI engineer in New York. Building products people use every day.</p></div>
+      <nav class="cluster" style="--cluster-gap:1.2rem" aria-label="Footer">
+        <a href="/#work">Work</a><a href="/#about">About</a><a href="/#contact">Contact</a>
+        <a href="https://github.com/squireaintready" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://www.linkedin.com/in/samuel-jo/" target="_blank" rel="noopener">LinkedIn</a>
+      </nav>
+    </div>
+    <p class="wrap wrap--wide footer-cred" style="margin-top:2rem; color:var(--text-mute)">© <span data-year>2026</span> Samuel Jo · Hand-built in HTML, CSS &amp; vanilla JS — no frameworks.</p>
+  </footer>
+</body>
+</html>

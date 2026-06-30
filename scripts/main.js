@@ -1,17 +1,13 @@
 /* ============================================================================
    main.js — progressive enhancement for the portfolio.
    The site is fully functional with JS disabled; this layer adds:
-     • theme picker (5 themes) with persistence
+     • theme picker (Forest / Paper / Indigo) with persistence
      • sticky nav: scrolled state, active-section links, scroll progress
-     • reveal-on-scroll, exact-fit display type (Pretext), inline count-ups
+     • reveal-on-scroll + inline count-ups
      • live New York clock + current year
      • ⌘K command palette (jump / open / theme / connect)
-     • The Craft: prose that genuinely flows around the seals (Pretext flowAround),
-       which you can drag to re-flow (wide) or reposition (narrow)
-     • interactive monogram orb (About) and a poker mini-game (Play)
+     • a heads-up Texas Hold'em mini-game (Play) — the engine behind facecard
    ========================================================================== */
-import { readyFonts, fitFontSize, flowAround } from "../assets/vendor/lib.js";
-
 const prefersReduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -24,13 +20,11 @@ const LINKS = { github: "https://github.com/squireaintready", linkedin: "https:/
 
 /* ---------- Theme ---------- */
 function systemTheme() { return matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; }
-function currentTheme() { return document.documentElement.getAttribute("data-theme") || systemTheme(); }
+function currentTheme() { return document.documentElement.getAttribute("data-theme") || "forest"; }
 const THEMES = [
-  { id: "light", name: "Paper", note: "Ink on warm paper" },
   { id: "forest", name: "Forest", note: "Bottle-green & tan" },
-  { id: "dark", name: "Ember", note: "Warm dark & brass" },
-  { id: "midnight", name: "Midnight", note: "Deep navy & blue" },
-  { id: "bordeaux", name: "Bordeaux", note: "Wine-black & brass" },
+  { id: "paper", name: "Paper", note: "Ink on warm paper" },
+  { id: "indigo", name: "Indigo", note: "Deep indigo & periwinkle" },
 ];
 function applyTheme(id) {
   document.documentElement.setAttribute("data-theme", id);
@@ -142,33 +136,6 @@ function initReveals() {
   items.forEach((el) => obs.observe(el));
 }
 
-/* ---------- Pretext: exact-fit display type ---------- */
-function fitOne(el) {
-  const text = (el.dataset.fitText || el.textContent || "").trim();
-  if (!text) return;
-  const cs = getComputedStyle(el);
-  const family = cs.fontFamily.split(",")[0].replace(/["']/g, "").trim();
-  const weight = parseInt(cs.fontWeight, 10) || 360;
-  const target = el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-  if (target <= 0) return;
-  let max = parseFloat(el.dataset.fitMax) || 280;
-  const vh = parseFloat(el.dataset.fitVh);          // optional: cap size to a fraction of viewport height
-  if (vh) max = Math.min(max, innerHeight * vh);    // keeps a full-screen hero from overflowing on short laptops
-  const min = parseFloat(el.dataset.fitMin) || 22;
-  const size = fitFontSize(text, { family: `'${family}'`, weight, target, min, max });
-  el.style.fontSize = size.toFixed(2) + "px";
-  el.classList.add("is-fitted");
-}
-async function initFit() {
-  const els = $$("[data-fit]");
-  if (!els.length) return;
-  try { await readyFonts(); } catch (e) {}
-  const run = () => els.forEach(fitOne);
-  run();
-  let raf;
-  addEventListener("resize", () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(run); }, { passive: true });
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(run);
-}
 
 /* ---------- Year + live New York clock ---------- */
 function initYear() { $$("[data-year]").forEach((el) => { el.textContent = new Date().getFullYear(); }); }
@@ -205,136 +172,6 @@ function initCounters() {
   els.forEach((el) => { const dec = +(el.dataset.countDecimals || 0); el.textContent = fmt(0, dec) + (el.dataset.countSuffix || ""); obs.observe(el); });
 }
 
-/* ---------- The Craft: real Pretext flow of prose around the seal ---------- */
-async function initCraftFlow() {
-  const flow = $("[data-craft-flow]");
-  if (!flow) return;
-  const p = flow.querySelector("p");
-  const discs = $$(".craft__disc", flow);
-  if (!p || !discs.length) return;
-
-  // build a plain string + per-character bold mask from the paragraph's DOM
-  const runs = [];
-  p.childNodes.forEach((node) => {
-    const bold = node.nodeType === 1 && node.tagName === "STRONG";
-    const text = node.textContent;
-    if (text) runs.push({ text, bold });
-  });
-  let plain = "", mask = [];
-  runs.forEach((r) => { plain += r.text; for (let i = 0; i < r.text.length; i++) mask.push(r.bold); });
-
-  try { await readyFonts(); } catch (e) {}
-  let lineEls = [];
-  const seals = discs.map(() => ({ dx: 0, dy: 0 })); // per-seal drag offset
-
-  function lineHTML(text, offset) {
-    // wrap consecutive bold chars in <strong>, escaping HTML; trims trailing space
-    const t = text.replace(/\s+$/, "");
-    let html = "", buf = "", cur = null;
-    const flush = () => { if (!buf) return; html += cur ? `<strong>${escapeHTML(buf)}</strong>` : escapeHTML(buf); buf = ""; };
-    for (let i = 0; i < t.length; i++) {
-      const b = !!mask[offset + i];
-      if (b !== cur) { flush(); cur = b; }
-      buf += t[i];
-    }
-    flush();
-    return html;
-  }
-
-  function build() {
-    lineEls.forEach((e) => e.remove()); lineEls = [];
-    flow.classList.remove("is-flowing");
-    flow.style.height = "";
-    discs.forEach((d) => { d.style.position = ""; d.style.left = ""; d.style.top = ""; d.style.width = ""; d.style.height = ""; d.style.transform = ""; });
-
-    const W = flow.clientWidth;
-    if (W < 300) return; // ultra-narrow only: let the seals stack (CSS). Phones still flow.
-
-    const cs = getComputedStyle(flow);
-    const family = cs.fontFamily.split(",")[0].replace(/["']/g, "").trim();
-    const weight = parseInt(cs.fontWeight, 10) || 400;
-    const fontPx = parseFloat(cs.fontSize);
-    const realLh = fontPx * 1.72; // matches .craft__flow line-height (getComputedStyle lineHeight is unreliable cross-browser)
-    const font = `${weight} ${fontPx}px '${family}'`;
-
-    // Phones: smaller seals, tighter gap, and the 2nd seal dropped further so the pair
-    // staggers down the taller narrow column (text wraps one edge at a time, never a sliver).
-    const narrow = W < 680;
-    const D = narrow ? clamp(Math.round(W * 0.26), 86, 116) : clamp(Math.round(W * 0.15), 112, 146);
-    const r = D / 2, gap = narrow ? 14 : 20;
-    const homes = [{ x: 0, y: 0 }, { x: W - D, y: realLh * (narrow ? 7 : 5) }];
-    const centers = seals.map((s, i) => { const h = homes[i] || { x: (i % 2) ? W - D : 0, y: realLh * (3 + i * 3) }; return { cx: h.x + r + s.dx, cy: h.y + r + s.dy }; });
-
-    discs.forEach((d, i) => {
-      const c = centers[i];
-      d.style.position = "absolute"; d.style.left = "0"; d.style.top = "0"; d.style.width = D + "px"; d.style.height = D + "px";
-      d.style.transform = `translate(${(c.cx - r).toFixed(1)}px, ${(c.cy - r).toFixed(1)}px)`;
-    });
-
-    const halfAt = (cy, yMid) => { const dy = Math.abs(yMid - cy); return dy < r ? Math.sqrt(r * r - dy * dy) : 0; };
-    const bounds = (yMid) => {
-      let xs = 0, xe = W;
-      for (const c of centers) { const hw = halfAt(c.cy, yMid); if (!hw) continue; if (c.cx < W / 2) xs = Math.max(xs, c.cx + hw + gap); else xe = Math.min(xe, c.cx - hw - gap); }
-      return { xs: Math.max(0, xs), xe: Math.min(W, xe) };
-    };
-
-    const res = flowAround(plain, font, { lineHeight: realLh, widthAt: (yMid) => { const b = bounds(yMid); return Math.max(50, b.xe - b.xs); }, minWidth: 50 });
-    if (!res.lines.length) return;
-
-    flow.classList.add("is-flowing");
-    let offset = 0;
-    res.lines.forEach((ln) => {
-      const yMid = ln.y + realLh * 0.5, b = bounds(yMid);
-      const d = document.createElement("div");
-      d.className = "craft__line"; d.setAttribute("aria-hidden", "true");
-      d.innerHTML = lineHTML(ln.text, offset);
-      d.style.transform = `translate(${b.xs.toFixed(1)}px, ${ln.y.toFixed(1)}px)`;
-      d.style.width = (b.xe - b.xs) + "px";
-      flow.appendChild(d); lineEls.push(d);
-      offset += ln.text.length;
-    });
-    flow.style.height = Math.ceil(res.height + realLh * 0.4) + "px";
-  }
-
-  // Drag a seal. Wide screens (flowing): move its center and reflow the prose around it.
-  // Narrow screens (stacked, no flow): translate it directly via --dx/--dy, clamped on-screen.
-  // A tap (no real drag, in either mode) reverses the spin.
-  let raf = 0;
-  const schedule = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; build(); }); };
-  discs.forEach((disc, i) => {
-    const s = seals[i], seal = disc.querySelector(".seal"), ring = disc.querySelector(".seal__ring");
-    // s.dx/s.dy = flow offset (wide, drives reflow); tx/ty = translate offset (narrow, drives --dx/--dy).
-    // Kept separate so a resize across the breakpoint never carries one mode's offset into the other.
-    let dragging = false, sx = 0, sy = 0, ox = 0, oy = 0, moved = 0, pid = null, rev = false, mx = 0, my = 0, tx = 0, ty = 0;
-    disc.addEventListener("pointerdown", (e) => {
-      dragging = true; moved = 0; pid = e.pointerId; sx = e.clientX; sy = e.clientY;
-      const flowing = flow.classList.contains("is-flowing");
-      ox = flowing ? s.dx : tx; oy = flowing ? s.dy : ty;
-      const D = disc.offsetWidth || 130; mx = Math.max(40, (flow.clientWidth - D) / 2 - 4); my = 132; // clamp range (narrow mode)
-      disc.classList.add("is-grabbing"); try { disc.setPointerCapture(pid); } catch (_) {}
-    });
-    disc.addEventListener("pointermove", (e) => {
-      if (!dragging) return;
-      const mvx = e.clientX - sx, mvy = e.clientY - sy;
-      moved = Math.max(moved, Math.abs(mvx) + Math.abs(mvy));
-      if (flow.classList.contains("is-flowing")) { s.dx = ox + mvx; s.dy = oy + mvy; schedule(); }       // wide: reflow
-      else {                                                                                              // narrow: translate, clamped
-        tx = clamp(ox + mvx, -mx, mx); ty = clamp(oy + mvy, -my, my);
-        disc.style.setProperty("--dx", tx.toFixed(1) + "px"); disc.style.setProperty("--dy", ty.toFixed(1) + "px");
-      }
-    });
-    const end = () => {
-      if (!dragging) return; dragging = false; disc.classList.remove("is-grabbing");
-      if (pid != null) { try { disc.releasePointerCapture(pid); } catch (_) {} pid = null; }
-      if (moved < 6 && ring && seal) { rev = !rev; ring.style.animationDirection = rev ? "reverse" : "normal"; seal.classList.add("is-spun"); clearTimeout(seal._t); seal._t = setTimeout(() => seal.classList.remove("is-spun"), 1200); }
-    };
-    disc.addEventListener("pointerup", end); disc.addEventListener("pointercancel", end);
-  });
-
-  build();
-  addEventListener("resize", debounce(build, 180));
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(build);
-}
 
 /* ---------- Command palette (⌘K) ---------- */
 const IC = {
@@ -357,9 +194,9 @@ function initCommandPalette() {
   const theme = (t) => ({ group: "Theme", iconHTML: `<span class="sw sw-${t.id}"></span>`, title: t.name, sub: t.note, kw: "theme " + t.name + " " + t.note, keepOpen: true, run: () => { applyTheme(t.id); render(input.value); } });
 
   const COMMANDS = [
-    nav("work", "Work"), nav("about", "About"), nav("capabilities", "Capabilities"), nav("craft", "The Craft"), nav("play", "Play"), nav("contact", "Contact"),
-    live("Crowdtells", "https://crowdtells.com/"), live("RegWatch", "https://regwatch.nyc/"), live("Tells", "https://facer-fti6.onrender.com/"), live("miztips", "https://miztips.vercel.app/"),
-    study("Crowdtells", "/work/crowdtells.html"), study("RegWatch", "/work/regwatch.html"), study("Tells", "/work/tells.html"), study("miztips", "/work/miztips.html"),
+    nav("work", "Work"), nav("about", "About"), nav("capabilities", "Capabilities"), nav("play", "Play"), nav("contact", "Contact"),
+    live("Crowdtells", "https://crowdtells.com/"), live("RegWatch", "https://regwatch.nyc/"), live("facecard", "https://facer-fti6.onrender.com/"), live("miztips", "https://miztips.vercel.app/"), live("phos-analysis", "https://phos-analysis.vercel.app/"),
+    study("Crowdtells", "/work/crowdtells.html"), study("RegWatch", "/work/regwatch.html"), study("facecard", "/work/facecard.html"), study("miztips", "/work/miztips.html"), study("phos-analysis", "/work/phos-analysis.html"),
     ...THEMES.map(theme),
     { group: "Connect", icon: IC.copy, title: "Copy email", sub: EMAIL, kw: "copy email address clipboard", run: () => copyEmail() },
     { group: "Connect", icon: IC.mail, title: "Email me", sub: EMAIL, kw: "email contact write", run: () => openExt("mailto:" + EMAIL) },
@@ -469,7 +306,7 @@ function toast(msg) {
   clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove("is-on"), 2200);
 }
 
-/* ---------- Play: three-handed Texas Hold'em (the game behind Tells) ---------- */
+/* ---------- Play: three-handed Texas Hold'em (the game behind facecard) ---------- */
 const SUITS = [{ s: "♠", red: false }, { s: "♥", red: true }, { s: "♦", red: true }, { s: "♣", red: false }];
 const RANKS = [
   { r: 2, l: "2" }, { r: 3, l: "3" }, { r: 4, l: "4" }, { r: 5, l: "5" }, { r: 6, l: "6" },
@@ -482,7 +319,7 @@ const cardName = (c) => `${RANK_NAME[c.l] || c.l} of ${SUIT_NAME[c.s]}`;
 const HAND_NAMES = ["High Card", "Pair", "Two Pair", "Three of a Kind", "Straight", "Flush", "Full House", "Four of a Kind", "Straight Flush"];
 
 // Score a 5-card hand as a comparable array [category, ...tiebreakers] — the same ranking
-// (categories + kickers) the Tells engine uses to settle a showdown.
+// (categories + kickers) the facecard engine uses to settle a showdown.
 function rank5(cards) {
   const rs = cards.map((c) => c.r), suits = cards.map((c) => c.s);
   const flush = suits.every((s) => s === suits[0]);
@@ -867,8 +704,6 @@ function init() {
   initYear();
   initClock();
   initCounters();
-  initFit();
-  initCraftFlow();
   initCommandPalette();
   initPlay();
   initOrb();

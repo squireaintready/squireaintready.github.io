@@ -3,119 +3,52 @@
    craft, play, contact. Built on tokens.css + base.css.
    ========================================================================== */
 
-/* ---------- Hero (bold editorial) ---------- */
-.hero {
-  position: relative; overflow: hidden;
-  min-height: 100vh;                          /* fallback for browsers without svh */
-  min-height: calc(100svh - var(--nav-h));    /* fill the screen below the sticky nav */
-  display: flex; flex-direction: column;
-  padding-block: clamp(1rem, 2.5vw, 1.75rem) clamp(1.1rem, 2.8vw, 1.9rem);
-  border-bottom: 2px solid var(--rule);
+/* ---------- Hero (modern) ---------- */
+.hero { position: relative; overflow: hidden; padding-block: clamp(3.25rem, 8vw, 5.5rem) clamp(2.25rem, 5vw, 3.5rem); }
+.hero__grid {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 34px 34px;
+  -webkit-mask-image: radial-gradient(ellipse 64% 58% at 64% 0%, #000, transparent 76%);
+  mask-image: radial-gradient(ellipse 64% 58% at 64% 0%, #000, transparent 76%);
 }
-.hero__inner { position: relative; z-index: 1; flex: 1 1 auto; align-content: center; display: grid; grid-template-columns: 1fr; gap: clamp(1.1rem, 3vw, 1.8rem); }
-@media (min-width: 720px) {
-  .hero__inner { grid-template-columns: clamp(112px, 15vw, 184px) 1fr; gap: clamp(1.25rem, 2.5vw, 2.25rem); align-items: end; }
+.hero__inner { position: relative; z-index: 1; }
+.hero__status {
+  display: inline-flex; align-items: center; gap: 0.55em;
+  font-family: var(--font-sans); font-size: var(--fs-sm); font-weight: 600; color: var(--text-dim);
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 0.4rem 0.85rem; border-radius: var(--r-pill); margin-bottom: clamp(1.1rem, 3vw, 1.6rem);
 }
-.hero__rail { display: flex; flex-direction: column; gap: 0.7rem; }
-@media (min-width: 720px) { .hero__rail { border-right: 1px solid var(--border-strong); padding-right: clamp(0.9rem, 1.8vw, 1.4rem); padding-bottom: 0.5rem; } }
-@media (max-width: 719px) { .hero__rail { flex-flow: row wrap; gap: 0.5rem 1.4rem; align-items: baseline; } }
-.hero__rail-row { display: flex; flex-direction: column; gap: 1px; font-family: var(--font-sans); font-size: var(--fs-sm); color: var(--text-dim); }
-.hero__rail-k { font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-mute); }
-.hero__rail-row a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--border-strong); transition: text-decoration-color var(--t); }
-.hero__rail-row a:hover { text-decoration-color: var(--accent); }
-.hero__rail .num { color: var(--text); }
-
-.hero__main { min-width: 0; }
-.hero__kicker { margin-bottom: clamp(0.7rem, 1.8vw, 1.1rem); }
-.hero__name {
+.hero__status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--live); box-shadow: 0 0 0 3px color-mix(in srgb, var(--live) 26%, transparent); flex: none; }
+.hero__headline {
   margin: 0; color: var(--text);
-  font-family: var(--font-display); font-weight: 420;
-  /* Fallback tuned to land within a few px of the Pretext fit so the name doesn't jump on load
-     (CLS): mirrors the fit's own caps — width (~29vw) and viewport height (16.5vh, = data-fit-vh),
-     clamped to data-fit-max (190px). JS then sets the exact size. */
-  font-size: clamp(4.5rem, min(29vw, 16.5vh), 190px);
-  line-height: 0.82; letter-spacing: -0.04em;
-  font-optical-sizing: auto;
+  font-family: var(--font-display); font-weight: var(--w-display);
+  font-size: var(--fs-display); line-height: var(--lh-tight); letter-spacing: -0.04em;
+  max-width: 17ch; text-wrap: balance;
 }
-.hero__name-l { display: block; }
-.hero__j { font-family: "Newsreader J", var(--font-display); font-optical-sizing: auto; font-weight: 500; } /* clean upright J; Fraunces' is hooked */
-.hero__name-l2 { display: flex; align-items: center; gap: clamp(0.5rem, 1.5vw, 1.1rem); }
-.hero__name-rule { flex: 1 1 auto; height: clamp(2px, 0.03em, 4px); background: var(--rule); border-radius: 2px; align-self: center; opacity: 0.9; }
+.hero__headline em { font-style: normal; color: var(--accent); }
+.hero__lead { margin-top: clamp(1.1rem, 2.6vw, 1.5rem); max-width: 56ch; font-family: var(--font-sans); font-size: var(--fs-lg); line-height: 1.5; color: var(--text-dim); text-wrap: pretty; }
+.hero__lead strong { color: var(--text); font-weight: var(--w-strong); }
+.hero__actions { margin-top: clamp(1.4rem, 3vw, 1.9rem); display: flex; flex-wrap: wrap; gap: 0.8rem; }
+.hero__stats { margin-top: clamp(1.9rem, 4.5vw, 2.6rem); padding-top: clamp(1.4rem, 3vw, 1.8rem); border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: clamp(1.5rem, 5vw, 2.75rem); }
+.hero__stat { display: flex; flex-direction: column; gap: 0.15rem; }
+.hero__stat-n { font-family: var(--font-display); font-weight: var(--w-display); font-size: var(--fs-xl); letter-spacing: -0.02em; color: var(--accent); }
+.hero__stat-l { font-family: var(--font-sans); font-size: var(--fs-xs); color: var(--text-mute); }
+@media (max-width: 600px) { .hero__headline { font-size: clamp(2.6rem, 11vw, 3.4rem); } }
 
-.hero__statement { font-family: var(--font-display); font-weight: 360; font-size: var(--fs-2xl); line-height: 1.12; letter-spacing: -0.015em; color: var(--text-dim); max-width: 28ch; text-wrap: balance; margin-top: clamp(0.9rem, 2.2vw, 1.4rem); }
-.hero__statement em { font-style: italic; color: var(--text); }
-.hero__lead { margin-top: 0.9rem; max-width: 56ch; }
-.hero__actions { margin-top: clamp(1.1rem, 2.6vw, 1.6rem); display: flex; flex-wrap: wrap; gap: 0.8rem; }
-
-/* short viewports (laptops, landscape phones): tighten gaps + signal so the hero stays one clean screen */
-@media (max-height: 860px) {
-  .hero__kicker { margin-bottom: 0.5rem; }
-  .hero__statement { margin-top: 0.7rem; }
-  .hero__lead { margin-top: 0.55rem; }
-  .hero__actions { margin-top: 0.9rem; }
-}
-/* ---------- Mobile hero: lead with the name; drop the dense meta rail; rule on its own row ---------- */
-@media (max-width: 600px) {
-  .hero__rail { display: none; }                        /* role + location already live in the kicker */
-  .hero__name-l2 { flex-wrap: wrap; row-gap: 0.1em; }   /* "Jo" sits on its own row ... */
-  .hero__name-rule { flex: 1 1 100%; }                  /* ... the rule drops to its own full-width row */
-  .hero__kicker { margin-bottom: 0.8rem; }
-  .hero__statement { margin-top: 1rem; }
-  .hero__lead { margin-top: 0.8rem; }
-  /* Bias the (still centered) block up off dead-center so the name owns the top half
-     and the breathing room pools above the section rail. Shrinks the centering box
-     from the bottom; scales with viewport height so taller phones lift a touch more. */
-  .hero__inner { padding-bottom: clamp(1.5rem, 7vh, 4rem); }
-}
-/* very short phones (SE-class): tighten gaps + compact the lead so the full pitch fits one clean screen */
-@media (max-width: 600px) and (max-height: 760px) {
-  .hero__name-l2 { row-gap: 0; }
-  .hero__kicker { margin-bottom: 0.45rem; }
-  .hero__statement { margin-top: 0.65rem; }
-  .hero__lead { margin-top: 0.5rem; font-size: var(--fs-sm); line-height: 1.45; }
-  .hero__inner { padding-bottom: 0; }   /* short screens already fill — keep it centered, no lift */
-}
-
-/* ---------- Section index — the hero's bottom "table of contents" strip ---------- */
-.index-rail {
-  display: flex; flex-wrap: wrap; gap: 0.2rem 1.6rem;
-  margin-top: clamp(1.1rem, 3vw, 1.9rem);        /* min gap from hero content when the screen is tight */
-  padding-top: clamp(0.75rem, 1.8vw, 1.05rem);
-  border-top: 1px solid var(--border-strong);
-}
-.index-rail a {
-  font-family: var(--font-sans); font-size: var(--fs-sm); font-weight: 500; color: var(--text-dim);
-  display: inline-flex; align-items: baseline; gap: 0.5em; padding-block: 0.2rem;
-  position: relative; transition: color var(--t);
-}
-.index-rail__n { font-family: var(--font-mono); font-size: var(--fs-2xs); color: var(--text-mute); transition: color var(--t); }
-.index-rail a:hover { color: var(--text); }
-.index-rail a:hover .index-rail__n, .index-rail a[aria-current="page"] .index-rail__n { color: var(--accent); }
-.index-rail a[aria-current="page"] { color: var(--text); }
-@media (max-width: 600px) {
-  .index-rail {
-    flex-wrap: nowrap; overflow-x: auto; gap: 1.3rem; scrollbar-width: none; -webkit-overflow-scrolling: touch;
-    --ml: 0px; --mr: 0px;   /* JS fades whichever edge still has items to swipe (see initRailFade) */
-    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--ml), #000 calc(100% - var(--mr)), transparent 100%);
-    mask-image: linear-gradient(90deg, transparent 0, #000 var(--ml), #000 calc(100% - var(--mr)), transparent 100%);
-  }
-  .index-rail::-webkit-scrollbar { display: none; }
-  .index-rail a { white-space: nowrap; }
-}
-
-/* ---------- Section headers (bold editorial: heavy top rule + big index) ---------- */
-.sec-head { margin-bottom: clamp(2rem, 5vw, 3rem); padding-top: clamp(0.9rem, 2vw, 1.3rem); border-top: 2px solid var(--rule); }
+/* ---------- Section headers (modern: hairline rule + mono index) ---------- */
+.sec-head { margin-bottom: clamp(2rem, 5vw, 3rem); padding-top: clamp(0.9rem, 2vw, 1.3rem); border-top: 1px solid var(--border); }
 .sec-head__meta { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--text-mute); letter-spacing: 0.12em; text-transform: uppercase; display: flex; align-items: center; gap: 0.7em; }
 .sec-head__n { color: var(--proj-ink, var(--accent)); font-weight: 600; }
-.sec-head__title { font-family: var(--font-display); font-size: var(--fs-3xl); font-weight: 400; max-width: 20ch; text-wrap: balance; margin-top: 0.55rem; letter-spacing: -0.025em; line-height: 1.0; }
+.sec-head__title { font-family: var(--font-display); font-size: var(--fs-3xl); font-weight: var(--w-display); max-width: 20ch; text-wrap: balance; margin-top: 0.55rem; letter-spacing: -0.03em; line-height: 1.04; }
 .sec-head--center { text-align: center; }
 .sec-head--center .sec-head__meta { justify-content: center; }
 .sec-head--center .sec-head__title { margin-inline: auto; max-width: none; }
 
 /* ---------- Subtle per-section backgrounds (full-bleed, CSS-only, behind content) ----------
    Each motif nods to the section's meaning; all kept very low-contrast so text stays clean. */
-#work, #about, #capabilities, #play, #contact { position: relative; isolation: isolate; }
-#work::before, #about::before, #capabilities::before, #play::before, #contact::before {
+#work, #capabilities, #play, #contact { position: relative; isolation: isolate; }
+#work::before, #capabilities::before, #play::before, #contact::before {
   content: ""; position: absolute; z-index: -1; inset-block: 0; left: 50%; width: 100vw; transform: translateX(-50%);
   pointer-events: none; background-repeat: no-repeat;
 }
@@ -124,12 +57,6 @@
   background:
     radial-gradient(46% 55% at 90% 4%, color-mix(in srgb, var(--proj-crowdtells) 7%, transparent), transparent 70%),
     radial-gradient(var(--grid-line) 1px, transparent 1.6px) 0 0 / 24px 24px;
-}
-/* About — a warm soft glow on a tinted band */
-#about::before {
-  background:
-    radial-gradient(55% 70% at 10% 0%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 66%),
-    var(--bg-tint);
 }
 /* Capabilities — a faint engineering grid + glow */
 #capabilities::before {
@@ -164,7 +91,7 @@
 .feature__body { min-width: 0; }
 .feature__meta { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.9rem; }
 .feature__index { font-family: var(--font-mono); font-size: var(--fs-sm); color: var(--proj-ink, var(--accent)); letter-spacing: 0.1em; }
-.feature__title { font-family: var(--font-display); font-weight: 360; font-size: clamp(2.5rem, 1.4rem + 4.4vw, 4.25rem); line-height: 0.98; letter-spacing: -0.025em; color: var(--text); }
+.feature__title { font-family: var(--font-display); font-weight: var(--w-display); font-size: clamp(2.1rem, 1.4rem + 3.4vw, 3.5rem); line-height: 1.0; letter-spacing: -0.035em; color: var(--text); }
 .feature__role { font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: 0.14em; text-transform: uppercase; color: var(--proj-ink, var(--accent)); margin-top: 0.7rem; }
 .feature__desc { margin-top: 1.1rem; font-size: var(--fs-lg); line-height: 1.55; color: var(--text-dim); max-width: 46ch; }
 .feature__desc .count { color: var(--text); font-weight: 600; }
@@ -200,49 +127,28 @@
 /* ---------- Also shipped ---------- */
 .more { margin-top: clamp(3.5rem, 8vw, 6rem); }
 .more__head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding-bottom: 0.9rem; border-bottom: 1px solid var(--border-strong); }
-.more__title { font-family: var(--font-display); font-weight: 400; font-size: var(--fs-xl); letter-spacing: -0.01em; }
+.more__title { font-family: var(--font-display); font-weight: var(--w-heading); font-size: var(--fs-xl); letter-spacing: -0.02em; }
 .more__head .tlink { color: var(--text-dim); }
 .more__list { display: grid; grid-template-columns: 1fr; }
 @media (min-width: 760px) { .more__list { grid-template-columns: 1fr 1fr; column-gap: 2.5rem; } }
 .more-item a { display: block; padding: 1.05rem 0.35rem; border-bottom: 1px solid var(--border); transition: background var(--t-fast); }
 .more-item a:hover { background: var(--surface-2); }
 .more-item__top { display: flex; align-items: baseline; gap: 0.7rem; }
-.more-item__name { font-family: var(--font-display); font-weight: 460; font-size: var(--fs-lg); color: var(--text); letter-spacing: -0.01em; }
+.more-item__name { font-family: var(--font-display); font-weight: var(--w-heading); font-size: var(--fs-lg); color: var(--text); letter-spacing: -0.02em; }
 .more-item__lang { font-family: var(--font-mono); font-size: var(--fs-2xs); color: var(--proj-ink, var(--text-mute)); letter-spacing: 0.04em; }
 .more-item__go { margin-left: auto; color: var(--text-mute); transition: transform var(--t) var(--ease), color var(--t); }
 .more-item a:hover .more-item__go { color: var(--proj-ink, var(--accent)); transform: translate(2px, -2px); }
 .more-item__desc { margin-top: 0.3rem; font-family: var(--font-sans); font-size: var(--fs-sm); color: var(--text-dim); line-height: 1.45; max-width: 46ch; }
 
-/* ---------- About (prose flows around a monogram) ---------- */
-.about__grid { display: block; }
-.about__shape {
-  float: right; shape-outside: circle(50%);
-  width: clamp(150px, 28vw, 250px); aspect-ratio: 1;
-  margin: 0.4rem 0 1rem 1.6rem; position: relative; perspective: 820px;
-}
-.about__orb { position: absolute; inset: 0; transform-style: preserve-3d; animation: about-float 7s ease-in-out infinite; }
-@keyframes about-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
-.about__orb-face {
-  position: absolute; inset: 0; border-radius: 50%; display: grid; place-items: center;
-  background: radial-gradient(120% 120% at 30% 25%, color-mix(in srgb, var(--accent) 22%, var(--surface)) 0%, var(--surface-2) 60%, var(--surface) 100%);
-  border: 1px solid var(--border); box-shadow: var(--shadow-2);
-  transform-style: preserve-3d; transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
-  transition: transform 0.2s var(--ease-out); cursor: pointer; -webkit-user-select: none; user-select: none;
-}
-.about__monogram { font-family: var(--font-display); font-weight: 360; font-size: clamp(3.2rem, 10vw, 6rem); color: var(--accent); letter-spacing: -0.04em; line-height: 1; transform: translateZ(30px); }
-.about__monogram.is-pop { animation: orb-pop 0.55s var(--ease-spring); }
-@keyframes orb-pop {
-  0% { transform: translateZ(30px) scale(1); }
-  35% { transform: translateZ(46px) scale(1.16); }
-  70% { transform: translateZ(30px) scale(0.97); }
-  100% { transform: translateZ(30px) scale(1); }
-}
-.about__shape .ring { position: absolute; inset: -1px; border-radius: 50%; border: 1px solid var(--proj, var(--accent)); opacity: 0.28; transform: translateZ(14px); }
-.about__body { font-size: var(--fs-lg); line-height: 1.62; color: var(--text-dim); }
+/* ---------- About (modern, text + fact grid) ---------- */
+.about__body { font-size: var(--fs-lg); line-height: 1.62; color: var(--text-dim); max-width: 64ch; }
 .about__body p + p { margin-top: 1.1rem; }
-.about__body strong { color: var(--text); font-weight: 600; }
-@media (prefers-reduced-motion: reduce) { .about__orb { animation: none; } .about__orb-face { transition: none; } .about__monogram.is-pop { animation: none; } }
-@media (max-width: 600px) { .about__shape { width: clamp(116px, 33vw, 150px); margin: 0.3rem 0 0.7rem 1.2rem; } }
+.about__body strong { color: var(--text); font-weight: var(--w-strong); }
+.about__meta { margin-top: clamp(1.6rem, 4vw, 2.4rem); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; }
+.about__fact { background: var(--surface); padding: 1.1rem 1.2rem; }
+.about__fact dt { font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-mute); }
+.about__fact dd { margin-top: 0.35rem; font-family: var(--font-sans); font-size: var(--fs-sm); color: var(--text); font-weight: var(--w-strong); }
+.about__fact dd .num { color: var(--accent); }
 
 /* ---------- Capabilities ---------- */
 .cap-feature {
@@ -255,7 +161,7 @@
 .cap-feature__head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
 .cap-feature__label { font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: 0.16em; text-transform: uppercase; color: var(--proj-ink, var(--accent)); display: inline-flex; align-items: center; gap: 0.5em; }
 .cap-feature__tag { font-family: var(--font-mono); font-size: var(--fs-2xs); color: var(--text-mute); }
-.cap-feature__lead { font-family: var(--font-display); font-weight: 360; font-size: clamp(1.3rem, 1rem + 1.3vw, 1.85rem); line-height: 1.2; letter-spacing: -0.015em; color: var(--text); max-width: 34ch; margin-top: 0.9rem; text-wrap: balance; }
+.cap-feature__lead { font-family: var(--font-display); font-weight: var(--w-heading); font-size: clamp(1.3rem, 1rem + 1.3vw, 1.85rem); line-height: 1.2; letter-spacing: -0.025em; color: var(--text); max-width: 34ch; margin-top: 0.9rem; text-wrap: balance; }
 .cap-feature__lead em { font-style: italic; color: var(--proj-ink, var(--accent)); }
 .cap-feature__chips { margin-top: 1.4rem; display: flex; flex-wrap: wrap; gap: 0.55rem; }
 .cap-chip { font-family: var(--font-sans); font-size: var(--fs-xs); font-weight: 500; color: var(--text-dim); background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-pill); padding: 0.4rem 0.85rem; transition: border-color var(--t), color var(--t), transform var(--t-fast); }
@@ -270,50 +176,9 @@
 .skill-list li { font-family: var(--font-sans); font-size: var(--fs-sm); color: var(--text-dim); padding-block: 0.35rem; line-height: 1.4; }
 .skill-list li b { color: var(--text); font-weight: 600; }
 
-/* ---------- The Craft (real Pretext text-flow around the seal) ---------- */
-.craft { background: radial-gradient(50% 60% at 14% 8%, color-mix(in srgb, var(--accent) 5%, transparent), transparent 70%), var(--bg-tint); border-block: 1px solid var(--border); }
-.craft__head { margin-bottom: clamp(1.75rem, 4vw, 2.75rem); }
-.craft__title { max-width: 18ch; }
-.craft__flow {
-  position: relative;
-  font-family: var(--font-prose); font-size: var(--fs-lg); line-height: 1.72; color: var(--text-dim);
-  max-width: 72ch;
-}
-.craft__flow strong { color: var(--text); font-weight: 600; }
-.craft__flow > p { margin: 0; }
-/* The self-referential "flow around the seals" clause is only literally true while the prose
-   actually flows (wide / JS flow mode ≥680px). On narrow screens the seals stack, so hide it —
-   on wide screens the flowed lines render it from the source <p>, so its display is moot there. */
-.craft__wide-note { display: none; }
-@media (min-width: 680px) { .craft__wide-note { display: inline; } }
-
-/* the seal */
-.craft__disc {
-  width: clamp(122px, 30vw, 150px); aspect-ratio: 1;
-  display: block; margin: 0 auto 1.4rem;
-  cursor: grab; touch-action: none; -webkit-user-select: none; user-select: none;
-  transform: translate(var(--dx, 0px), var(--dy, 0px)); will-change: transform;
-}
-.craft__disc.is-grabbing { cursor: grabbing; }
-
-/* CSS-float fallback (no JS): text wraps via shape-outside on wide screens */
-@media (min-width: 820px) {
-  .craft__disc { float: left; shape-outside: circle(50%); shape-margin: 0.9rem; margin: 0.1rem 1.1rem 0.6rem 0; }
-}
-/* JS flow mode: the <p> is kept for screen readers; visual lines are placed absolutely */
-.craft__flow.is-flowing > p { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; }
-.craft__flow.is-flowing .craft__disc { float: none; position: absolute; top: 0; left: 0; margin: 0; }
-.craft__line { position: absolute; top: 0; left: 0; white-space: pre; will-change: transform; }
-.craft__line strong { color: var(--text); font-weight: 600; }
-
-.craft__principles { margin-top: clamp(2.5rem, 6vw, 3.5rem); display: grid; grid-template-columns: 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; }
-@media (min-width: 680px) { .craft__principles { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 980px) { .craft__principles { grid-template-columns: repeat(4, 1fr); } }
-.principle { background: var(--surface); padding: 1.3rem 1.4rem; transition: background var(--t); }
-.principle:hover { background: var(--surface-2); }
-.principle__n { font-family: var(--font-mono); font-size: var(--fs-2xs); color: var(--accent); letter-spacing: 0.1em; }
-.principle h3 { font-family: var(--font-display); font-weight: 460; font-size: var(--fs-lg); margin-top: 0.5rem; letter-spacing: -0.01em; }
-.principle p { margin-top: 0.4rem; font-family: var(--font-sans); font-size: var(--fs-sm); color: var(--text-mute); line-height: 1.5; }
+/* ---------- Contact sign-off seal ---------- */
+.contact__seal { display: flex; justify-content: center; margin-bottom: clamp(1.6rem, 4vw, 2.4rem); }
+.contact__seal .seal { width: clamp(104px, 17vw, 136px); animation: none; }
 
 /* ---------- Spinning seal ---------- */
 .seal { width: clamp(122px, 30vw, 150px); aspect-ratio: 1; position: relative; color: var(--proj-ink, var(--accent)); flex: none; animation: seal-float 9s ease-in-out infinite; }
@@ -375,7 +240,7 @@
 .pcard__face .suit { font-size: clamp(0.9rem, 3.2vw, 1.35rem); line-height: 1; margin-top: 2px; }
 .pcard.red .pcard__face { color: #b23a2e; }
 
-.play__result { font-family: var(--font-display); font-weight: 380; font-size: var(--fs-2xl); letter-spacing: -0.015em; min-height: 3rem; color: var(--text); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.15rem; }
+.play__result { font-family: var(--font-display); font-weight: var(--w-heading); font-size: var(--fs-2xl); letter-spacing: -0.02em; min-height: 3rem; color: var(--text); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.15rem; }
 .play__result .muted { color: var(--text-mute); font-size: var(--fs-base); }
 .play__hands { font-family: var(--font-sans); font-size: var(--fs-sm); font-weight: 500; color: var(--text-mute); letter-spacing: 0; }
 .play__hands b { color: var(--text); font-weight: 600; }
@@ -388,7 +253,8 @@
 
 /* ---------- Contact ---------- */
 .contact { text-align: center; }
-.contact__title { font-size: var(--fs-display); font-weight: 340; line-height: 0.95; letter-spacing: -0.03em; }
+.contact__title { font-family: var(--font-display); font-size: var(--fs-display); font-weight: var(--w-display); line-height: 0.98; letter-spacing: -0.04em; }
+.contact__title em { font-style: normal; color: var(--accent); }
 .contact__lead { margin: 1.25rem auto 0; max-width: 42ch; color: var(--text-dim); font-size: var(--fs-lg); }
 .contact__actions { margin-top: 2rem; display: flex; flex-wrap: wrap; gap: 0.8rem; justify-content: center; }
 .contact__alt { margin-top: 1.75rem; font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--text-mute); display: inline-flex; align-items: center; gap: 0.5em; width: 100%; justify-content: center; }

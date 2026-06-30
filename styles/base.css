@@ -82,12 +82,12 @@ ul, ol { list-style: none; padding: 0; }
 /* ---------- Typography ---------- */
 .display {
   font-family: var(--font-display);
-  font-weight: 360;
+  font-weight: var(--w-display);
   line-height: var(--lh-tight);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.035em;
   font-optical-sizing: auto;
 }
-h1, h2, h3 { font-family: var(--font-display); font-weight: 400; line-height: var(--lh-snug); letter-spacing: -0.015em; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: var(--w-heading); line-height: var(--lh-snug); letter-spacing: -0.025em; }
 h2 { font-size: var(--fs-2xl); }
 h3 { font-size: var(--fs-xl); }
 
@@ -190,9 +190,11 @@ kbd {
 .theme-toggle:hover { color: var(--text); border-color: var(--border-strong); }
 .theme-toggle:active { transform: scale(0.92); }
 .theme-toggle svg { width: 16px; height: 16px; }
-.theme-toggle .icon-moon { display: none; }
-:is([data-theme="dark"], [data-theme="midnight"], [data-theme="bordeaux"], [data-theme="forest"]) .theme-toggle .icon-sun { display: none; }
-:is([data-theme="dark"], [data-theme="midnight"], [data-theme="bordeaux"], [data-theme="forest"]) .theme-toggle .icon-moon { display: block; }
+/* default theme is Forest (dark) → show the moon; Paper (light) flips to the sun */
+.theme-toggle .icon-sun { display: none; }
+.theme-toggle .icon-moon { display: block; }
+[data-theme="paper"] .theme-toggle .icon-sun { display: block; }
+[data-theme="paper"] .theme-toggle .icon-moon { display: none; }
 
 /* Theme picker popover (built by JS; wraps the toggle) */
 .theme-menu { position: relative; display: inline-flex; }
@@ -215,11 +217,9 @@ kbd {
 .theme-opt .sw { width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(127,127,127,0.4); flex: none; }
 .theme-opt .check { margin-left: auto; opacity: 0; color: var(--accent); font-size: var(--fs-sm); }
 .theme-opt[aria-checked="true"] .check { opacity: 1; }
-.sw-light    { background: linear-gradient(135deg, #fbfaf7 50%, #27496d 50%); }
-.sw-dark     { background: linear-gradient(135deg, #1b1813 50%, #d6a35b 50%); }
-.sw-midnight { background: linear-gradient(135deg, #121c2e 50%, #6fa8e0 50%); }
-.sw-bordeaux { background: linear-gradient(135deg, #1a0d11 50%, #d6a35b 50%); }
-.sw-forest   { background: linear-gradient(135deg, #121d17 50%, #d8b483 50%); }
+.sw-forest { background: linear-gradient(135deg, #0f1814 50%, #e0bc8c 50%); }
+.sw-paper  { background: linear-gradient(135deg, #fbfaf7 50%, #1f6b49 50%); }
+.sw-indigo { background: linear-gradient(135deg, #12152e 50%, #a6a2f7 50%); }
 
 /* ---------- Command palette (⌘K) ---------- */
 .cmdk {
