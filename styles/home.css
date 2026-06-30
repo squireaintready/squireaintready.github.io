@@ -3,38 +3,38 @@
    craft, play, contact. Built on tokens.css + base.css.
    ========================================================================== */
 
-/* ---------- Hero (modern) ---------- */
-.hero { position: relative; overflow: hidden; padding-block: clamp(3.25rem, 8vw, 5.5rem) clamp(2.25rem, 5vw, 3.5rem); }
+/* ---------- Hero (editorial: giant Fraunces name + serif statement) ---------- */
+.hero { position: relative; overflow: hidden; padding-block: clamp(2.25rem, 5.5vw, 3.75rem) clamp(2.25rem, 5vw, 3.5rem); }
 .hero__grid {
   position: absolute; inset: 0; z-index: 0; pointer-events: none;
   background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 34px 34px;
-  -webkit-mask-image: radial-gradient(ellipse 64% 58% at 64% 0%, #000, transparent 76%);
-  mask-image: radial-gradient(ellipse 64% 58% at 64% 0%, #000, transparent 76%);
+  -webkit-mask-image: radial-gradient(ellipse 72% 60% at 28% 8%, #000, transparent 76%);
+  mask-image: radial-gradient(ellipse 72% 60% at 28% 8%, #000, transparent 76%);
 }
 .hero__inner { position: relative; z-index: 1; }
 .hero__status {
   display: inline-flex; align-items: center; gap: 0.55em;
-  font-family: var(--font-sans); font-size: var(--fs-sm); font-weight: 600; color: var(--text-dim);
-  background: var(--surface); border: 1px solid var(--border);
-  padding: 0.4rem 0.85rem; border-radius: var(--r-pill); margin-bottom: clamp(1.1rem, 3vw, 1.6rem);
+  font-family: var(--font-mono); font-size: var(--fs-2xs); font-weight: 500; letter-spacing: 0.13em; text-transform: uppercase; color: var(--text-mute);
+  margin-bottom: clamp(0.9rem, 2.4vw, 1.3rem);
 }
 .hero__status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--live); box-shadow: 0 0 0 3px color-mix(in srgb, var(--live) 26%, transparent); flex: none; }
-.hero__headline {
+.hero__name {
   margin: 0; color: var(--text);
-  font-family: var(--font-display); font-weight: var(--w-display);
-  font-size: var(--fs-display); line-height: var(--lh-tight); letter-spacing: -0.04em;
-  max-width: 17ch; text-wrap: balance;
+  font-family: var(--font-display); font-weight: var(--w-display); font-optical-sizing: auto;
+  font-size: clamp(4.25rem, 20vw, 16.5rem); line-height: 0.84; letter-spacing: -0.02em;
 }
-.hero__headline em { font-style: normal; color: var(--accent); }
-.hero__lead { margin-top: clamp(1.1rem, 2.6vw, 1.5rem); max-width: 56ch; font-family: var(--font-sans); font-size: var(--fs-lg); line-height: 1.5; color: var(--text-dim); text-wrap: pretty; }
+.hero__rule { height: 2px; background: var(--border-strong); margin: 0.45rem 0 clamp(1.4rem, 3vw, 1.9rem); border-radius: 2px; opacity: 0.9; }
+.hero__statement { font-family: var(--font-display); font-weight: var(--w-display); font-size: clamp(1.5rem, 1.1rem + 1.9vw, 2.45rem); line-height: 1.16; letter-spacing: -0.01em; color: var(--text-dim); max-width: 30ch; text-wrap: balance; }
+.hero__statement em { font-style: italic; color: var(--accent); }
+.hero__lead { margin-top: clamp(1rem, 2.4vw, 1.4rem); max-width: 56ch; font-family: var(--font-sans); font-size: var(--fs-lg); line-height: 1.5; color: var(--text-dim); text-wrap: pretty; }
 .hero__lead strong { color: var(--text); font-weight: var(--w-strong); }
-.hero__actions { margin-top: clamp(1.4rem, 3vw, 1.9rem); display: flex; flex-wrap: wrap; gap: 0.8rem; }
-.hero__stats { margin-top: clamp(1.9rem, 4.5vw, 2.6rem); padding-top: clamp(1.4rem, 3vw, 1.8rem); border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: clamp(1.5rem, 5vw, 2.75rem); }
-.hero__stat { display: flex; flex-direction: column; gap: 0.15rem; }
-.hero__stat-n { font-family: var(--font-display); font-weight: var(--w-display); font-size: var(--fs-xl); letter-spacing: -0.02em; color: var(--accent); }
+.hero__actions { margin-top: clamp(1.3rem, 3vw, 1.7rem); display: flex; flex-wrap: wrap; gap: 0.8rem; }
+.hero__stats { margin-top: clamp(1.8rem, 4.2vw, 2.5rem); padding-top: clamp(1.3rem, 3vw, 1.7rem); border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: clamp(1.5rem, 5vw, 2.75rem); }
+.hero__stat { display: flex; flex-direction: column; gap: 0.1rem; }
+.hero__stat-n { font-family: var(--font-display); font-weight: var(--w-heading); font-size: var(--fs-2xl); letter-spacing: -0.01em; color: var(--accent); line-height: 1; }
 .hero__stat-l { font-family: var(--font-sans); font-size: var(--fs-xs); color: var(--text-mute); }
-@media (max-width: 600px) { .hero__headline { font-size: clamp(2.6rem, 11vw, 3.4rem); } }
+@media (max-width: 600px) { .hero__name { font-size: clamp(3.25rem, 19vw, 5.5rem); } }
 
 /* ---------- Section headers (modern: hairline rule + mono index) ---------- */
 .sec-head { margin-bottom: clamp(2rem, 5vw, 3rem); padding-top: clamp(0.9rem, 2vw, 1.3rem); border-top: 1px solid var(--border); }

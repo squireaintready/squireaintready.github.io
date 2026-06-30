@@ -45,7 +45,8 @@
     })();
   </script>
 
-  <!-- Preload the one typeface we use, above the fold -->
+  <!-- Preload the faces used above the fold (Fraunces display + Inter UI) -->
+  <link rel="preload" href="/assets/fonts/fraunces-latin-v2.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
 
   <link rel="stylesheet" href="/styles/tokens.css" />
@@ -103,11 +104,13 @@
     <span id="top"></span>
 
     <!-- ===================== Hero ===================== -->
-    <section class="hero" aria-labelledby="hero-headline">
+    <section class="hero" aria-labelledby="hero-name">
       <span class="hero__grid" aria-hidden="true"></span>
       <div class="hero__inner wrap wrap--wide">
         <p class="hero__status"><span class="dot" aria-hidden="true"></span> Software &amp; AI Engineer · New York · open to work</p>
-        <h1 id="hero-headline" class="hero__headline display">I build <em>living products</em> — software that ships, then gets used every day.</h1>
+        <h1 id="hero-name" class="hero__name">Samuel Jo</h1>
+        <div class="hero__rule" aria-hidden="true"></div>
+        <p class="hero__statement">I build <em>living products</em> — software that ships, then gets used every day.</p>
         <p class="hero__lead">Full-stack and AI engineer. I take products from blank repo to production: <strong>type-safe interfaces, real-time game servers, civic-data pipelines over millions of records,</strong> and LLM features kept honest by the data behind them.</p>
         <div class="hero__actions">
           <a class="btn btn--primary" href="#work">See the work <span class="arrow" aria-hidden="true">→</span></a>
@@ -117,7 +120,7 @@
           <div class="hero__stat"><span class="hero__stat-n">5</span><span class="hero__stat-l">live products</span></div>
           <div class="hero__stat"><span class="hero__stat-n"><span class="count" data-count-to="10.9" data-count-decimals="1" data-count-suffix="M+">10.9M+</span></span><span class="hero__stat-l">records · sub-100ms</span></div>
           <div class="hero__stat"><span class="hero__stat-n">0→1</span><span class="hero__stat-l">sole engineer</span></div>
-          <div class="hero__stat"><span class="hero__stat-n num" data-clock>—:—</span><span class="hero__stat-l">New York, now</span></div>
+          <div class="hero__stat"><span class="hero__stat-n" data-clock>—:—</span><span class="hero__stat-l">New York, now</span></div>
         </div>
       </div>
     </section>
