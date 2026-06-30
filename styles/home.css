@@ -30,7 +30,10 @@
 .hero__name {
   margin: 0; color: var(--text);
   font-family: var(--font-display); font-weight: 420;
-  font-size: var(--fs-display);      /* fallback; JS fits the first line to width */
+  /* Fallback tuned to land within a few px of the Pretext fit so the name doesn't jump on load
+     (CLS): mirrors the fit's own caps — width (~29vw) and viewport height (16.5vh, = data-fit-vh),
+     clamped to data-fit-max (190px). JS then sets the exact size. */
+  font-size: clamp(4.5rem, min(29vw, 16.5vh), 190px);
   line-height: 0.82; letter-spacing: -0.04em;
   font-optical-sizing: auto;
 }
