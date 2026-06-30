@@ -716,10 +716,25 @@ function initSmoothScroll() {
   });
 }
 
+/* ---------- Section-index rail: fade whichever edge still has items to swipe (mobile) ---------- */
+function initRailFade() {
+  const rail = $(".index-rail");
+  if (!rail) return;
+  const update = () => {
+    const max = rail.scrollWidth - rail.clientWidth;
+    rail.style.setProperty("--ml", rail.scrollLeft > 2 ? "24px" : "0px");
+    rail.style.setProperty("--mr", rail.scrollLeft < max - 2 ? "24px" : "0px");
+  };
+  update();
+  rail.addEventListener("scroll", update, { passive: true });
+  addEventListener("resize", debounce(update, 150));
+}
+
 function init() {
   initTheme();
   initNav();
   initSmoothScroll();
+  initRailFade();
   initReveals();
   initYear();
   initClock();
