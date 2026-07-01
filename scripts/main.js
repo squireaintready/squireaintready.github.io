@@ -808,12 +808,19 @@ function initHeroMark() {
   const face = orb && $(".hero__o-face", orb);
   if (!orb || !face) return;
 
-  // pop on click / tap (all pointer types) — a satisfying spring bounce, mirrors the About orb's pop
+  // press feedback (squish + soft accent glow) — mirrors the About orb's "held" state; driven by JS
+  // so it's reliable on touch too (iOS won't apply :active without a touch listener on the element)
+  const press = () => face.classList.add("is-press");
+  const unpress = () => face.classList.remove("is-press");
+  orb.addEventListener("pointerdown", press);
+  ["pointerup", "pointercancel", "pointerleave"].forEach((ev) => orb.addEventListener(ev, unpress));
+
+  // pop on click / tap (all pointer types) — a squash-and-stretch bounce, in the orb's family
   const pop = () => { face.classList.remove("is-pop"); void face.offsetWidth; face.classList.add("is-pop"); };
   orb.addEventListener("click", pop);
   face.addEventListener("animationend", (e) => { if (e.animationName === "hero-o-pop") face.classList.remove("is-pop"); });
 
-  if (prefersReduced) return;   // tilt is ambient motion — skip it; the click-pop stays (a discrete, user-invoked action)
+  if (prefersReduced) return;   // tilt is ambient motion — skip it; press + click-pop stay (discrete, user-invoked)
 
   // tilt toward the cursor as it sweeps the wordmark column (mouse/pen only — touch has no hover)
   const zone = orb.closest(".hero__main") || orb.closest(".hero") || orb;
