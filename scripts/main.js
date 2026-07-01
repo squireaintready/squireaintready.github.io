@@ -654,8 +654,9 @@ function initOrb() {
   const squish = () => { face.classList.remove("is-squish"); void face.offsetWidth; face.classList.add("is-squish"); };
   face.addEventListener("animationend", () => face.classList.remove("is-squish"));
   const swayMono = () => {
-    if (mono) mono.style.transform = "translate(" + sjX.toFixed(1) + "px," + sjY.toFixed(1) + "px) rotate(" + sjR.toFixed(1) + "deg)";
-    const hh = h || 1, nx = sjX / hh;
+    const hh = h || 1, nx = sjX / hh, sunk = clamp(sjY / (hh * 0.16), 0, 1);   // 0 held/centered → 1 fully sunk
+    // as the SJ sinks it also tips forward a touch (perspective rotateX) so the monogram itself reads as angled-down
+    if (mono) mono.style.transform = "translate(" + sjX.toFixed(1) + "px," + sjY.toFixed(1) + "px) perspective(360px) rotateX(" + (sunk * 8).toFixed(1) + "deg) rotate(" + sjR.toFixed(1) + "deg)";
     face.style.setProperty("--lx", (36 - nx * 80).toFixed(1) + "%");            // light shifts opposite the lean
     face.style.setProperty("--ly", (26 - (sjY / hh) * 95).toFixed(1) + "%");    // and rides up as the SJ sinks → ball tips to face down
     face.style.setProperty("--sx", (50 + nx * 60).toFixed(1) + "%");            // cast follows the heavy (SJ) side
