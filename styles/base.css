@@ -359,19 +359,21 @@ a, button { -webkit-tap-highlight-color: transparent; }
 }
 
 /* ---------- Doctor Strange portal page transitions ----------
-   Cross-document navigations are stitched across the page swap: the outgoing page
-   opens a fiery portal that swallows it into a warm void, and the incoming page —
-   masked by that same void before first paint via the inline <head> guard — blooms
-   open through the ring to reveal itself. The ember canvas, ring and bloom live in
-   initPortal(); these rules are just the seamless, JS-independent pre-paint cover. */
-.portal-arrive::before {
-  content: "";
+   A real portal, not a page swap: the destination loads into a clipped <iframe> (.portal-frame)
+   laid over the current page, and a fiery ring (the .portal-fx canvas) opens it from the centre —
+   the current page shows around the ring, the next page shows through it. Both layers sit above
+   everything; the engine is in initPortal(). */
+.portal-frame {
   position: fixed;
   inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  margin: 0;
   z-index: 2147483646;
-  pointer-events: none;
-  background: radial-gradient(140% 140% at var(--portal-x, 50%) var(--portal-y, 50%),
-    #1b120a 0%, #0b0806 48%, #050403 100%);
+  pointer-events: none;   /* purely visual — the ring canvas above handles input blocking */
+  background: transparent;
+  will-change: clip-path;
 }
 .portal-fx {
   position: fixed;
@@ -380,7 +382,7 @@ a, button { -webkit-tap-highlight-color: transparent; }
   pointer-events: none;
   contain: layout style paint;
 }
-.portal-fx.is-block { pointer-events: auto; }   /* swallow input while a page is leaving */
+.portal-fx.is-block { pointer-events: auto; }   /* swallow input while the portal is opening */
 
 /* ---------- Reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
@@ -391,7 +393,6 @@ a, button { -webkit-tap-highlight-color: transparent; }
     transition-duration: 0.001ms !important;
   }
   .reveal { opacity: 1; transform: none; }
-  .portal-arrive::before { display: none; }   /* never flash a full-screen cover under reduced motion */
 }
 
 /* ---------- Print ---------- */

@@ -132,7 +132,11 @@ function initNav() {
 /* ---------- Reveal on scroll ---------- */
 function initReveals() {
   const items = $$(".reveal");
-  if (prefersReduced || !("IntersectionObserver" in window)) { items.forEach((el) => el.classList.add("is-in")); return; }
+  // Arrived through a portal? The portal already showed this content, so reveal it instantly
+  // (no second fade-in) instead of re-animating it on load.
+  let viaPortal = false;
+  try { viaPortal = !!sessionStorage.getItem("portalReveal"); if (viaPortal) sessionStorage.removeItem("portalReveal"); } catch (e) {}
+  if (viaPortal || prefersReduced || !("IntersectionObserver" in window)) { items.forEach((el) => el.classList.add("is-in")); return; }
   const obs = new IntersectionObserver(
     (entries, o) => { entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("is-in"); o.unobserve(e.target); } }); },
     { rootMargin: "0px 0px -10% 0px", threshold: 0.08 }
@@ -1097,23 +1101,22 @@ async function initFit() {
 }
 
 /* ---------- Doctor Strange portal page transitions ---------- */
-/* Multi-page site, so the effect spans a real navigation. A portal opens dead-centre: a
-   small spinning ring of sparks ignites, holds a beat, then expands in one smooth motion.
-   On arrival it opens onto the new page inside the ring and keeps rushing forward — the
-   ring blows past the screen and the page scales up — as if you're pulled through; on
-   departure the same ring swallows the current page into a warm void, then navigates. The
-   outgoing side flags sessionStorage and the incoming page is masked before first paint by
-   an inline <head> guard, so there's no flash. Gold-orange sparks, centre origin; skipped
-   under reduced motion; <head> + timer failsafes make sure a page is never left covered. */
+/* A real portal, not a page swap: on an internal-link click the destination is loaded into a
+   clipped <iframe> laid over the CURRENT page, and a fiery ring opens it from the centre — you
+   keep seeing the current page around the ring while more and more of the next page shows
+   through it, until it fills the screen and we hand off to the real navigation (already loaded,
+   so the swap is invisible). The iframe is sandboxed (renders styled, runs no scripts → no
+   double analytics, no nested portal) and themed to match. Gold-orange sparks; skipped under
+   reduced motion; a timer failsafe guarantees navigation even if the frame never loads. */
 function initPortal() {
-  if (prefersReduced) return;   // motion-heavy — links just navigate; the head guard no-ops too
+  if (prefersReduced) return;   // motion-heavy — links just navigate
 
   const TAU = Math.PI * 2;
   const mobile = matchMedia("(pointer: coarse)").matches || innerWidth < 640;
   const DPR = Math.min(window.devicePixelRatio || 1, 2);
   const N = mobile ? 210 : 360;                 // spark count — a dense sparkler ring
   const SPIN = 0.0019;                          // ring rotation, rad/ms
-  const IN_MS = 780, FADE_MS = 190;             // the single continuous reveal, and a quick dip to the void before navigating
+  const OPEN_MS = 720;                          // portal expansion
 
   // white-gold → deep-orange sparks, pre-rendered once to sprites (cheap additive stamps)
   const HUES = ["255,247,224", "255,206,120", "248,150,54", "222,96,26"];
@@ -1180,87 +1183,78 @@ function initPortal() {
     ctx.globalAlpha = 1;
   }
 
-  // scale the page content (not the canvas — it lives on <html>) for the "pulled through" depth.
-  // Pivot at the viewport centre in page coords (scroll-aware) so a tall/scrolled page zooms
-  // toward the portal, not around the document's middle.
-  const bodyEl = document.body;
-  function pageScale(s) {
-    if (s == null) { bodyEl.style.transform = ""; bodyEl.style.transformOrigin = ""; bodyEl.style.willChange = ""; return; }
-    bodyEl.style.transformOrigin = (scrollX + innerWidth / 2) + "px " + (scrollY + innerHeight / 2) + "px";
-    bodyEl.style.willChange = "transform";
-    bodyEl.style.transform = "scale(" + s.toFixed(4) + ")";
+  // warm central bloom while the ring is still small (the portal igniting)
+  function glow(ctx, cx, cy, r, a) {
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    g.addColorStop(0, "rgba(255,224,160,1)"); g.addColorStop(1, "rgba(255,180,90,0)");
+    ctx.globalAlpha = a; ctx.fillStyle = g; ctx.fillRect(cx - r, cy - r, r * 2, r * 2); ctx.globalAlpha = 1;
   }
 
-  // the single portal reveal — the ring opens and the new page shows through the growing hole
-  function run({ dur, onFirst, onDone }) {
-    const W = innerWidth, H = innerHeight, cx = W / 2, cy = H / 2;
-    const cv = document.createElement("canvas");
-    cv.className = "portal-fx";
-    cv.setAttribute("aria-hidden", "true");
-    cv.style.width = W + "px"; cv.style.height = H + "px";
-    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
-    document.documentElement.appendChild(cv);   // on <html> so the page's scale transform never scales the effect
-    const ctx = cv.getContext("2d");
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    const R0 = Math.min(W, H) * 0.05;                       // the small starting ring
-    const maxR = Math.hypot(cx, cy) * 1.18 + 40;            // rushes well past the corners
-    const embers = makeEmbers();
-    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, maxR);
-    grad.addColorStop(0, "#1b120a"); grad.addColorStop(0.5, "#0b0806"); grad.addColorStop(1, "#050403");
-    let t0 = 0, first = false, done = false;
-    function finish() { if (done) return; done = true; pageScale(null); if (onDone) onDone(cv); }
-
-    function frame(ts) {
-      if (done) return;
-      if (!t0) t0 = ts;
-      const el = ts - t0, p = clamp(el / dur, 0, 1);
-
-      // radius: one continuous, smooth expansion from the small ring out past the edges — no hold, no pause
-      const expo = easeInOut(p);
-      const R = R0 + (maxR - R0) * expo;
-      const ringA = 1 - Math.max(0, (p - 0.9) / 0.1) * 0.5;                    // ease the ring out at the very end
-      pageScale(0.9 + 0.1 * expo);                                            // the new page is pulled forward as it opens
-
-      ctx.clearRect(0, 0, W, H);
-      ctx.globalCompositeOperation = "source-over";
-      ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);                          // the warm void
-      ctx.globalCompositeOperation = "destination-out";                        // carve a hole → the new page shows through
-      ctx.beginPath(); ctx.arc(cx, cy, Math.max(0.01, R), 0, TAU); ctx.fill();   // carve the portal disc
-      ctx.globalCompositeOperation = "lighter";
-      if (p < 0.16) {                                                         // warm ignite glow as the ring first appears
-        const ig = clamp(1 - p / 0.16, 0, 1), gr = R0 * 6;
-        const gg = ctx.createRadialGradient(cx, cy, 0, cx, cy, gr);
-        gg.addColorStop(0, "rgba(255,224,160,1)"); gg.addColorStop(1, "rgba(255,180,90,0)");
-        ctx.globalAlpha = 0.55 * ig; ctx.fillStyle = gg; ctx.fillRect(cx - gr, cy - gr, gr * 2, gr * 2); ctx.globalAlpha = 1;
-      }
-      drawRing(ctx, cx, cy, R, el, embers, ringA);                            // the sparkler ring on the boundary
-      ctx.globalCompositeOperation = "source-over";
-
-      if (!first) { first = true; if (onFirst) onFirst(); }
-      if (p < 1) requestAnimationFrame(frame); else finish();
-    }
-    requestAnimationFrame(frame);
-    return finish;
-  }
-
-  // ---- outgoing: no second portal — just a quick dip to the void, continuous with the reveal ----
+  // ---- open a portal onto the destination over the current page, then hand off to the real nav ----
   let leaving = false;
   function depart(href) {
     if (leaving) return; leaving = true;
-    try { fetch(href, { credentials: "same-origin" }).catch(() => {}); } catch (e) {}   // warm the cache so the new page loads instantly — no blank at the swap
-    try { sessionStorage.setItem("portal", JSON.stringify({ rx: 0.5, ry: 0.5, t: Date.now() })); } catch (e) {}
-    const dip = document.createElement("div");
-    dip.className = "portal-fx is-block";
-    dip.style.background = "radial-gradient(140% 140% at 50% 50%, #1b120a 0%, #0b0806 48%, #050403 100%)";   // identical to the incoming void → seamless swap
-    dip.style.opacity = "0";
-    dip.style.transition = "opacity " + FADE_MS + "ms ease-out";
-    document.documentElement.appendChild(dip);
-    requestAnimationFrame(() => { dip.style.opacity = "1"; });        // fade the current page down to the void
-    // navigate only once the void FULLY covers the old page, so the page swap is never seen (timer is the failsafe)
-    let gone = false;
-    const go = () => { if (gone) return; gone = true; location.href = href; };
-    dip.addEventListener("transitionend", go, { once: true });
-    setTimeout(go, FADE_MS + 130);
+    const W = innerWidth, H = innerHeight, cx = W / 2, cy = H / 2;
+    const R0 = Math.min(W, H) * 0.05, maxR = Math.hypot(cx, cy) * 1.06 + 24;
+
+    // the destination, rendered inside the portal. Sandboxed → styled but runs no scripts, so it
+    // can't fire analytics or a nested portal; same-origin so we can theme it to match.
+    const frame = document.createElement("iframe");
+    frame.className = "portal-frame"; frame.setAttribute("aria-hidden", "true"); frame.tabIndex = -1;
+    frame.setAttribute("sandbox", "allow-same-origin"); frame.setAttribute("scrolling", "no");
+    frame.style.clipPath = "circle(0px at 50% 50%)";
+    document.documentElement.appendChild(frame);
+
+    // the sparks ring on top — transparent, so the current page stays visible around the portal
+    const cv = document.createElement("canvas");
+    cv.className = "portal-fx is-block"; cv.setAttribute("aria-hidden", "true");
+    cv.style.width = W + "px"; cv.style.height = H + "px";
+    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+    document.documentElement.appendChild(cv);
+    const ctx = cv.getContext("2d"); ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    const embers = makeEmbers();
+
+    let ready = false, openAt = 0, start = 0, done = false;
+    const nav = () => { if (done) return; done = true; try { sessionStorage.setItem("portalReveal", "1"); } catch (e) {} location.href = href; };
+    const onReady = () => {   // frame rendered → match theme + reveal its JS-gated content, then open onto it
+      if (ready) return; ready = true;
+      try {
+        const d = frame.contentDocument, t = document.documentElement.getAttribute("data-theme");
+        if (t) d.documentElement.setAttribute("data-theme", t);   // else it keeps the same CSS default as this page
+        const st = d.createElement("style");
+        st.textContent = ".reveal{opacity:1!important;transform:none!important}";   // content is JS-gated → show it in the script-less preview
+        (d.head || d.documentElement).appendChild(st);
+      } catch (e) {}
+    };
+    // preview the destination with its <script>s stripped → styled, but fires no analytics and logs nothing
+    fetch(href, { credentials: "same-origin" }).then((r) => r.text()).then((html) => {
+      frame.addEventListener("load", onReady, { once: true });   // armed after content is set → skips the initial about:blank load
+      frame.srcdoc = html.replace(/<script[\s\S]*?<\/script>/gi, "");
+    }).catch(() => { frame.addEventListener("load", onReady, { once: true }); frame.src = href; });
+    setTimeout(onReady, 1000);   // safety: open even if the fetch/load stalls
+
+    function loop(ts) {
+      if (!start) start = ts;
+      const el = ts - start;
+      ctx.clearRect(0, 0, W, H);
+      ctx.globalCompositeOperation = "lighter";
+      let R, ringA = 1;
+      if (!ready) {                                              // charging: a small live ring while the frame loads
+        R = R0 * (0.86 + 0.14 * Math.sin(el * 0.011));
+        glow(ctx, cx, cy, R0 * 5, 0.5);
+      } else {                                                   // opening: expand the clip so more of the next page shows
+        if (!openAt) openAt = ts;
+        const p = clamp((ts - openAt) / OPEN_MS, 0, 1);
+        R = R0 + (maxR - R0) * easeInOut(p);
+        ringA = 1 - Math.max(0, (p - 0.9) / 0.1) * 0.5;
+        if (p < 0.14) glow(ctx, cx, cy, R0 * 5, 0.5 * (1 - p / 0.14));
+        frame.style.clipPath = "circle(" + R.toFixed(1) + "px at 50% 50%)";
+        if (p >= 1) { nav(); return; }                          // portal fills the screen → hand off to the real page
+      }
+      drawRing(ctx, cx, cy, R, el, embers, ringA);
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
   }
 
   // resolve a click to an in-site navigation URL, or null to leave the click alone
@@ -1291,32 +1285,12 @@ function initPortal() {
     depart(url.href);
   };
 
-  // Back/forward: a page we portalled away from is frozen with the void canvas + a scaled body.
-  // On bfcache restore, strip any leftover overlay and reset the page so it's never stuck.
+  // Back/forward: strip any leftover portal iframe/ring so a bfcache-restored page is never stuck
   addEventListener("pageshow", (e) => {
     if (!e.persisted) return;
     leaving = false;
-    pageScale(null);
-    document.querySelectorAll(".portal-fx").forEach((c) => c.remove());
-    document.documentElement.classList.remove("portal-arrive");
+    document.querySelectorAll(".portal-frame, .portal-fx").forEach((n) => n.remove());
   });
-
-  // ---- incoming: the <head> guard set .portal-arrive + window.__portal before first paint ----
-  if (window.__portal) {
-    window.__portal = null;
-    clearTimeout(window.__portalKill);
-    const dropCover = () => {   // remove the flat pre-paint cover (idempotent: onFirst + the failsafe both call it)
-      const el = document.documentElement;
-      el.classList.remove("portal-arrive");
-      el.style.removeProperty("--portal-x"); el.style.removeProperty("--portal-y");
-    };
-    const finish = run({
-      dur: IN_MS,
-      onFirst: dropCover,                // canvas has painted the void → drop the flat cover seamlessly
-      onDone: (cv) => cv.remove(),
-    });
-    setTimeout(() => { dropCover(); pageScale(null); finish(); }, IN_MS + 800);   // failsafe: never leave the cover / canvas / scale behind
-  }
 }
 
 function init() {
