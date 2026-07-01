@@ -222,10 +222,10 @@
   border: 1px solid var(--border);
   box-shadow: var(--shadow-2), inset var(--sh-x) -15px 26px -12px rgba(0, 0, 0, 0.62), inset calc(-1 * var(--sh-x)) 12px 20px -14px color-mix(in srgb, var(--accent) 55%, #fff);
   transform-style: preserve-3d; transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(var(--os, 1));
-  transition: transform 0.18s var(--ease-out); cursor: grab; -webkit-user-select: none; user-select: none;
+  filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0)); transition: transform 0.18s var(--ease-out), filter 0.28s var(--ease-out); cursor: grab; -webkit-user-select: none; user-select: none;
 }
 .about__orb:not(.is-loose) .about__orb-face:hover { --os: 1.03; }   /* hover invites the grab */
-.about__orb-face.is-grabbed { --os: 0.95; }                        /* press feedback */
+.about__orb-face.is-grabbed { --os: 0.97; filter: drop-shadow(0 0 13px color-mix(in srgb, var(--accent) 48%, transparent)); }  /* held: a soft accent glow (no tilt yet) */
 .about__orb-face:active { cursor: grabbing; }
 .about__orb-face::before {   /* soft specular glint that tracks the light */
   content: ""; position: absolute; left: calc(var(--lx) - 17%); top: calc(var(--ly) - 15%); width: 42%; height: 34%; border-radius: 50%;

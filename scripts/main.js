@@ -646,7 +646,7 @@ function initOrb() {
   const stage = () => (layer || (layer = document.body.appendChild(Object.assign(document.createElement("div"), { className: "orb-layer" }))));
 
   // ---- physics: click to pop loose → gravity + wall bounce; drag to fling; drag back to the cutout to re-lock ----
-  const GRAV = 0.44, REST = 0.72, FLOOR_REST = 0.55, FLOORF = 0.84, AIRX = 0.992, AIRY = 0.999;
+  const GRAV = 0.44, REST = 0.72, FLOOR_REST = 0.62, FLOORF = 0.93, AIRX = 0.992, AIRY = 0.999;
   const vw = () => document.documentElement.clientWidth;   // clientWidth excludes the scrollbar, so a fixed bubble at the edge never spawns one
   const vh = () => document.documentElement.clientHeight;
   const homeRect = () => shape.getBoundingClientRect();
@@ -690,18 +690,27 @@ function initOrb() {
       else if (y >= H) { y = H; if (Math.abs(vy) > 2.4) hit = Math.max(hit, Math.abs(vy)); vy = -vy * FLOOR_REST; vx *= FLOORF; }
       if (hit > 4.5) squish();
       draw();
-      const parked = y >= H - 0.5 && Math.abs(vy) < 0.7 && Math.abs(vx) < 0.3;   // resting on the floor with no meaningful speed
+      // Ease to rest instead of snapping. A hard velocity cutoff is what read as an abrupt stop, so once it's
+      // on the floor and slow, bleed off the last dying bounces gradually and only park when it's truly still.
+      const onFloor = y >= H - 0.5;
+      if (onFloor && Math.abs(vy) < 1.3) vy *= 0.8;
+      const parked = onFloor && Math.abs(vy) < 0.16 && Math.abs(vx) < 0.09;
       if (parked) { vx = vy = 0; }
       moving = !parked;
     }
-    // SJ "gravity" eases EVERY frame (dragging or free), so the monogram rolls smoothly to the bottom
-    // and the light rides with it — it never jumps. Target sway comes from the current velocity.
-    const sink = h * 0.15;
-    const tx = dragging ? 0 : clamp(-vx, -h * 0.09, h * 0.09);
-    const tr = dragging ? 0 : clamp(-vx * 0.65, -11, 11);
-    sjX += (tx - sjX) * 0.14; sjY += (sink - sjY) * 0.11; sjR += (tr - sjR) * 0.14;
+    // SJ "gravity": while HELD the monogram stays centered (a glow shows it's grabbed, no tilt yet); once
+    // RELEASED it sinks to the bottom — slow and heavy — and the light + shadow ride down with it, so the
+    // tip-down reads as real weight. Target sway comes from the current velocity.
+    const sink = h * 0.16;
+    const held = dragging;
+    const syTarget = held ? 0 : sink;
+    const tx = held ? 0 : clamp(-vx, -h * 0.09, h * 0.09);
+    const tr = held ? 0 : clamp(-vx * 0.65, -11, 11);
+    const syRate = held ? 0.16 : 0.036;   // released: slow + dramatic sink (gravity); held: snappy return to centre
+    const swR = held ? 0.16 : 0.10;
+    sjX += (tx - sjX) * swR; sjY += (syTarget - sjY) * syRate; sjR += (tr - sjR) * swR;
     swayMono();
-    const sjSettled = Math.abs(sjY - sink) < 0.4 && Math.abs(sjX) < 0.4 && Math.abs(sjR) < 0.4;
+    const sjSettled = Math.abs(sjY - syTarget) < 0.4 && Math.abs(sjX) < 0.4 && Math.abs(sjR) < 0.4;
     if (!moving && sjSettled) { rafId = 0; return; }   // ball parked (or held still mid-drag) + SJ settled → idle until the next input
     rafId = requestAnimationFrame(loop);
   }

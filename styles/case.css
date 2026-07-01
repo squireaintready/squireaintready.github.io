@@ -63,9 +63,9 @@
 .fact__value { font-family: var(--font-sans); font-size: var(--fs-sm); color: var(--text); line-height: 1.5; }
 .fact__value .chip { margin: 0.2rem 0.2rem 0 0; display: inline-block; }
 
-/* ---------- Project seal — a spinning signature stamp that signs off the case study, just above prev/next ---------- */
-.case-seal { display: flex; justify-content: center; padding: clamp(2.75rem, 7vw, 4.75rem) 0 clamp(1.5rem, 4vw, 2.75rem); }
-.seal { width: clamp(102px, 15vw, 128px); aspect-ratio: 1; position: relative; color: var(--proj-ink, var(--accent)); flex: none; }
+/* ---------- Project seal — a spinning signature stamp centered in the prev/next row (sits on the line, no extra height) ---------- */
+.case-seal { display: flex; align-items: center; justify-content: center; padding: 0 clamp(1rem, 3vw, 2.75rem); }
+.seal { width: clamp(66px, 8vw, 94px); aspect-ratio: 1; position: relative; color: var(--proj-ink, var(--accent)); flex: none; }
 .seal svg { width: 100%; height: 100%; display: block; }
 .seal__ring { animation: seal-spin 26s linear infinite; transform-origin: 50% 50%; }
 .seal:hover .seal__ring { animation-duration: 7s; }
@@ -101,10 +101,16 @@
 .case-stats .stat__num b { color: var(--proj-ink, var(--accent)); }
 
 /* prev / next */
-.case-nav { border-top: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr; }
+.case-nav { border-top: 1px solid var(--border); display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
 .case-nav a { padding: clamp(1.75rem, 4vw, 2.75rem) 0; display: flex; flex-direction: column; gap: 0.4rem; transition: color var(--t); }
 .case-nav a:hover { color: var(--proj-ink, var(--accent)); }
 .case-nav .dir { font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-mute); }
 .case-nav .name { font-family: var(--font-display); font-size: var(--fs-xl); font-weight: var(--w-heading); letter-spacing: -0.02em; }
-.case-nav a.next { text-align: right; align-items: flex-end; border-left: 1px solid var(--border); padding-left: 1.5rem; }
+.case-nav a.next { text-align: right; align-items: flex-end; padding-left: 1.5rem; }
 .case-nav a.prev { padding-right: 1.5rem; }
+/* mobile: the centered seal would crowd the two links — hide it and restore the prev/next divider */
+@media (max-width: 560px) {
+  .case-nav { grid-template-columns: 1fr 1fr; }
+  .case-seal { display: none; }
+  .case-nav a.next { border-left: 1px solid var(--border); }
+}
