@@ -136,16 +136,17 @@
    .orb-reset's later `bottom`), so both orbs can be live with both buttons visible at once */
 .orb-reset.orb-reset--hero { bottom: calc(clamp(1rem, 3.5vw, 1.7rem) + 3.15rem); }
 @media (prefers-reduced-motion: reduce) { .hero__o-orb, .hero__o-spin { animation: none; } .hero__o-face { transition: none; } .hero__o.is-loose::after { animation: none; } }
-/* accent rule under the name — draws in from the left on load; the accent is solid on the left and
-   fades to transparent toward the right. Hover lifts it with a brighter accent + a soft glow. */
+/* accent rule under the name — draws in from the centre on load; the accent peaks at the centre and
+   fades symmetrically to transparent at both ends. Hover lifts it with a brighter accent + a soft glow. */
 .hero__rule {
   height: clamp(2px, 0.3vw, 3px); width: min(100%, 40rem); margin-top: clamp(0.85rem, 2vw, 1.5rem);
-  border-radius: 3px; transform-origin: left;
+  border-radius: 3px; transform-origin: center;
   background: linear-gradient(90deg,
-    var(--accent) 0%,
-    color-mix(in srgb, var(--accent) 80%, transparent) 32%,
-    color-mix(in srgb, var(--accent) 38%, transparent) 64%,
-    transparent 97%);
+    transparent 0%,
+    color-mix(in srgb, var(--accent) 40%, transparent) 25%,
+    var(--accent) 50%,
+    color-mix(in srgb, var(--accent) 40%, transparent) 75%,
+    transparent 100%);
   transform: scaleX(0); opacity: 0;
   animation: hero-rule-in 1s var(--ease-out) 0.35s forwards;
   transition: filter 0.5s var(--ease-out);
