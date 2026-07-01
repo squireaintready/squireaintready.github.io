@@ -93,37 +93,11 @@
 }
 
 /* ============================================================================
-   FOREST — default. Bottle-green-black canvas, cream ink, warm tan/gold accent.
+   PAPER — default. Ink on warm paper, forest-green accent (the light theme).
+   This block owns :root, so it must stay FIRST — the [data-theme] blocks below
+   have equal specificity and only win by coming later in source order.
    ========================================================================== */
-:root, [data-theme="forest"] {
-  color-scheme: dark;
-  --bg: #0b1310;
-  --bg-tint: #0f1814;
-  --surface: #121d17;
-  --surface-2: #17241d;
-  --border: #243a30;
-  --border-strong: #34503f;
-  --rule: #34503f;
-  --text: #edf1e7;
-  --text-dim: #b5bdab;
-  --text-mute: #828b79;
-  --accent: #e0bc8c;
-  --accent-strong: #eccfa3;
-  --accent-tint: rgba(224, 188, 140, 0.14);
-  --on-accent: #0b1310;
-  --up: #5bbf86;
-  --down: #e0796b;
-  --live: #5bbf86;
-  --selection: rgba(224, 188, 140, 0.22);
-  --shadow-1: 0 1px 0 rgba(255, 255, 255, 0.04);
-  --shadow-2: 0 22px 46px rgba(0, 0, 0, 0.45);
-  --shadow-3: 0 36px 80px rgba(0, 0, 0, 0.6);
-}
-
-/* ============================================================================
-   PAPER — ink on warm paper, forest-green accent (the light option).
-   ========================================================================== */
-[data-theme="paper"] {
+:root, [data-theme="paper"] {
   color-scheme: light;
   --bg: #fbfaf7;
   --bg-tint: #f4f1ea;
@@ -146,6 +120,34 @@
   --shadow-1: 0 1px 0 var(--border);
   --shadow-2: 0 18px 40px rgba(28, 26, 22, 0.10);
   --shadow-3: 0 32px 70px rgba(28, 26, 22, 0.16);
+}
+
+/* ============================================================================
+   FOREST — the deep bottle-green theme. Cream ink, warm tan/gold accent.
+   ========================================================================== */
+[data-theme="forest"] {
+  color-scheme: dark;
+  --bg: #0b1310;
+  --bg-tint: #0f1814;
+  --surface: #121d17;
+  --surface-2: #17241d;
+  --border: #243a30;
+  --border-strong: #34503f;
+  --rule: #34503f;
+  --text: #edf1e7;
+  --text-dim: #b5bdab;
+  --text-mute: #828b79;
+  --accent: #e0bc8c;
+  --accent-strong: #eccfa3;
+  --accent-tint: rgba(224, 188, 140, 0.14);
+  --on-accent: #0b1310;
+  --up: #5bbf86;
+  --down: #e0796b;
+  --live: #5bbf86;
+  --selection: rgba(224, 188, 140, 0.22);
+  --shadow-1: 0 1px 0 rgba(255, 255, 255, 0.04);
+  --shadow-2: 0 22px 46px rgba(0, 0, 0, 0.45);
+  --shadow-3: 0 36px 80px rgba(0, 0, 0, 0.6);
 }
 
 /* ============================================================================

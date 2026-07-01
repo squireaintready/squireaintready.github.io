@@ -24,10 +24,10 @@ let portalGo = null;   // set by initPortal(); lets the ⌘K palette route throu
 
 /* ---------- Theme ---------- */
 function systemTheme() { return matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; }
-function currentTheme() { return document.documentElement.getAttribute("data-theme") || "forest"; }
+function currentTheme() { return document.documentElement.getAttribute("data-theme") || "paper"; }
 const THEMES = [
-  { id: "forest", name: "Forest", note: "Bottle-green & tan" },
   { id: "paper", name: "Paper", note: "Ink on warm paper" },
+  { id: "forest", name: "Forest", note: "Bottle-green & tan" },
   { id: "indigo", name: "Indigo", note: "Deep indigo & periwinkle" },
 ];
 function applyTheme(id) {
