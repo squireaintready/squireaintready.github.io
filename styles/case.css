@@ -86,7 +86,7 @@
 /* highlights */
 .highlights { margin-top: 0.5rem; }
 .highlight { padding: 1.25rem 0.6rem 1.25rem 0.9rem; border-top: 1px solid var(--border); display: grid; grid-template-columns: auto 1fr; gap: 0.4rem 1.1rem; position: relative; transition: background var(--t); }
-.highlight::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--proj, var(--accent)); transform: scaleY(0); transform-origin: top; transition: transform var(--t-slow) var(--ease-out); }
+.highlight::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: linear-gradient(180deg, transparent, var(--proj, var(--accent)) 50%, transparent); transform: scaleY(0); transform-origin: center; transition: transform var(--t-slow) var(--ease-out); }
 .highlight:hover { background: color-mix(in srgb, var(--proj) 5%, transparent); }
 .highlight:hover::before { transform: scaleY(1); }
 .highlight:last-child { border-bottom: 1px solid var(--border); }
