@@ -802,6 +802,37 @@ function initOrb() {
   addEventListener("resize", () => { if (loose && !dragging) { x = clamp(x, 0, vw() - w); y = clamp(y, 0, vh() - h); draw(); } }, { passive: true });
 }
 
+/* ---------- Hero wordmark: the "o" in "Jo" is a living orb (cursor-tilt + click-pop) ---------- */
+function initHeroMark() {
+  const orb = $(".hero__o");
+  const face = orb && $(".hero__o-face", orb);
+  if (!orb || !face) return;
+
+  // pop on click / tap (all pointer types) — a satisfying spring bounce, mirrors the About orb's pop
+  const pop = () => { face.classList.remove("is-pop"); void face.offsetWidth; face.classList.add("is-pop"); };
+  orb.addEventListener("click", pop);
+  face.addEventListener("animationend", (e) => { if (e.animationName === "hero-o-pop") face.classList.remove("is-pop"); });
+
+  if (prefersReduced) return;   // tilt is ambient motion — skip it; the click-pop stays (a discrete, user-invoked action)
+
+  // tilt toward the cursor as it sweeps the wordmark column (mouse/pen only — touch has no hover)
+  const zone = orb.closest(".hero__main") || orb.closest(".hero") || orb;
+  const MAX = 11;
+  let raf = 0;
+  zone.addEventListener("pointermove", (e) => {
+    if (e.pointerType === "touch") return;
+    const r = orb.getBoundingClientRect();
+    const px = clamp((e.clientX - (r.left + r.width / 2)) / (r.width * 7), -1, 1);   // reach ≈ the wordmark's half-width → gentle lean across the name
+    const py = clamp((e.clientY - (r.top + r.height / 2)) / (r.height * 7), -1, 1);
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => {
+      face.style.setProperty("--ry", (px * MAX).toFixed(2) + "deg");
+      face.style.setProperty("--rx", (-py * MAX).toFixed(2) + "deg");
+    });
+  }, { passive: true });
+  zone.addEventListener("pointerleave", () => { face.style.setProperty("--rx", "0deg"); face.style.setProperty("--ry", "0deg"); });
+}
+
 /* ---------- Buttery smooth in-page scrolling (anchor clicks only — never hijacks free scroll) ---------- */
 function initSmoothScroll() {
   const navH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--nav-h")) || 60;
@@ -915,6 +946,7 @@ function init() {
   initCommandPalette();
   initPlay();
   initOrb();
+  initHeroMark();
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
 else init();

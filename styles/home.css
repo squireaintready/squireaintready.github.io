@@ -33,6 +33,47 @@
   font-size: clamp(2.4rem, 13vw, 96px);   /* CLS fallback (under the fitted size so "Samuel Jo" never clips pre-JS); JS fits it to the column */
   line-height: 0.9; letter-spacing: -0.03em;
 }
+/* The "o" in "Jo" is a small living orb — a scaled cousin of the About monogram sphere: a lit
+   sphere with a specular glint + ring that gently floats, tilts toward the cursor (initHeroMark),
+   and pops on click. Sized in em so it tracks the JS-fitted wordmark; the box width equals the
+   'o' advance (0.55em, measured) so the fitted line width is unchanged — no overflow, no CLS.
+   A real (visually-hidden) "o" stays in the DOM for a11y/SEO/selection. */
+.hero__o {
+  display: inline-block; position: relative; vertical-align: baseline;
+  width: 0.55em; height: 0.52em;          /* width ≤ the 'o' advance (0.551em) so the fitted line never widens */
+  perspective: 3em;
+  animation: hero-o-float 6.5s var(--ease-in-out) infinite;
+}
+.hero__o-face {
+  position: absolute; inset: 0; border-radius: 50%; transform-style: preserve-3d; cursor: pointer;
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(var(--os, 1));
+  transition: transform 0.2s var(--ease-out);
+  /* lit sphere: soft occlusion at the base + an accent-tinted radial body */
+  background:
+    radial-gradient(circle at 32% 116%, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0) 46%),
+    radial-gradient(circle at 34% 27%, color-mix(in srgb, var(--accent) 46%, var(--surface)) 0%, var(--surface-2) 50%, color-mix(in srgb, #000 28%, var(--surface)) 100%);
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
+  box-shadow:
+    inset 0 -0.07em 0.13em -0.05em rgba(0, 0, 0, 0.6),
+    inset 0 0.05em 0.09em -0.05em color-mix(in srgb, var(--accent) 55%, #fff),
+    0 0.05em 0.12em rgba(0, 0, 0, 0.34);
+}
+.hero__o-glint {
+  position: absolute; left: 18%; top: 10%; width: 46%; height: 37%; border-radius: 50%;
+  background: radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0) 70%);
+  transform: translateZ(0.05em); pointer-events: none;
+}
+.hero__o-ring {
+  position: absolute; inset: -0.03em; border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--accent) 42%, transparent);
+  transform: translateZ(0.03em); opacity: 0.7; pointer-events: none;
+}
+.hero__o-face:hover { --os: 1.06; }                                   /* hover swells it, like the orb inviting a grab */
+.hero__o-face:active { --os: 0.9; transition-duration: 0.07s; }       /* press squishes it in */
+.hero__o-face.is-pop { animation: hero-o-pop 0.5s var(--ease-spring); }
+@keyframes hero-o-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-0.05em); } }
+@keyframes hero-o-pop { 0% { transform: scale(1); } 35% { transform: scale(1.17); } 70% { transform: scale(0.95); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .hero__o { animation: none; } .hero__o-face { transition: none; } }
 /* accent rule under the name — draws in from the left on load; the accent is solid on the left and
    fades to transparent toward the right. Hover lifts it with a brighter accent + a soft glow. */
 .hero__rule {
@@ -57,6 +98,25 @@
 .hero__lead strong { color: var(--text); font-weight: var(--w-strong); }
 .hero__actions { margin-top: clamp(1.1rem, 2.6vw, 1.6rem); display: flex; flex-wrap: wrap; gap: 0.8rem; }
 
+/* Entrance: the masthead rises + fades in on load, one element at a time. `both` fill applies the
+   hidden `from` state only while each element's delay runs; the base style stays visible, so if
+   animations are unavailable nothing is left hidden. A dedicated reduced-motion guard below turns
+   it off (the global reduce rule collapses animation duration but NOT the stagger delay). The rule
+   under the name keeps its own draw-in (hero-rule-in), timed to land right after the name. */
+@keyframes hero-rise { from { opacity: 0; transform: translateY(1.1rem); } to { opacity: 1; transform: none; } }
+.hero__kicker, .hero__name, .hero__statement, .hero__lead, .hero__actions { animation: hero-rise 0.72s var(--ease-out) both; }
+.hero__kicker    { animation-delay: 0.04s; }
+.hero__name      { animation-delay: 0.12s; }
+.hero__statement { animation-delay: 0.26s; }
+.hero__lead      { animation-delay: 0.34s; }
+.hero__actions   { animation-delay: 0.42s; }
+/* Reduced-motion: kill the entrance outright. (The global reduce rule only collapses animation
+   DURATION, not DELAY — with `both` fill the staggered elements would otherwise sit hidden through
+   their delay. Same guard the hero rule uses.) */
+@media (prefers-reduced-motion: reduce) {
+  .hero__kicker, .hero__name, .hero__statement, .hero__lead, .hero__actions { animation: none; opacity: 1; transform: none; }
+}
+
 @media (max-height: 860px) {
   .hero__kicker { margin-bottom: 0.5rem; }
   .hero__statement { margin-top: 0.7rem; }
@@ -65,10 +125,27 @@
 }
 @media (max-width: 600px) {
   .hero__rail { display: none; }                        /* role + location already live in the kicker */
-  .hero__kicker { margin-bottom: 0.8rem; }
-  .hero__statement { margin-top: 1rem; }
-  .hero__lead { margin-top: 0.8rem; }
-  .hero__inner { padding-bottom: clamp(1.5rem, 7vh, 4rem); }
+  /* Name owns the top: anchor the masthead just under the nav and let it breathe downward, so the
+     block reads as a deliberate masthead instead of a short cluster floating at mid-screen. The
+     open space below the CTAs leads the eye to the section rail (the built-in scroll cue). */
+  .hero__inner { align-content: start; padding-top: clamp(0.5rem, 3.5vh, 2rem); padding-bottom: 0; }
+  .hero__kicker { margin-bottom: clamp(0.9rem, 3.2vw, 1.2rem); }
+  .hero__statement { margin-top: clamp(1.05rem, 4vw, 1.45rem); }
+  .hero__lead { margin-top: clamp(0.85rem, 3vw, 1.1rem); }
+  .hero__actions { margin-top: clamp(1.35rem, 5vw, 1.9rem); }
+}
+/* Very short phones (landscape / SE-class): tighten so the whole pitch still fits one clean screen. */
+@media (max-width: 600px) and (max-height: 720px) {
+  .hero__inner { padding-top: clamp(0.25rem, 1.5vh, 0.9rem); }
+  .hero__kicker { margin-bottom: 0.7rem; }
+  .hero__statement { margin-top: 0.8rem; }
+  .hero__lead { margin-top: 0.65rem; }
+  .hero__actions { margin-top: 1rem; }
+}
+/* Very tall phones: the masthead can't fill this much height top-anchored, so center it —
+   symmetric framing reads more balanced than a large void pooled above the section rail. */
+@media (max-width: 600px) and (min-height: 900px) {
+  .hero__inner { align-content: center; padding-top: 0; }
 }
 
 /* ---------- Section index — the hero's bottom "table of contents" strip ---------- */
