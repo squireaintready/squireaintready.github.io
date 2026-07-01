@@ -687,14 +687,17 @@ function initOrb() {
       else if (y >= H) { y = H; if (Math.abs(vy) > 2.4) hit = Math.max(hit, Math.abs(vy)); vy = -vy * FLOOR_REST; vx *= FLOORF; }
       if (hit > 4.5) squish();
       draw();
-      // SJ "gravity": the heavy monogram sinks to the bottom of the orb and sways against the motion
-      const sink = h * 0.15;
-      sjX += (clamp(-vx * 1.0, -h * 0.09, h * 0.09) - sjX) * 0.16;
-      sjY += (sink - sjY) * 0.14;
-      sjR += (clamp(-vx * 0.65, -11, 11) - sjR) * 0.16;
-      swayMono();
-      if (y >= H - 0.5 && Math.abs(vy) < 0.7 && Math.abs(vx) < 0.3) { vx = vy = 0; sjX = 0; sjR = 0; sjY = sink; swayMono(); rafId = 0; return; }  // rest: settle SJ at the bottom
+      if (y >= H - 0.5 && Math.abs(vy) < 0.7 && Math.abs(vx) < 0.3) { vx = vy = 0; atRest = true; }
     }
+    // SJ "gravity" eases EVERY frame (dragging or free), so the monogram rolls smoothly to the bottom
+    // and the light rides with it — it never jumps. Target sway comes from the current velocity.
+    const sink = h * 0.15;
+    const tx = dragging ? 0 : clamp(-vx * 1.0, -h * 0.09, h * 0.09);
+    const tr = dragging ? 0 : clamp(-vx * 0.65, -11, 11);
+    sjX += (tx - sjX) * 0.14; sjY += (sink - sjY) * 0.11; sjR += (tr - sjR) * 0.14;
+    swayMono();
+    const sjSettled = Math.abs(sjY - sink) < 0.4 && Math.abs(sjX) < 0.4 && Math.abs(sjR) < 0.4;
+    if (sjSettled && (atRest || dragging)) { rafId = 0; return; }   // both physics + SJ settled → stop
     rafId = requestAnimationFrame(loop);
   }
   const run = () => { if (!rafId) { lastT = 0; rafId = requestAnimationFrame(loop); } };
@@ -743,11 +746,11 @@ function initOrb() {
 
   const DRAG_THRESH = 5;
   function beginDrag(e) {
-    dragging = true; halt();
+    dragging = true;
     dragDX = e.clientX - x; dragDY = e.clientY - y;
     hist = [{ x: e.clientX, y: e.clientY, t: performance.now() }];
-    sjX = 0; sjR = 0; sjY = h * 0.15; swayMono();   // SJ hangs at the bottom while carried
     orb.style.transition = "";
+    run();   // keep the loop alive so the SJ rolls (eases) to the bottom while carried — never jumps
   }
   orb.addEventListener("pointerdown", (e) => {
     face.classList.add("is-grabbed");
@@ -767,6 +770,7 @@ function initOrb() {
     hist.push({ x: e.clientX, y: e.clientY, t: performance.now() });
     if (hist.length > 6) hist.shift();
     shape.classList.toggle("is-target", near());
+    run();   // ensure the SJ keeps easing smoothly while dragging
   });
   function release(e) {
     face.classList.remove("is-grabbed");
