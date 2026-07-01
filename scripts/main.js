@@ -1113,7 +1113,7 @@ function initPortal() {
   const DPR = Math.min(window.devicePixelRatio || 1, 2);
   const N = mobile ? 210 : 360;                 // spark count — a dense sparkler ring
   const SPIN = 0.0019;                          // ring rotation, rad/ms
-  const IN_MS = 860, FADE_MS = 190;             // the reveal duration, and a quick dip to the void before navigating
+  const IN_MS = 780, FADE_MS = 190;             // the single continuous reveal, and a quick dip to the void before navigating
 
   // white-gold → deep-orange sparks, pre-rendered once to sprites (cheap additive stamps)
   const HUES = ["255,247,224", "255,206,120", "248,150,54", "222,96,26"];
@@ -1124,7 +1124,6 @@ function initPortal() {
     g.fillStyle = rad; g.fillRect(0, 0, s, s); return c;
   });
 
-  const easeOut = (p) => 1 - Math.pow(1 - p, 3);
   const easeInOut = (p) => (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);
 
   // a sparkler particle: sits in the ring band, sprays outward over its short life and rains down
@@ -1193,7 +1192,7 @@ function initPortal() {
   }
 
   // the single portal reveal — the ring opens and the new page shows through the growing hole
-  function run({ dur, beat, onFirst, onDone }) {
+  function run({ dur, onFirst, onDone }) {
     const W = innerWidth, H = innerHeight, cx = W / 2, cy = H / 2;
     const cv = document.createElement("canvas");
     cv.className = "portal-fx";
@@ -1216,10 +1215,9 @@ function initPortal() {
       if (!t0) t0 = ts;
       const el = ts - t0, p = clamp(el / dur, 0, 1);
 
-      // radius: pop the small ring in → hold the beat → expand and rush past the edges
-      let R, expo = 0;
-      if (p < beat) { const b = p / beat; R = R0 * (b < 0.5 ? easeOut(b / 0.5) : 1); }
-      else { expo = easeInOut((p - beat) / (1 - beat)); R = R0 + (maxR - R0) * expo; }
+      // radius: one continuous, smooth expansion from the small ring out past the edges — no hold, no pause
+      const expo = easeInOut(p);
+      const R = R0 + (maxR - R0) * expo;
       const ringA = 1 - Math.max(0, (p - 0.9) / 0.1) * 0.5;                    // ease the ring out at the very end
       pageScale(0.9 + 0.1 * expo);                                            // the new page is pulled forward as it opens
 
@@ -1229,8 +1227,8 @@ function initPortal() {
       ctx.globalCompositeOperation = "destination-out";                        // carve a hole → the new page shows through
       ctx.beginPath(); ctx.arc(cx, cy, Math.max(0.01, R), 0, TAU); ctx.fill();   // carve the portal disc
       ctx.globalCompositeOperation = "lighter";
-      if (p < beat + 0.12) {                                                   // warm ignite glow while the ring is small
-        const ig = clamp(1 - p / (beat + 0.12), 0, 1), gr = R0 * 6;
+      if (p < 0.16) {                                                         // warm ignite glow as the ring first appears
+        const ig = clamp(1 - p / 0.16, 0, 1), gr = R0 * 6;
         const gg = ctx.createRadialGradient(cx, cy, 0, cx, cy, gr);
         gg.addColorStop(0, "rgba(255,224,160,1)"); gg.addColorStop(1, "rgba(255,180,90,0)");
         ctx.globalAlpha = 0.55 * ig; ctx.fillStyle = gg; ctx.fillRect(cx - gr, cy - gr, gr * 2, gr * 2); ctx.globalAlpha = 1;
@@ -1249,16 +1247,20 @@ function initPortal() {
   let leaving = false;
   function depart(href) {
     if (leaving) return; leaving = true;
-    try { const l = document.createElement("link"); l.rel = "prefetch"; l.href = href; document.head.appendChild(l); } catch (e) {}
+    try { fetch(href, { credentials: "same-origin" }).catch(() => {}); } catch (e) {}   // warm the cache so the new page loads instantly — no blank at the swap
     try { sessionStorage.setItem("portal", JSON.stringify({ rx: 0.5, ry: 0.5, t: Date.now() })); } catch (e) {}
     const dip = document.createElement("div");
     dip.className = "portal-fx is-block";
-    dip.style.background = "radial-gradient(circle at 50% 50%, #1b120a 0%, #0b0806 55%, #050403 100%)";
+    dip.style.background = "radial-gradient(140% 140% at 50% 50%, #1b120a 0%, #0b0806 48%, #050403 100%)";   // identical to the incoming void → seamless swap
     dip.style.opacity = "0";
-    dip.style.transition = "opacity " + FADE_MS + "ms ease-in";
+    dip.style.transition = "opacity " + FADE_MS + "ms ease-out";
     document.documentElement.appendChild(dip);
     requestAnimationFrame(() => { dip.style.opacity = "1"; });        // fade the current page down to the void
-    setTimeout(() => { location.href = href; }, FADE_MS + 40);        // then hand off; the new page opens the portal
+    // navigate only once the void FULLY covers the old page, so the page swap is never seen (timer is the failsafe)
+    let gone = false;
+    const go = () => { if (gone) return; gone = true; location.href = href; };
+    dip.addEventListener("transitionend", go, { once: true });
+    setTimeout(go, FADE_MS + 130);
   }
 
   // resolve a click to an in-site navigation URL, or null to leave the click alone
@@ -1309,7 +1311,7 @@ function initPortal() {
       el.style.removeProperty("--portal-x"); el.style.removeProperty("--portal-y");
     };
     const finish = run({
-      dur: IN_MS, beat: 0.17,
+      dur: IN_MS,
       onFirst: dropCover,                // canvas has painted the void → drop the flat cover seamlessly
       onDone: (cv) => cv.remove(),
     });
