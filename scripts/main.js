@@ -1145,7 +1145,7 @@ function initPortal() {
   const mobile = matchMedia("(pointer: coarse)").matches || innerWidth < 640;
   const DPR = Math.min(window.devicePixelRatio || 1, 2);
   const N = mobile ? 280 : 500;                 // spark count — a dense, fiery sparkler ring
-  const SPIN = 0.004;                           // ring rotation, rad/ms — full spin speed; the ring spins the whole time
+  const SPIN = 0.006;                           // ring rotation, rad/ms — full spin speed; the ring spins the whole time
   const OPEN_MS = 850, HOLD_MS = 800, FADE_MS = 470;   // expand → hold (spins in place) → dissolve
 
   // spark sprites, pre-rendered once (cheap stamps). Two palettes: bright white-gold for dark themes
@@ -1190,6 +1190,19 @@ function initPortal() {
       ctx.globalAlpha = RING[i][1] * strokeA; ctx.lineWidth = LW[i];
       ctx.strokeStyle = "rgba(" + RING[i][0] + ",1)";
       ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
+    }
+    // rotating energy streaks — bright comet-arcs sweep the band so the spin is unmistakable and dramatic
+    // (a smooth ring is rotationally symmetric, so these streaks are what actually read as motion)
+    const STREAKS = mobile ? 2 : 3, SEG = 9, SPAN = 1.15;
+    ctx.lineWidth = mobile ? 4 : 5.5;
+    for (let i = 0; i < STREAKS; i++) {
+      const head = rot + i * (TAU / STREAKS);
+      for (let s = 0; s < SEG; s++) {
+        const f = s / SEG;                                          // 0 at the bright head → 1 at the faded tail
+        ctx.globalAlpha = (1 - f) * (1 - f) * sparkA;               // comet taper; lingers like the sparks as it dissolves
+        ctx.strokeStyle = "rgba(" + (f < 0.34 ? RING[3][0] : RING[2][0]) + ",1)";
+        ctx.beginPath(); ctx.arc(cx, cy, R, head - (f + 1 / SEG) * SPAN, head - f * SPAN); ctx.stroke();
+      }
     }
     // sparks spraying off the ring — they keep living (rotating + shooting) even as the ring dissolves
     for (const e of embers) {
@@ -1309,7 +1322,7 @@ function initPortal() {
           Rclip = Rhold + (maxR - Rhold) * easeInOut(pf);
           strokeA = clamp(1 - pf * 1.5, 0, 1);                  // the solid ring dissolves first...
           sparkA = 1 - pf * pf * pf;                            // ...leaving a swirl of sparks that fade last
-          spinMult = 1 - 0.82 * easeInOut(pf);                  // spins slower as it loses energy (never fully stops)
+          spinMult = 1 - 0.5 * easeInOut(pf);                   // eases down as it loses energy, but keeps spinning hard
           if (pf >= 1) { nav(); return; }
         }
         frame.style.clipPath = "circle(" + Rclip.toFixed(1) + "px at 50% 50%)";
