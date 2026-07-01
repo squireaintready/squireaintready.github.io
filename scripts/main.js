@@ -883,6 +883,30 @@ function initHeroOrb() {
   const squish = () => { face.classList.remove("is-squish"); void face.offsetWidth; face.classList.add("is-squish"); };
   face.addEventListener("animationend", () => face.classList.remove("is-squish"));
 
+  // ---- discoverability callout: a one-time "poke me" tooltip so first-time visitors learn the o is a
+  // toy. It surfaces once the landing choreography has settled and retires the instant the o is touched
+  // (persisted, so a visitor who's found it is never nagged again; shown at most once per session). ----
+  let hintEl = null, hintTimer = 0;
+  const seen = () => { try { return !!localStorage.getItem("heroOrbSeen"); } catch (_) { return false; } };
+  const hintedThisSession = () => { try { return !!sessionStorage.getItem("heroOrbHinted"); } catch (_) { return false; } };
+  const dismissHint = (persist) => {
+    if (hintTimer) { clearTimeout(hintTimer); hintTimer = 0; }
+    if (persist) { try { localStorage.setItem("heroOrbSeen", "1"); } catch (_) {} }
+    if (hintEl) { const el = hintEl; hintEl = null; el.classList.remove("is-shown"); setTimeout(() => el.remove(), 450); }
+  };
+  if (!seen() && !hintedThisSession()) {
+    hintTimer = setTimeout(() => {
+      if (loose || seen()) return;             // they already found it during the wait → skip the hint
+      try { sessionStorage.setItem("heroOrbHinted", "1"); } catch (_) {}
+      hintEl = document.createElement("span");
+      hintEl.className = "hero__o-hint"; hintEl.setAttribute("aria-hidden", "true");
+      hintEl.innerHTML = '<span class="hero__o-hint-inner"><span class="hero__o-hint-tail"></span>poke me</span>';
+      home.appendChild(hintEl);
+      requestAnimationFrame(() => { if (hintEl) hintEl.classList.add("is-shown"); });
+      hintTimer = setTimeout(() => dismissHint(false), 12000);   // retire quietly if ignored (may re-hint next session)
+    }, 2500);
+  }
+
   // return-home button — lazily created, stacked above the About orb's so both can be live at once
   let resetBtn = null;
   const getReset = () => {
@@ -964,7 +988,9 @@ function initHeroOrb() {
     hist = [{ x: e.clientX, y: e.clientY, t: performance.now() }];
     orb.style.transition = "";
   }
+  orb.addEventListener("pointerenter", () => dismissHint(true));   // hovered → they've noticed the toy
   orb.addEventListener("pointerdown", (e) => {
+    dismissHint(true);                                             // first touch retires the hint for good
     if (loose) { face.classList.add("is-grabbed"); try { orb.setPointerCapture(e.pointerId); } catch (_) {} beginDrag(e); e.preventDefault(); return; }
     armed = true; armedMouse = e.pointerType !== "touch"; downX = e.clientX; downY = e.clientY;
     if (armedMouse) { face.classList.add("is-grabbed"); try { orb.setPointerCapture(e.pointerId); } catch (_) {} e.preventDefault(); }

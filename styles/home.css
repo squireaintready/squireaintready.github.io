@@ -173,6 +173,36 @@
    .orb-reset's later `bottom`), so both orbs can be live with both buttons visible at once */
 .orb-reset.orb-reset--hero { bottom: calc(clamp(1rem, 3.5vw, 1.7rem) + 3.15rem); }
 @media (prefers-reduced-motion: reduce) { .hero__o-orb, .hero__o-spin { animation: none; } .hero__o-face { transition: none; } .hero__o.is-loose::after { animation: none; } }
+/* Discoverability callout — a small tooltip that emanates from the o so first-time visitors learn it's
+   a toy (poke to pop, drag to fling). JS builds it only when the o is actually interactive (never under
+   reduced motion, where the physics is off), shows it once after the entrance settles, and retires it for
+   good the first time the o is touched. Anchored to the .hero__o cutout so it tracks the o at any name
+   size: to the right on wide screens (open space); flips to just below on phones (where the o hugs the
+   edge). Outer span owns anchoring/centering; inner span owns the reveal + the idle bob, so the two
+   transforms never fight. On-accent text on the accent pill mirrors the primary button — legible in
+   every theme. */
+.hero__o-hint { position: absolute; z-index: 3; left: calc(100% + 0.6rem); top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 0; line-height: 0; }   /* collapse the inherited display line-box so the pill centres on the o, not on the name's baseline */
+.hero__o-hint-inner {
+  position: relative; display: inline-flex; align-items: center; white-space: nowrap;
+  font-family: var(--font-mono); font-size: var(--fs-2xs); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; line-height: 1;
+  color: var(--on-accent); background: var(--accent); padding: 0.42em 0.72em; border-radius: var(--r-pill);
+  box-shadow: 0 4px 14px -5px color-mix(in srgb, var(--accent) 60%, transparent);
+  opacity: 0; transform: translateX(-6px) scale(0.9); transform-origin: left center;
+  transition: opacity 0.4s var(--ease-out), transform 0.5s var(--ease-spring);
+}
+.hero__o-hint.is-shown .hero__o-hint-inner { opacity: 1; transform: none; animation: hero-hint-bob-x 2.4s var(--ease-in-out) 0.6s infinite; }
+/* tail — a small triangle pointing back at the o (its left edge on desktop) */
+.hero__o-hint-tail { position: absolute; right: 100%; top: 50%; width: 0; height: 0; border: 5px solid transparent; border-right-color: var(--accent); transform: translateY(-50%); margin-right: -1px; }
+@keyframes hero-hint-bob-x { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(4px); } }
+/* phones: the o sits at the right edge → drop the callout just beneath it, right-aligned, tail on top */
+@media (max-width: 600px) {
+  .hero__o-hint { left: auto; right: -0.15rem; top: calc(100% + 0.5rem); transform: none; }
+  .hero__o-hint-inner { transform: translateY(-6px) scale(0.9); transform-origin: top right; }
+  .hero__o-hint.is-shown .hero__o-hint-inner { transform: none; animation: hero-hint-bob-y 2.4s var(--ease-in-out) 0.6s infinite; }
+  .hero__o-hint-tail { right: 0.72rem; top: auto; bottom: 100%; border: 5px solid transparent; border-bottom-color: var(--accent); transform: none; margin: 0 0 -1px 0; }
+}
+@keyframes hero-hint-bob-y { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
+@media (prefers-reduced-motion: reduce) { .hero__o-hint.is-shown .hero__o-hint-inner { animation: none; } }
 /* accent rule under the name — draws in from the centre on load; the accent peaks at the centre and
    fades symmetrically to transparent at both ends. Hover lifts it with a brighter accent + a soft glow. */
 .hero__rule {
