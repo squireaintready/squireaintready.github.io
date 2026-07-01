@@ -678,6 +678,7 @@ function initOrb() {
     if (!loose) { rafId = 0; return; }
     const dt = lastT ? clamp((t - lastT) / 16.6667, 0.5, 2.4) : 1;
     lastT = t;
+    let moving = false;   // recomputed fresh each frame — no sticky "at rest" flag that could freeze a fresh fling mid-air
     if (!dragging) {
       vy += GRAV * dt; vx *= Math.pow(AIRX, dt); vy *= Math.pow(AIRY, dt);
       x += vx * dt; y += vy * dt;
@@ -689,23 +690,25 @@ function initOrb() {
       else if (y >= H) { y = H; if (Math.abs(vy) > 2.4) hit = Math.max(hit, Math.abs(vy)); vy = -vy * FLOOR_REST; vx *= FLOORF; }
       if (hit > 4.5) squish();
       draw();
-      if (y >= H - 0.5 && Math.abs(vy) < 0.7 && Math.abs(vx) < 0.3) { vx = vy = 0; atRest = true; }
+      const parked = y >= H - 0.5 && Math.abs(vy) < 0.7 && Math.abs(vx) < 0.3;   // resting on the floor with no meaningful speed
+      if (parked) { vx = vy = 0; }
+      moving = !parked;
     }
     // SJ "gravity" eases EVERY frame (dragging or free), so the monogram rolls smoothly to the bottom
     // and the light rides with it — it never jumps. Target sway comes from the current velocity.
     const sink = h * 0.15;
-    const tx = dragging ? 0 : clamp(-vx * 1.0, -h * 0.09, h * 0.09);
+    const tx = dragging ? 0 : clamp(-vx, -h * 0.09, h * 0.09);
     const tr = dragging ? 0 : clamp(-vx * 0.65, -11, 11);
     sjX += (tx - sjX) * 0.14; sjY += (sink - sjY) * 0.11; sjR += (tr - sjR) * 0.14;
     swayMono();
     const sjSettled = Math.abs(sjY - sink) < 0.4 && Math.abs(sjX) < 0.4 && Math.abs(sjR) < 0.4;
-    if (sjSettled && (atRest || dragging)) { rafId = 0; return; }   // both physics + SJ settled → stop
+    if (!moving && sjSettled) { rafId = 0; return; }   // ball parked (or held still mid-drag) + SJ settled → idle until the next input
     rafId = requestAnimationFrame(loop);
   }
   const run = () => { if (!rafId) { lastT = 0; rafId = requestAnimationFrame(loop); } };
   const halt = () => { if (rafId) { cancelAnimationFrame(rafId); rafId = 0; } };
 
-  function unlock() {
+  function unlock(pop) {
     if (loose) return;
     const r = orb.getBoundingClientRect();
     w = r.width; h = r.height; x = r.left; y = r.top;
@@ -717,7 +720,7 @@ function initOrb() {
     loose = true;
     sjX = sjY = sjR = 0;        // SJ starts centered, then eases down to the bottom in the loop
     getReset().classList.add("is-shown");
-    if (pop) { vx = (Math.random() * 2 - 1) * 3; vy = -6.5; squish(); }   // a click pops it loose with a bounce
+    if (pop) { vx = (Math.random() * 2 - 1) * 2.4; vy = -7; squish(); }   // a single click pops it straight up with a light bounce
     else { vx = 0; vy = 0; }                                              // a drag grabs it in place (no pop)
     run();
   }
@@ -746,7 +749,7 @@ function initOrb() {
     setTimeout(finish, 440);
   }
 
-  const DRAG_THRESH = 5;
+  const DRAG_THRESH = 7;   // past this a locked-orb press becomes a grab-and-pull; under it, a plain click just pops
   function beginDrag(e) {
     dragging = true;
     dragDX = e.clientX - x; dragDY = e.clientY - y;
@@ -755,11 +758,11 @@ function initOrb() {
     run();   // keep the loop alive so the SJ rolls (eases) to the bottom while carried — never jumps
   }
   orb.addEventListener("pointerdown", (e) => {
-    face.classList.add("is-grabbed");
-    if (loose) { try { orb.setPointerCapture(e.pointerId); } catch (_) {} beginDrag(e); e.preventDefault(); return; }
-    // locked: arm — a tap pops it loose, a mouse/pen drag pulls it straight out in one gesture
+    if (loose) { face.classList.add("is-grabbed"); try { orb.setPointerCapture(e.pointerId); } catch (_) {} beginDrag(e); e.preventDefault(); return; }
+    // locked: arm — a click/tap pops it loose, a mouse/pen drag pulls it straight out in one gesture
     armed = true; armedMouse = e.pointerType !== "touch"; downX = e.clientX; downY = e.clientY;
-    if (armedMouse) { try { orb.setPointerCapture(e.pointerId); } catch (_) {} e.preventDefault(); }
+    // press feedback + capture + preventDefault only for mouse/pen; on touch stay hands-off so a vertical swipe still scrolls
+    if (armedMouse) { face.classList.add("is-grabbed"); try { orb.setPointerCapture(e.pointerId); } catch (_) {} e.preventDefault(); }
   });
   orb.addEventListener("pointermove", (e) => {
     if (armed && !loose) {

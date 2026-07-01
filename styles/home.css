@@ -33,18 +33,22 @@
   font-size: clamp(2.4rem, 13vw, 96px);   /* CLS fallback (under the fitted size so "Samuel Jo" never clips pre-JS); JS fits it to the column */
   line-height: 0.9; letter-spacing: -0.03em;
 }
-/* animated accent rule under the name — draws in on load, its accent sweeps across on hover */
+/* accent rule under the name — draws in from the left on load; the accent is solid on the left and
+   fades to transparent toward the right. Hover lifts it with a brighter accent + a soft glow. */
 .hero__rule {
-  height: clamp(2px, 0.3vw, 4px); width: min(100%, 40rem); margin-top: clamp(0.85rem, 2vw, 1.5rem);
+  height: clamp(2px, 0.3vw, 3px); width: min(100%, 40rem); margin-top: clamp(0.85rem, 2vw, 1.5rem);
   border-radius: 3px; transform-origin: left;
-  background: linear-gradient(90deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 45%, var(--border-strong)) 40%, var(--border-strong) 68%, transparent 100%);
-  background-size: 220% 100%; background-position: 100% 0;
+  background: linear-gradient(90deg,
+    var(--accent) 0%,
+    color-mix(in srgb, var(--accent) 80%, transparent) 32%,
+    color-mix(in srgb, var(--accent) 38%, transparent) 64%,
+    transparent 97%);
   transform: scaleX(0); opacity: 0;
   animation: hero-rule-in 1s var(--ease-out) 0.35s forwards;
-  transition: background-position 0.75s var(--ease-out);
+  transition: filter 0.5s var(--ease-out);
 }
 @keyframes hero-rule-in { to { transform: scaleX(1); opacity: 1; } }
-.hero__main:hover .hero__rule { background-position: 0 0; }
+.hero__main:hover .hero__rule { filter: brightness(1.32) drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 42%, transparent)); }
 @media (prefers-reduced-motion: reduce) { .hero__rule { animation: none; transform: scaleX(1); opacity: 1; transition: none; } }
 
 .hero__statement { font-family: var(--font-display); font-weight: var(--w-display); font-optical-sizing: none; font-size: var(--fs-2xl); line-height: 1.16; letter-spacing: -0.01em; color: var(--text-dim); max-width: 30ch; text-wrap: balance; margin-top: clamp(0.9rem, 2.2vw, 1.4rem); }
