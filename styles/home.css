@@ -201,19 +201,23 @@
 @keyframes about-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
 .about__orb-face {
   position: absolute; inset: 0; border-radius: 50%; display: grid; place-items: center;
-  /* lit sphere: warm highlight top-left, occlusion + cast toward bottom, so it reads as a ball tipping toward you */
+  --lx: 36%; --ly: 26%;   /* light position — JS rides it up + sideways with gravity while the orb is loose */
+  /* lit sphere: warm highlight at --lx/--ly, occlusion + cast toward the bottom; as the light rises the base darkens, so it reads as a ball tipping to face down */
   background:
     radial-gradient(circle at 50% 116%, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0) 46%),
-    radial-gradient(circle at 36% 26%, color-mix(in srgb, var(--accent) 38%, var(--surface)) 0%, var(--surface-2) 48%, color-mix(in srgb, #000 26%, var(--surface)) 100%);
+    radial-gradient(circle at var(--lx) var(--ly), color-mix(in srgb, var(--accent) 38%, var(--surface)) 0%, var(--surface-2) 48%, color-mix(in srgb, #000 26%, var(--surface)) 100%);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-2), inset 0 -15px 26px -12px rgba(0, 0, 0, 0.6), inset 0 12px 20px -14px color-mix(in srgb, var(--accent) 55%, #fff);
-  transform-style: preserve-3d; transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
-  transition: transform 0.2s var(--ease-out); cursor: pointer; -webkit-user-select: none; user-select: none;
+  transform-style: preserve-3d; transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(var(--os, 1));
+  transition: transform 0.18s var(--ease-out); cursor: grab; -webkit-user-select: none; user-select: none;
 }
-.about__orb-face::before {   /* soft specular highlight — a real glint high on the sphere */
-  content: ""; position: absolute; left: 19%; top: 11%; width: 42%; height: 34%; border-radius: 50%;
-  background: radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 66%);
-  opacity: 0.5; pointer-events: none;
+.about__orb:not(.is-loose) .about__orb-face:hover { --os: 1.03; }   /* hover invites the grab */
+.about__orb-face.is-grabbed { --os: 0.95; }                        /* press feedback */
+.about__orb-face:active { cursor: grabbing; }
+.about__orb-face::before {   /* soft specular glint that tracks the light */
+  content: ""; position: absolute; left: calc(var(--lx) - 17%); top: calc(var(--ly) - 15%); width: 42%; height: 34%; border-radius: 50%;
+  background: radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0) 66%);
+  opacity: 0.55; pointer-events: none;
 }
 .about__shape .ring { position: absolute; inset: -1px; border-radius: 50%; border: 1px solid var(--proj, var(--accent)); opacity: 0.28; transform: translateZ(14px); }
 .about__monogram { font-family: var(--font-display); font-weight: 360; font-size: clamp(3.2rem, 10vw, 6rem); color: var(--accent); letter-spacing: -0.04em; line-height: 1; transform: translateZ(30px); will-change: transform; }

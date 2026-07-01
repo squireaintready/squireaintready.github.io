@@ -616,7 +616,7 @@ function initOrb() {
   if (!shape || !orb || !face) return;
   const mono = face.querySelector(".about__monogram");
 
-  let loose = false, dragging = false;
+  let loose = false, dragging = false, armed = false, armedMouse = false, downX = 0, downY = 0;
   let x = 0, y = 0, vx = 0, vy = 0, w = 0, h = 0, rafId = 0, lastT = 0, dragDX = 0, dragDY = 0, hist = [], sjX = 0, sjY = 0, sjR = 0;
 
   // ---- hover tilt (locked state, mouse only) ----
@@ -653,7 +653,12 @@ function initOrb() {
   const draw = () => { orb.style.transform = "translate(" + x.toFixed(1) + "px," + y.toFixed(1) + "px)"; };
   const squish = () => { face.classList.remove("is-squish"); void face.offsetWidth; face.classList.add("is-squish"); };
   face.addEventListener("animationend", () => face.classList.remove("is-squish"));
-  const swayMono = () => { if (mono) mono.style.transform = "translate(" + sjX.toFixed(1) + "px," + sjY.toFixed(1) + "px) rotate(" + sjR.toFixed(1) + "deg)"; };
+  const swayMono = () => {
+    if (mono) mono.style.transform = "translate(" + sjX.toFixed(1) + "px," + sjY.toFixed(1) + "px) rotate(" + sjR.toFixed(1) + "deg)";
+    const hh = h || 1;
+    face.style.setProperty("--lx", (36 - (sjX / hh) * 80).toFixed(1) + "%");   // light shifts opposite the sway
+    face.style.setProperty("--ly", (26 - (sjY / hh) * 95).toFixed(1) + "%");   // and rides up as the SJ sinks → the ball reads as tipping to face down
+  };
 
   // return-home button — lazily created, shown only while the orb is loose
   let resetBtn = null;
@@ -707,8 +712,9 @@ function initOrb() {
     loose = true;
     sjX = sjY = sjR = 0;        // SJ starts centered, then eases down to the bottom in the loop
     getReset().classList.add("is-shown");
-    vx = (Math.random() * 2 - 1) * 3; vy = -6.5;   // a little pop as it releases
-    squish(); run();
+    if (pop) { vx = (Math.random() * 2 - 1) * 3; vy = -6.5; squish(); }   // a click pops it loose with a bounce
+    else { vx = 0; vy = 0; }                                              // a drag grabs it in place (no pop)
+    run();
   }
   function relock() {
     loose = false; halt();
@@ -716,6 +722,7 @@ function initOrb() {
     orb.classList.remove("is-loose"); shape.classList.remove("is-loose", "is-target");
     orb.style.transition = ""; orb.style.transform = ""; orb.style.width = ""; orb.style.height = "";
     if (mono) mono.style.transform = "";   // SJ back to its centered badge position
+    face.style.removeProperty("--lx"); face.style.removeProperty("--ly"); face.classList.remove("is-grabbed");
     sjX = sjY = sjR = 0;
     if (resetBtn) resetBtn.classList.remove("is-shown");
   }
@@ -734,17 +741,26 @@ function initOrb() {
     setTimeout(finish, 440);
   }
 
-  face.addEventListener("click", (e) => { if (!loose) { e.preventDefault(); unlock(); } });
-  orb.addEventListener("pointerdown", (e) => {
-    if (!loose) return;
+  const DRAG_THRESH = 5;
+  function beginDrag(e) {
     dragging = true; halt();
-    try { orb.setPointerCapture(e.pointerId); } catch (_) {}
     dragDX = e.clientX - x; dragDY = e.clientY - y;
     hist = [{ x: e.clientX, y: e.clientY, t: performance.now() }];
     sjX = 0; sjR = 0; sjY = h * 0.15; swayMono();   // SJ hangs at the bottom while carried
-    orb.style.transition = ""; e.preventDefault();
+    orb.style.transition = "";
+  }
+  orb.addEventListener("pointerdown", (e) => {
+    face.classList.add("is-grabbed");
+    if (loose) { try { orb.setPointerCapture(e.pointerId); } catch (_) {} beginDrag(e); e.preventDefault(); return; }
+    // locked: arm — a tap pops it loose, a mouse/pen drag pulls it straight out in one gesture
+    armed = true; armedMouse = e.pointerType !== "touch"; downX = e.clientX; downY = e.clientY;
+    if (armedMouse) { try { orb.setPointerCapture(e.pointerId); } catch (_) {} e.preventDefault(); }
   });
   orb.addEventListener("pointermove", (e) => {
+    if (armed && !loose) {
+      if (armedMouse && Math.hypot(e.clientX - downX, e.clientY - downY) > DRAG_THRESH) { armed = false; unlock(false); beginDrag(e); }
+      else return;   // touch: let a swipe scroll; a tap pops on pointerup
+    }
     if (!dragging) return;
     x = clamp(e.clientX - dragDX, 0, vw() - w); y = clamp(e.clientY - dragDY, 0, vh() - h);
     draw();
@@ -752,7 +768,9 @@ function initOrb() {
     if (hist.length > 6) hist.shift();
     shape.classList.toggle("is-target", near());
   });
-  function release() {
+  function release(e) {
+    face.classList.remove("is-grabbed");
+    if (armed && !loose) { armed = false; unlock(true); return; }   // tap → pop loose + bounce
     if (!dragging) return;
     dragging = false;
     if (hist.length >= 2) {
@@ -762,7 +780,7 @@ function initOrb() {
     if (near()) snapHome(); else run();
   }
   orb.addEventListener("pointerup", release);
-  orb.addEventListener("pointercancel", release);
+  orb.addEventListener("pointercancel", (e) => { armed = false; release(e); });
   addEventListener("resize", () => { if (loose && !dragging) { x = clamp(x, 0, vw() - w); y = clamp(y, 0, vh() - h); draw(); } }, { passive: true });
 }
 
