@@ -990,6 +990,9 @@ function initHeroOrb() {
   }
   orb.addEventListener("pointerup", release);
   orb.addEventListener("pointercancel", (e) => { armed = false; release(e); });
+  // click the cutout (the ring at the o's spot) to snap the orb home — the target is `home` itself,
+  // not the orb (which is off in the clip layer while loose), so the pop-click never triggers this
+  home.addEventListener("click", (e) => { if (loose && e.target === home) snapHome(); });
   addEventListener("resize", () => { if (loose && !dragging) { x = clamp(x, 0, vw() - w); y = clamp(y, 0, vh() - h); draw(); } }, { passive: true });
 }
 

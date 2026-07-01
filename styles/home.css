@@ -43,36 +43,39 @@
   display: inline-block; position: relative; vertical-align: baseline;
   width: 0.55em; height: 0.52em;
 }
-/* the drop-back cutout — the SJ orb's target, scaled to the wordmark: a thin dashed ring that slowly
-   spins, a soft accent glow, and a "drag me home" cue, exactly like the About orb. Sized in px (not em)
-   so the ring + hint stay a legible, comfortable target even though the o's own box is tiny; shown only
-   while the orb is loose. ::after = the spinning ring, ::before = the static cue (so it doesn't spin). */
+/* the drop-back cutout — a small dashed ring nested on the o's spot while it's loose: the SJ orb's
+   language (thin dashed, slow spin, soft accent glow) but sized in em so it hugs the orb instead of
+   dwarfing it. It doubles as a reset button — the ring is clickable (initHeroOrb → snapHome) and
+   labelled "reset"; dragging the orb back onto it also snaps home. ::after = the spinning, clickable
+   ring; ::before = the static label (so it doesn't spin). */
 .hero__o.is-loose::after {
   content: ""; position: absolute; left: 50%; top: 50%;
-  width: 116px; height: 116px; border-radius: 50%;
+  width: 0.62em; height: 0.62em; border-radius: 50%;
   border: 1px dashed color-mix(in srgb, var(--accent) 46%, transparent);
-  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 9%, transparent) 0%, transparent 70%);
-  transform: translate(-50%, -50%); opacity: 0.85;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 10%, transparent) 0%, transparent 70%);
+  transform: translate(-50%, -50%); opacity: 0.9;
   animation: hero-cutout-spin 20s linear infinite;
   transition: border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+  pointer-events: auto; cursor: pointer;
 }
 .hero__o.is-loose::before {
-  content: "↩ drag me home"; position: absolute; left: 50%; top: 50%;
-  width: 116px; transform: translate(-50%, -50%); text-align: center; line-height: 1.5;
-  font-family: var(--font-mono); font-size: var(--fs-2xs); font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase;
-  color: color-mix(in srgb, var(--accent) 70%, var(--text-dim)); opacity: 0.92; pointer-events: none;
+  content: "↺ reset"; position: absolute; left: 50%; top: 50%;
+  width: 0.62em; transform: translate(-50%, -50%); text-align: center; line-height: 1.35;
+  font-family: var(--font-mono); font-size: var(--fs-2xs); font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--accent) 74%, var(--text-dim)); opacity: 0.95; pointer-events: none;
   transition: color 0.2s var(--ease-out);
 }
+.hero__o.is-loose:hover::after,
 .hero__o.is-target::after {
   border-color: var(--accent);
-  box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 13%, transparent), inset 0 0 20px color-mix(in srgb, var(--accent) 14%, transparent);
+  box-shadow: 0 0 0 0.035em color-mix(in srgb, var(--accent) 14%, transparent), inset 0 0 0.14em color-mix(in srgb, var(--accent) 16%, transparent);
 }
+.hero__o.is-loose:hover::before,
 .hero__o.is-target::before { color: var(--accent); }
 @keyframes hero-cutout-spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
-/* On phones the "o" hugs the screen edge, so a full-size ring + centred cue would clip. Show a
-   smaller ring (still the drop target) and drop the cue — the "Return o" button is the touch path. */
+/* On phones the "o" hugs the screen edge and the ring is tiny, so drop the label (the ring is still
+   the tap-to-reset target, and the "Return o" button is the primary touch path). */
 @media (max-width: 680px) {
-  .hero__o.is-loose::after { width: clamp(62px, 19vw, 80px); height: clamp(62px, 19vw, 80px); }
   .hero__o.is-loose::before { display: none; }
 }
 .hero__o-orb {
