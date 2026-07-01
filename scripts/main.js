@@ -1181,35 +1181,35 @@ function initPortal() {
     return a;
   }
 
-  function drawRing(ctx, cx, cy, R, el, embers, ringA) {
-    const rot = el * SPIN;
+  function drawRing(ctx, cx, cy, R, el, embers, rot, strokeA, sparkA, sprayK) {
     // fiery annulus, broad → hot → white-hot: a wide halo, an orange glow, a thick gold body, a bright core
-    ctx.globalAlpha = 0.16 * ringA; ctx.lineWidth = Math.max(20, R * 0.13);
+    ctx.globalAlpha = 0.16 * strokeA; ctx.lineWidth = Math.max(20, R * 0.13);
     ctx.strokeStyle = "rgba(214,96,26,1)";
     ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
-    ctx.globalAlpha = 0.34 * ringA; ctx.lineWidth = Math.max(10, R * 0.06);
+    ctx.globalAlpha = 0.34 * strokeA; ctx.lineWidth = Math.max(10, R * 0.06);
     ctx.strokeStyle = "rgba(240,150,54,1)";
     ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
-    ctx.globalAlpha = 0.78 * ringA; ctx.lineWidth = mobile ? 4.5 : 7;
+    ctx.globalAlpha = 0.78 * strokeA; ctx.lineWidth = mobile ? 4.5 : 7;
     ctx.strokeStyle = "rgba(255,192,100,1)";
     ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
-    ctx.globalAlpha = 0.98 * ringA; ctx.lineWidth = mobile ? 2 : 2.6;
+    ctx.globalAlpha = 0.98 * strokeA; ctx.lineWidth = mobile ? 2 : 2.6;
     ctx.strokeStyle = "rgba(255,248,226,1)";
     ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
-    // sparks spraying off the ring
+    // sparks spraying off the ring — they keep living (rotating + shooting) even as the ring dissolves
     for (const e of embers) {
       const lp = (el * e.rate + e.life0) % 1;                     // 0..1 spark life
       const fl = 0.5 + 0.5 * Math.sin(el * e.tw + e.ph);
-      const ang = e.a + rot, rr = R + e.band + e.spray * lp;
+      const espray = e.spray * sprayK;
+      const ang = e.a + rot, rr = R + e.band + espray * lp;
       const px = cx + Math.cos(ang) * rr, py = cy + Math.sin(ang) * rr + e.grav * lp * lp;
-      const a = clamp(e.al * fl * (1 - lp) * ringA, 0, 1);
+      const a = clamp(e.al * fl * (1 - lp) * sparkA, 0, 1);
       if (a < 0.012) continue;
       const sz = e.sz * (1 - 0.4 * lp), sp = sprites[e.hue];
       ctx.globalAlpha = a;
       ctx.drawImage(sp, px - sz, py - sz, sz * 2, sz * 2);
       if (e.trail) {                                              // motion-blur streak back toward the ring (two stamps)
         for (let k = 1; k <= 2; k++) {
-          const tr = R + e.band + e.spray * lp * (1 - k * 0.3), ts = sz * (1 - k * 0.2);
+          const tr = R + e.band + espray * lp * (1 - k * 0.3), ts = sz * (1 - k * 0.2);
           ctx.globalAlpha = a * (0.5 - k * 0.13);
           ctx.drawImage(sp, cx + Math.cos(ang) * tr - ts, cy + Math.sin(ang) * tr + e.grav * lp * lp * (1 - k * 0.35) - ts, ts * 2, ts * 2);
         }
@@ -1249,7 +1249,7 @@ function initPortal() {
     const ctx = cv.getContext("2d"); ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     const embers = makeEmbers();
 
-    let ready = false, openAt = 0, start = 0, done = false;
+    let ready = false, openAt = 0, start = 0, done = false, rot = 0, lastTs = 0;
     const nav = () => { if (done) return; done = true; try { sessionStorage.setItem("portalReveal", "1"); } catch (e) {} location.href = href; };
     const onReady = () => {   // frame rendered → match theme + reveal its JS-gated content, then open onto it
       if (ready) return; ready = true;
@@ -1270,10 +1270,11 @@ function initPortal() {
 
     function loop(ts) {
       if (!start) start = ts;
-      const el = ts - start;
+      if (!lastTs) lastTs = ts;
+      const el = ts - start, dt = Math.min(50, ts - lastTs); lastTs = ts;
       ctx.clearRect(0, 0, W, H);
       ctx.globalCompositeOperation = "lighter";
-      let R, ringA = 1;
+      let R, strokeA = 1, sparkA = 1, sprayK = 1, spin = SPIN;
       if (!ready) {                                              // charging: a small live ring while the frame loads
         R = R0 * (0.86 + 0.14 * Math.sin(el * 0.011));
         glow(ctx, cx, cy, R0 * 5, 0.5);
@@ -1286,16 +1287,21 @@ function initPortal() {
           R = Rclip = R0 + (Rhold - R0) * easeInOut(p);
           if (p < 0.16) glow(ctx, cx, cy, R0 * 5, 0.5 * (1 - p / 0.16));
         } else if (t < OPEN_MS + HOLD_MS) {                     // hold: fully open, the ring spins in place
-          R = Rclip = Rhold;
-        } else {                                                // dissolve: the ring fades where it is while the page fills the last corners
+          R = Rclip = Rhold; spin = SPIN * 1.6;
+        } else {                                                // dissolve: the ring stays ALIVE — spins up, shoots sparks — as it disintegrates
           const pf = clamp((t - OPEN_MS - HOLD_MS) / FADE_MS, 0, 1);
-          R = Rhold; ringA = 1 - pf;
+          R = Rhold;
           Rclip = Rhold + (maxR - Rhold) * easeInOut(pf);
+          strokeA = clamp(1 - pf * 1.5, 0, 1);                  // the solid ring dissolves first...
+          sparkA = 1 - pf * pf * pf;                            // ...leaving a swirl of sparks that fade last
+          sprayK = 1 + pf * 0.9;                                // sparks shoot outward as it breaks apart
+          spin = SPIN * (1.6 + pf * 1.4);                       // spinning faster the whole way out
           if (pf >= 1) { nav(); return; }
         }
         frame.style.clipPath = "circle(" + Rclip.toFixed(1) + "px at 50% 50%)";
       }
-      drawRing(ctx, cx, cy, R, el, embers, ringA);
+      rot += dt * spin;
+      drawRing(ctx, cx, cy, R, el, embers, rot, strokeA, sparkA, sprayK);
       requestAnimationFrame(loop);
     }
     requestAnimationFrame(loop);
