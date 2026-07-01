@@ -63,9 +63,9 @@
 .fact__value { font-family: var(--font-sans); font-size: var(--fs-sm); color: var(--text); line-height: 1.5; }
 .fact__value .chip { margin: 0.2rem 0.2rem 0 0; display: inline-block; }
 
-/* ---------- Project seal — a spinning signature stamp at the foot of the sidebar ---------- */
-.case-seal { margin-top: clamp(1.6rem, 4vw, 2.2rem); padding-top: clamp(1.4rem, 3vw, 1.9rem); border-top: 1px solid var(--border); display: flex; justify-content: center; }
-.seal { width: clamp(82px, 44%, 104px); aspect-ratio: 1; position: relative; color: var(--proj-ink, var(--accent)); flex: none; }
+/* ---------- Project seal — a spinning signature stamp that signs off the case study, just above prev/next ---------- */
+.case-seal { display: flex; justify-content: center; padding: clamp(2.75rem, 7vw, 4.75rem) 0 clamp(1.5rem, 4vw, 2.75rem); }
+.seal { width: clamp(102px, 15vw, 128px); aspect-ratio: 1; position: relative; color: var(--proj-ink, var(--accent)); flex: none; }
 .seal svg { width: 100%; height: 100%; display: block; }
 .seal__ring { animation: seal-spin 26s linear infinite; transform-origin: 50% 50%; }
 .seal:hover .seal__ring { animation-duration: 7s; }
