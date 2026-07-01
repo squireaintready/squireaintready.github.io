@@ -201,13 +201,14 @@
 @keyframes about-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
 .about__orb-face {
   position: absolute; inset: 0; border-radius: 50%; display: grid; place-items: center;
-  --lx: 36%; --ly: 26%;   /* light position — JS rides it up + sideways with gravity while the orb is loose */
-  /* lit sphere: warm highlight at --lx/--ly, occlusion + cast toward the bottom; as the light rises the base darkens, so it reads as a ball tipping to face down */
+  --lx: 36%; --ly: 26%; --sx: 50%; --sh-x: 0px;   /* light (--lx/--ly) + shadow side (--sx/--sh-x): JS tilts them with gravity while loose */
+  /* lit sphere. Everything tilts together: the light rides up + opposite the lean, while the cast (--sx) and
+     inset occlusion (--sh-x) follow the heavy SJ side — so highlight, shadow, cast and SJ read as one moving ball. */
   background:
-    radial-gradient(circle at 50% 116%, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0) 46%),
+    radial-gradient(circle at var(--sx) 118%, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0) 47%),
     radial-gradient(circle at var(--lx) var(--ly), color-mix(in srgb, var(--accent) 38%, var(--surface)) 0%, var(--surface-2) 48%, color-mix(in srgb, #000 26%, var(--surface)) 100%);
   border: 1px solid var(--border);
-  box-shadow: var(--shadow-2), inset 0 -15px 26px -12px rgba(0, 0, 0, 0.6), inset 0 12px 20px -14px color-mix(in srgb, var(--accent) 55%, #fff);
+  box-shadow: var(--shadow-2), inset var(--sh-x) -15px 26px -12px rgba(0, 0, 0, 0.62), inset calc(-1 * var(--sh-x)) 12px 20px -14px color-mix(in srgb, var(--accent) 55%, #fff);
   transform-style: preserve-3d; transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(var(--os, 1));
   transition: transform 0.18s var(--ease-out); cursor: grab; -webkit-user-select: none; user-select: none;
 }

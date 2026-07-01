@@ -655,9 +655,11 @@ function initOrb() {
   face.addEventListener("animationend", () => face.classList.remove("is-squish"));
   const swayMono = () => {
     if (mono) mono.style.transform = "translate(" + sjX.toFixed(1) + "px," + sjY.toFixed(1) + "px) rotate(" + sjR.toFixed(1) + "deg)";
-    const hh = h || 1;
-    face.style.setProperty("--lx", (36 - (sjX / hh) * 80).toFixed(1) + "%");   // light shifts opposite the sway
-    face.style.setProperty("--ly", (26 - (sjY / hh) * 95).toFixed(1) + "%");   // and rides up as the SJ sinks → the ball reads as tipping to face down
+    const hh = h || 1, nx = sjX / hh;
+    face.style.setProperty("--lx", (36 - nx * 80).toFixed(1) + "%");            // light shifts opposite the lean
+    face.style.setProperty("--ly", (26 - (sjY / hh) * 95).toFixed(1) + "%");    // and rides up as the SJ sinks → ball tips to face down
+    face.style.setProperty("--sx", (50 + nx * 60).toFixed(1) + "%");            // cast follows the heavy (SJ) side
+    face.style.setProperty("--sh-x", (sjX * 0.42).toFixed(1) + "px");           // inset occlusion follows the SJ, rim light goes opposite
   };
 
   // return-home button — lazily created, shown only while the orb is loose
@@ -725,7 +727,7 @@ function initOrb() {
     orb.classList.remove("is-loose"); shape.classList.remove("is-loose", "is-target");
     orb.style.transition = ""; orb.style.transform = ""; orb.style.width = ""; orb.style.height = "";
     if (mono) mono.style.transform = "";   // SJ back to its centered badge position
-    face.style.removeProperty("--lx"); face.style.removeProperty("--ly"); face.classList.remove("is-grabbed");
+    face.style.removeProperty("--lx"); face.style.removeProperty("--ly"); face.style.removeProperty("--sx"); face.style.removeProperty("--sh-x"); face.classList.remove("is-grabbed");
     sjX = sjY = sjR = 0;
     if (resetBtn) resetBtn.classList.remove("is-shown");
   }
