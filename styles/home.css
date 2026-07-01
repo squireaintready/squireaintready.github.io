@@ -43,13 +43,19 @@
   display: inline-block; position: relative; vertical-align: baseline;
   width: 0.55em; height: 0.52em;
 }
-/* while the orb is loose, a dashed ring holds its spot in the wordmark — the drop-back target */
+/* the drop-back cutout: a softly glowing, slowly spinning dashed ring holds the o's spot in the
+   wordmark while it's loose — the About cutout's language, scaled down to the letter */
 .hero__o.is-loose::after {
-  content: ""; position: absolute; inset: -1px; border-radius: 50%;
-  border: 0.055em dashed color-mix(in srgb, var(--accent) 52%, transparent); opacity: 0.85;
+  content: ""; position: absolute; inset: -0.06em; border-radius: 50%;
+  border: 0.05em dashed color-mix(in srgb, var(--accent) 52%, transparent);
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 13%, transparent) 0%, transparent 68%);
+  opacity: 0.9; animation: cutout-spin 16s linear infinite;
   transition: border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
 }
-.hero__o.is-target::after { border-color: var(--accent); box-shadow: 0 0 0 0.12em color-mix(in srgb, var(--accent) 16%, transparent); }
+.hero__o.is-target::after {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 0.1em color-mix(in srgb, var(--accent) 16%, transparent), inset 0 0 0.6em color-mix(in srgb, var(--accent) 22%, transparent);
+}
 .hero__o-orb {
   position: absolute; inset: 0; perspective: 6em;
   animation: hero-o-float 7s var(--ease-in-out) infinite;
@@ -64,28 +70,39 @@
   transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(var(--os, 1));
   filter: drop-shadow(0 0 0 transparent);
   transition: transform 0.18s var(--ease-out), filter 0.28s var(--ease-out);
-  /* FIXED lit torus: inner-wall shadow, base occlusion, accent body + upper-left light. The hole is
-     punched with a radial mask (closest-side → 100% = the sphere radius, so the ratios are exact). */
+  /* the SJ orb's glossy material, punched into a natural "O": accent-lit body from the upper-left, a
+     rounded dark inner wall + base occlusion, and a bright accent rim on the top-outer edge. The
+     radial mask (closest-side → 100% = the radius) punches the counter; a soft feather keeps it organic. */
   background:
-    radial-gradient(circle closest-side at 50% 50%, transparent 44%, rgba(0, 0, 0, 0.6) 55%, rgba(0, 0, 0, 0) 82%),
-    radial-gradient(circle at 50% 118%, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0) 47%),
-    radial-gradient(circle at 36% 26%, color-mix(in srgb, var(--accent) 42%, var(--surface)) 0%, var(--surface-2) 52%, color-mix(in srgb, #000 30%, var(--surface)) 100%);
+    radial-gradient(circle closest-side at 50% 50%, rgba(0, 0, 0, 0.52) 47%, rgba(0, 0, 0, 0) 72%),
+    radial-gradient(circle at 50% 120%, rgba(0, 0, 0, 0.48) 0%, rgba(0, 0, 0, 0) 46%),
+    radial-gradient(circle at 35% 24%, color-mix(in srgb, var(--accent) 48%, var(--surface)) 0%, var(--surface-2) 46%, color-mix(in srgb, #000 18%, var(--surface)) 100%);
   border: 1px solid var(--border);
-  box-shadow: inset 0 0.035em 0.06em -0.035em color-mix(in srgb, var(--accent) 55%, #fff), 0 0.04em 0.1em rgba(0, 0, 0, 0.3);
-  -webkit-mask: radial-gradient(circle closest-side at 50% 50%, transparent 0 47%, #000 51%);
-          mask: radial-gradient(circle closest-side at 50% 50%, transparent 0 47%, #000 51%);
+  box-shadow:
+    inset 0 0.055em 0.085em -0.04em color-mix(in srgb, var(--accent) 62%, #fff),
+    inset 0 -0.03em 0.055em -0.04em rgba(0, 0, 0, 0.42),
+    0 0.05em 0.11em rgba(0, 0, 0, 0.32);
+  -webkit-mask: radial-gradient(circle closest-side at 50% 50%, transparent 0 45%, #000 51%);
+          mask: radial-gradient(circle closest-side at 50% 50%, transparent 0 45%, #000 51%);
 }
-/* a faint sheen that rotates around the ring → the surface reads as turning while the light stays put */
+/* fixed specular glint (the SJ orb's ::before) — the gloss that makes it read polished, not flat;
+   the face's mask keeps it on the ring */
+.hero__o-face::before {
+  content: ""; position: absolute; left: 18%; top: 10%; width: 40%; height: 31%; border-radius: 50%;
+  background: radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0) 68%);
+  opacity: 0.68; pointer-events: none;
+}
+/* a faint sheen that slowly turns around the ring → a subtle sense of rotation; the light stays fixed */
 .hero__o-spin {
   position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
-  background: conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(255, 255, 255, 0.17) 32deg, transparent 82deg, transparent 214deg, rgba(255, 255, 255, 0.07) 250deg, transparent 300deg);
-  -webkit-mask: radial-gradient(circle closest-side at 50% 50%, transparent 0 47%, #000 51%);
-          mask: radial-gradient(circle closest-side at 50% 50%, transparent 0 47%, #000 51%);
-  animation: hero-o-turn 9s linear infinite;
+  background: conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(255, 255, 255, 0.1) 44deg, transparent 96deg, transparent 360deg);
+  -webkit-mask: radial-gradient(circle closest-side at 50% 50%, transparent 0 45%, #000 51%);
+          mask: radial-gradient(circle closest-side at 50% 50%, transparent 0 45%, #000 51%);
+  animation: hero-o-turn 12s linear infinite;
 }
 .hero__o-ring {   /* thin accent ring just outside the torus — mirrors .about__shape .ring */
   position: absolute; inset: -1px; border-radius: 50%;
-  border: 1px solid var(--accent); opacity: 0.28; pointer-events: none;
+  border: 1px solid var(--accent); opacity: 0.24; pointer-events: none;
 }
 .hero__o-face:hover { --os: 1.05; }                    /* hover swells it, inviting the grab */
 .hero__o-face.is-grabbed { --os: 0.94; filter: drop-shadow(0 0 0.13em color-mix(in srgb, var(--accent) 48%, transparent)); }  /* held: squish + accent glow */
@@ -96,7 +113,7 @@
 /* the hero orb's return button — stacked above the About orb's (double class beats the base
    .orb-reset's later `bottom`), so both orbs can be live with both buttons visible at once */
 .orb-reset.orb-reset--hero { bottom: calc(clamp(1rem, 3.5vw, 1.7rem) + 3.15rem); }
-@media (prefers-reduced-motion: reduce) { .hero__o-orb, .hero__o-spin { animation: none; } .hero__o-face { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .hero__o-orb, .hero__o-spin { animation: none; } .hero__o-face { transition: none; } .hero__o.is-loose::after { animation: none; } }
 /* accent rule under the name — draws in from the left on load; the accent is solid on the left and
    fades to transparent toward the right. Hover lifts it with a brighter accent + a soft glow. */
 .hero__rule {
