@@ -1145,7 +1145,7 @@ function initPortal() {
   const mobile = matchMedia("(pointer: coarse)").matches || innerWidth < 640;
   const DPR = Math.min(window.devicePixelRatio || 1, 2);
   const N = mobile ? 280 : 500;                 // spark count — a dense, fiery sparkler ring
-  const SPIN = 0.0025;                          // ring rotation, rad/ms — a touch faster so the hold visibly spins
+  const SPIN = 0.004;                           // ring rotation, rad/ms — full spin speed; the ring spins the whole time
   const OPEN_MS = 850, HOLD_MS = 800, FADE_MS = 470;   // expand → hold (spins in place) → dissolve
 
   // white-gold → deep-orange sparks, pre-rendered once to sprites (cheap additive stamps)
@@ -1253,6 +1253,7 @@ function initPortal() {
     const nav = () => { if (done) return; done = true; try { sessionStorage.setItem("portalReveal", "1"); } catch (e) {} location.href = href; };
     const onReady = () => {   // frame rendered → match theme + reveal its JS-gated content, then open onto it
       if (ready) return; ready = true;
+      setTimeout(nav, OPEN_MS + HOLD_MS + FADE_MS + 1200);   // hard backstop: reach the destination even if the rAF loop stalls
       try {
         const d = frame.contentDocument, t = document.documentElement.getAttribute("data-theme");
         if (t) d.documentElement.setAttribute("data-theme", t);   // else it keeps the same CSS default as this page
@@ -1274,7 +1275,7 @@ function initPortal() {
       const el = ts - start, dt = Math.min(50, ts - lastTs); lastTs = ts;
       ctx.clearRect(0, 0, W, H);
       ctx.globalCompositeOperation = "lighter";
-      let R, strokeA = 1, sparkA = 1, sprayK = 1, spin = SPIN;
+      let R, strokeA = 1, sparkA = 1, spinMult = 1;   // spinMult 1 = full speed (spins throughout); winds down as it dissolves
       if (!ready) {                                              // charging: a small live ring while the frame loads
         R = R0 * (0.86 + 0.14 * Math.sin(el * 0.011));
         glow(ctx, cx, cy, R0 * 5, 0.5);
@@ -1287,20 +1288,20 @@ function initPortal() {
           R = Rclip = R0 + (Rhold - R0) * easeInOut(p);
           if (p < 0.16) glow(ctx, cx, cy, R0 * 5, 0.5 * (1 - p / 0.16));
         } else if (t < OPEN_MS + HOLD_MS) {                     // hold: fully open, the ring spins in place
-          R = Rclip = Rhold; spin = SPIN * 1.6;
+          R = Rclip = Rhold;
         } else {                                                // dissolve: the ring stays ALIVE — spins up, shoots sparks — as it disintegrates
           const pf = clamp((t - OPEN_MS - HOLD_MS) / FADE_MS, 0, 1);
           R = Rhold;
           Rclip = Rhold + (maxR - Rhold) * easeInOut(pf);
           strokeA = clamp(1 - pf * 1.5, 0, 1);                  // the solid ring dissolves first...
           sparkA = 1 - pf * pf * pf;                            // ...leaving a swirl of sparks that fade last
-          sprayK = 1 + pf * 0.9;                                // sparks shoot outward as it breaks apart
-          spin = SPIN * (1.6 + pf * 1.4);                       // spinning faster the whole way out
+          spinMult = 1 - 0.82 * easeInOut(pf);                  // spins slower as it loses energy (never fully stops)
           if (pf >= 1) { nav(); return; }
         }
         frame.style.clipPath = "circle(" + Rclip.toFixed(1) + "px at 50% 50%)";
       }
-      rot += dt * spin;
+      const sprayK = spinMult;                                  // spark throw tracks spin speed (centrifugal): slower spin → shorter sparks
+      rot += dt * SPIN * spinMult;
       drawRing(ctx, cx, cy, R, el, embers, rot, strokeA, sparkA, sprayK);
       requestAnimationFrame(loop);
     }
