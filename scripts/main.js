@@ -1113,7 +1113,7 @@ function initPortal() {
   const DPR = Math.min(window.devicePixelRatio || 1, 2);
   const N = mobile ? 210 : 360;                 // spark count — a dense sparkler ring
   const SPIN = 0.0019;                          // ring rotation, rad/ms
-  const OUT_MS = 500, IN_MS = 860, HOLD = 60;   // out → navigate → in
+  const IN_MS = 860, FADE_MS = 190;             // the reveal duration, and a quick dip to the void before navigating
 
   // white-gold → deep-orange sparks, pre-rendered once to sprites (cheap additive stamps)
   const HUES = ["255,247,224", "255,206,120", "248,150,54", "222,96,26"];
@@ -1192,11 +1192,11 @@ function initPortal() {
     bodyEl.style.transform = "scale(" + s.toFixed(4) + ")";
   }
 
-  // one portal pass — "out" swallows the page into the void, "in" opens onto the new page
-  function run({ polarity, dur, beat, block, onFirst, onDone }) {
+  // the single portal reveal — the ring opens and the new page shows through the growing hole
+  function run({ dur, beat, onFirst, onDone }) {
     const W = innerWidth, H = innerHeight, cx = W / 2, cy = H / 2;
     const cv = document.createElement("canvas");
-    cv.className = "portal-fx" + (block ? " is-block" : "");
+    cv.className = "portal-fx";
     cv.setAttribute("aria-hidden", "true");
     cv.style.width = W + "px"; cv.style.height = H + "px";
     cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
@@ -1221,12 +1221,12 @@ function initPortal() {
       if (p < beat) { const b = p / beat; R = R0 * (b < 0.5 ? easeOut(b / 0.5) : 1); }
       else { expo = easeInOut((p - beat) / (1 - beat)); R = R0 + (maxR - R0) * expo; }
       const ringA = 1 - Math.max(0, (p - 0.9) / 0.1) * 0.5;                    // ease the ring out at the very end
-      pageScale(polarity === "in" ? 0.9 + 0.1 * expo : 1 - 0.05 * expo);       // arrival pulled forward, departure recedes
+      pageScale(0.9 + 0.1 * expo);                                            // the new page is pulled forward as it opens
 
       ctx.clearRect(0, 0, W, H);
       ctx.globalCompositeOperation = "source-over";
       ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);                          // the warm void
-      ctx.globalCompositeOperation = polarity === "in" ? "destination-out" : "destination-in";
+      ctx.globalCompositeOperation = "destination-out";                        // carve a hole → the new page shows through
       ctx.beginPath(); ctx.arc(cx, cy, Math.max(0.01, R), 0, TAU); ctx.fill();   // carve the portal disc
       ctx.globalCompositeOperation = "lighter";
       if (p < beat + 0.12) {                                                   // warm ignite glow while the ring is small
@@ -1245,14 +1245,20 @@ function initPortal() {
     return finish;
   }
 
-  // ---- outgoing ----
+  // ---- outgoing: no second portal — just a quick dip to the void, continuous with the reveal ----
   let leaving = false;
   function depart(href) {
     if (leaving) return; leaving = true;
     try { const l = document.createElement("link"); l.rel = "prefetch"; l.href = href; document.head.appendChild(l); } catch (e) {}
     try { sessionStorage.setItem("portal", JSON.stringify({ rx: 0.5, ry: 0.5, t: Date.now() })); } catch (e) {}
-    run({ polarity: "out", dur: OUT_MS, beat: 0.14, block: true });   // visual only — the void holds until unload
-    setTimeout(() => { location.href = href; }, OUT_MS + HOLD);       // navigate on a clock (survives a throttled tab)
+    const dip = document.createElement("div");
+    dip.className = "portal-fx is-block";
+    dip.style.background = "radial-gradient(circle at 50% 50%, #1b120a 0%, #0b0806 55%, #050403 100%)";
+    dip.style.opacity = "0";
+    dip.style.transition = "opacity " + FADE_MS + "ms ease-in";
+    document.documentElement.appendChild(dip);
+    requestAnimationFrame(() => { dip.style.opacity = "1"; });        // fade the current page down to the void
+    setTimeout(() => { location.href = href; }, FADE_MS + 40);        // then hand off; the new page opens the portal
   }
 
   // resolve a click to an in-site navigation URL, or null to leave the click alone
@@ -1303,8 +1309,8 @@ function initPortal() {
       el.style.removeProperty("--portal-x"); el.style.removeProperty("--portal-y");
     };
     const finish = run({
-      polarity: "in", dur: IN_MS, beat: 0.17,
-      onFirst: dropCover,                // canvas has painted the void → drop the cover seamlessly
+      dur: IN_MS, beat: 0.17,
+      onFirst: dropCover,                // canvas has painted the void → drop the flat cover seamlessly
       onDone: (cv) => cv.remove(),
     });
     setTimeout(() => { dropCover(); pageScale(null); finish(); }, IN_MS + 800);   // failsafe: never leave the cover / canvas / scale behind
