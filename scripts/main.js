@@ -1145,7 +1145,7 @@ function initPortal() {
   const mobile = matchMedia("(pointer: coarse)").matches || innerWidth < 640;
   const DPR = Math.min(window.devicePixelRatio || 1, 2);
   const N = mobile ? 280 : 500;                 // spark count — a dense, fiery sparkler ring
-  const SPIN = 0.006;                           // ring rotation, rad/ms — full spin speed; the ring spins the whole time
+  const SPIN = 0.009;                           // ring rotation, rad/ms — full spin speed; the ring spins the whole time
   const OPEN_MS = 850, HOLD_MS = 800, FADE_MS = 470;   // expand → hold (spins in place) → dissolve
 
   // spark sprites, pre-rendered once (cheap stamps). Two palettes: bright white-gold for dark themes
@@ -1183,7 +1183,7 @@ function initPortal() {
     return a;
   }
 
-  function drawRing(ctx, cx, cy, R, el, embers, rot, strokeA, sparkA, sprayK, RING, spr) {
+  function drawRing(ctx, cx, cy, R, el, embers, rot, strokeA, sparkA, sprayK, RING, spr, streaks) {
     // fiery annulus: broad halo → orange glow → hot body → bright core (colors + base alphas per palette)
     const LW = [Math.max(20, R * 0.13), Math.max(10, R * 0.06), mobile ? 4.5 : 7, mobile ? 2 : 2.6];
     for (let i = 0; i < 4; i++) {
@@ -1191,17 +1191,17 @@ function initPortal() {
       ctx.strokeStyle = "rgba(" + RING[i][0] + ",1)";
       ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
     }
-    // rotating energy streaks — bright comet-arcs sweep the band so the spin is unmistakable and dramatic
-    // (a smooth ring is rotationally symmetric, so these streaks are what actually read as motion)
-    const STREAKS = mobile ? 2 : 3, SEG = 9, SPAN = 1.15;
-    ctx.lineWidth = mobile ? 4 : 5.5;
-    for (let i = 0; i < STREAKS; i++) {
-      const head = rot + i * (TAU / STREAKS);
+    // rotating comet-streaks sweep the band so the spin reads as strong, organic motion
+    // (a smooth ring is rotationally symmetric — these varied streaks are what actually show rotation)
+    const SEG = 9;
+    for (const st of streaks) {
+      const head = rot * st.spd + st.off;
+      ctx.lineWidth = st.wide;
       for (let s = 0; s < SEG; s++) {
         const f = s / SEG;                                          // 0 at the bright head → 1 at the faded tail
-        ctx.globalAlpha = (1 - f) * (1 - f) * sparkA;               // comet taper; lingers like the sparks as it dissolves
+        ctx.globalAlpha = (1 - f) * (1 - f) * st.bri * sparkA;      // comet taper; lingers like the sparks as it dissolves
         ctx.strokeStyle = "rgba(" + (f < 0.34 ? RING[3][0] : RING[2][0]) + ",1)";
-        ctx.beginPath(); ctx.arc(cx, cy, R, head - (f + 1 / SEG) * SPAN, head - f * SPAN); ctx.stroke();
+        ctx.beginPath(); ctx.arc(cx, cy, R, head - (f + 1 / SEG) * st.span, head - f * st.span); ctx.stroke();
       }
     }
     // sparks spraying off the ring — they keep living (rotating + shooting) even as the ring dissolves
@@ -1272,6 +1272,16 @@ function initPortal() {
     document.documentElement.appendChild(cv);
     const ctx = cv.getContext("2d"); ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     const embers = makeEmbers();
+    // comet-streaks that sweep the band (the real rotation cue on a symmetric ring), generated once with
+    // varied length/speed/brightness so they drift instead of marching in lockstep → organic, not a pinwheel.
+    const streaks = [];
+    for (let i = 0, sn = mobile ? 4 : 6; i < sn; i++) streaks.push({
+      off: Math.random() * TAU,
+      span: 0.45 + Math.random() * Math.random() * 2,        // mostly short, a few long tails
+      spd: 0.75 + Math.random() * 0.8,                        // varied speeds → they drift apart, organic
+      bri: 0.55 + Math.random() * 0.5,
+      wide: (mobile ? 3 : 4) + Math.random() * (mobile ? 2 : 3),
+    });
 
     let ready = false, openAt = 0, start = 0, done = false, rot = 0, lastTs = 0;
     const nav = () => { if (done) return; done = true; try { sessionStorage.setItem("portalReveal", "1"); } catch (e) {} location.href = href; };
@@ -1303,8 +1313,9 @@ function initPortal() {
       ctx.clearRect(0, 0, W, H);
       ctx.globalCompositeOperation = blend;
       let R, strokeA = 1, sparkA = 1, spinMult = 1;   // spinMult 1 = full speed (spins throughout); winds down as it dissolves
-      if (!ready) {                                              // charging: a small live ring while the frame loads
+      if (!ready) {                                              // charging: a small ring spun hard, so it looks strong from the first frame
         R = R0 * (0.86 + 0.14 * Math.sin(el * 0.011));
+        spinMult = 2;
         glow(ctx, cx, cy, R0 * 5, 0.5);
       } else {                                                   // opening: expand → hold (spin) → dissolve
         if (!openAt) openAt = ts;
@@ -1313,6 +1324,7 @@ function initPortal() {
         if (t < OPEN_MS) {                                       // expand: reveal more of the next page
           const p = t / OPEN_MS;
           R = Rclip = R0 + (Rhold - R0) * easeInOut(p);
+          spinMult = 1 + (1 - p) * (1 - p);                     // bursts strong out of the gate, settles as it opens
           if (p < 0.16) glow(ctx, cx, cy, R0 * 5, 0.5 * (1 - p / 0.16));
         } else if (t < OPEN_MS + HOLD_MS) {                     // hold: fully open, the ring spins in place
           R = Rclip = Rhold;
@@ -1329,7 +1341,7 @@ function initPortal() {
       }
       const sprayK = spinMult;                                  // spark throw tracks spin speed (centrifugal): slower spin → shorter sparks
       rot += dt * SPIN * spinMult;
-      drawRing(ctx, cx, cy, R, el, embers, rot, strokeA, sparkA, sprayK, RING, spr);
+      drawRing(ctx, cx, cy, R, el, embers, rot, strokeA, sparkA, sprayK, RING, spr, streaks);
       requestAnimationFrame(loop);
     }
     requestAnimationFrame(loop);
