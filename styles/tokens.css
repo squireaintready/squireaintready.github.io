@@ -21,10 +21,21 @@
   font-style: normal;
   font-display: swap;
 }
+/* Glyph override: Fraunces' eccentric J/F/j/f (descending-hook J etc.) read off at display
+   sizes, so swap just those four for Newsreader's calmer forms via unicode-range. ~4.7KB,
+   loads only because those glyphs appear; everything else stays Fraunces. */
+@font-face {
+  font-family: "Display Override";
+  src: url("../assets/fonts/newsreader-jffj.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+004A, U+0046, U+006A, U+0066;
+}
 
 :root {
   /* ---- Type families (editorial-modern: Fraunces serif display, Inter UI/body, system mono labels) ---- */
-  --font-display: "Fraunces Variable", "Fraunces", Georgia, "Times New Roman", serif;
+  --font-display: "Display Override", "Fraunces Variable", "Fraunces", Georgia, "Times New Roman", serif;
   --font-sans: "Inter Variable", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --font-prose: "Inter Variable", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Menlo", monospace;
