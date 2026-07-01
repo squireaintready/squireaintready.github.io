@@ -27,6 +27,22 @@
 
 .hero__main { min-width: 0; }
 .hero__kicker { margin-bottom: clamp(0.7rem, 1.8vw, 1.1rem); }
+/* The eyebrow's live dot is the o's partner in the arrival: it emits one expanding accent ring timed
+   to peak exactly as the o lands (see hero-o-land), so the line above the name and the o resolve on
+   the same beat. The dot keeps its perpetual live-ping (base.css) after; this ::after fires once. */
+.hero__kicker .kicker__dot--live { position: relative; }
+.hero__kicker .kicker__dot--live::after {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 100%; height: 100%;
+  border-radius: var(--r-pill); border: 1.5px solid var(--live);
+  transform: translate(-50%, -50%) scale(0.4); opacity: 0; pointer-events: none;
+  animation: hero-dot-land 1s var(--ease-out) 0.78s 1 both;
+}
+@keyframes hero-dot-land {
+  0%   { opacity: 0;    transform: translate(-50%, -50%) scale(0.4); }
+  22%  { opacity: 0.85; }                                                  /* ~1.0s — fires as the o lands */
+  100% { opacity: 0;    transform: translate(-50%, -50%) scale(4.2); }
+}
+@media (prefers-reduced-motion: reduce) { .hero__kicker .kicker__dot--live::after { animation: none; opacity: 0; } }
 .hero__name {
   margin: 0; color: var(--text); white-space: nowrap;
   font-family: var(--font-display); font-weight: var(--w-display); font-optical-sizing: none;
@@ -80,7 +96,14 @@
 }
 .hero__o-orb {
   position: absolute; inset: 0; perspective: 6em;
-  animation: hero-o-float 7s var(--ease-in-out) infinite;
+  /* On load the o spins in (two decelerating turns), lands on its spot, then hops a couple of times
+     ("lifts off the ground") before the perpetual float takes over — the float is delayed to start
+     exactly as the landing settles, so the two hand off with no jump (both end/begin at translateY 0,
+     rotate 0). The kicker's live dot rings on the same beat (hero-dot-land) so the two read as one
+     choreographed arrival. */
+  animation:
+    hero-o-land 1.7s var(--ease-out) 0.18s both,
+    hero-o-float 7s var(--ease-in-out) 2s infinite;
 }
 .hero__o-orb.is-loose {   /* popped out into the fixed clip-layer; JS sets width/height + transform */
   inset: auto; left: 0; top: 0; margin: 0;
@@ -132,6 +155,19 @@
 .hero__o-face.is-squish { animation: hero-o-squish 0.32s var(--ease-out); }
 @keyframes hero-o-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-0.03em); } }
 @keyframes hero-o-turn { to { transform: rotate(360deg); } }
+/* Landing entrance: spins in from just above (2 turns, decelerating), impacts its spot (~46% → the
+   "beat" the kicker dot syncs to), lifts off in two decaying hops, then settles to rest so the float
+   can take over. Impact/hop frames squash-and-stretch on the vertical axis for weight. Ends at
+   translateY(0) rotate(0) scale(1) — identical to hero-o-float's 0% — so the handoff is seamless. */
+@keyframes hero-o-land {
+  0%   { opacity: 0; transform: translateY(-0.55em) rotate(-720deg) scale(0.5); }
+  10%  { opacity: 1; }
+  46%  { transform: translateY(0.02em)  rotate(0deg) scale(1.08, 0.9); }   /* impact — squash */
+  60%  { transform: translateY(-0.26em) rotate(0deg) scale(0.95, 1.06); }  /* lift off — hop up + stretch */
+  74%  { transform: translateY(0)       rotate(0deg) scale(1.05, 0.96); }  /* land — small squash */
+  87%  { transform: translateY(-0.09em) rotate(0deg) scale(1); }           /* tiny second hop */
+  100% { transform: translateY(0)       rotate(0deg) scale(1); }
+}
 @keyframes hero-o-squish { 0% { transform: scale(1.16, 0.86); } 55% { transform: scale(0.95, 1.05); } 100% { transform: scale(1, 1); } }
 /* the hero orb's return button — stacked above the About orb's (double class beats the base
    .orb-reset's later `bottom`), so both orbs can be live with both buttons visible at once */
