@@ -1141,8 +1141,8 @@ function initPortal() {
   const mobile = matchMedia("(pointer: coarse)").matches || innerWidth < 640;
   const DPR = Math.min(window.devicePixelRatio || 1, 2);
   const N = mobile ? 280 : 500;                 // spark count — a dense, fiery sparkler ring
-  const SPIN = 0.0021;                          // ring rotation, rad/ms
-  const OPEN_MS = 1100;                         // portal expansion — slower + deliberate for drama
+  const SPIN = 0.0025;                          // ring rotation, rad/ms — a touch faster so the hold visibly spins
+  const OPEN_MS = 850, HOLD_MS = 800, FADE_MS = 470;   // expand → hold (spins in place) → dissolve
 
   // white-gold → deep-orange sparks, pre-rendered once to sprites (cheap additive stamps)
   const HUES = ["255,247,224", "255,206,120", "248,150,54", "222,96,26"];
@@ -1226,7 +1226,7 @@ function initPortal() {
   function depart(href) {
     if (leaving) return; leaving = true;
     const W = innerWidth, H = innerHeight, cx = W / 2, cy = H / 2;
-    const R0 = Math.min(W, H) * 0.05, maxR = Math.hypot(cx, cy) * 1.06 + 24;
+    const R0 = Math.min(W, H) * 0.05, diag = Math.hypot(cx, cy), Rhold = diag * 0.82, maxR = diag * 1.06 + 24;
 
     // the destination, rendered inside the portal. Sandboxed → styled but runs no scripts, so it
     // can't fire analytics or a nested portal; same-origin so we can theme it to match.
@@ -1273,14 +1273,23 @@ function initPortal() {
       if (!ready) {                                              // charging: a small live ring while the frame loads
         R = R0 * (0.86 + 0.14 * Math.sin(el * 0.011));
         glow(ctx, cx, cy, R0 * 5, 0.5);
-      } else {                                                   // opening: expand the clip so more of the next page shows
+      } else {                                                   // opening: expand → hold (spin) → dissolve
         if (!openAt) openAt = ts;
-        const p = clamp((ts - openAt) / OPEN_MS, 0, 1);
-        R = R0 + (maxR - R0) * easeInOut(p);
-        ringA = 1 - Math.max(0, (p - 0.9) / 0.1) * 0.5;
-        if (p < 0.14) glow(ctx, cx, cy, R0 * 5, 0.5 * (1 - p / 0.14));
-        frame.style.clipPath = "circle(" + R.toFixed(1) + "px at 50% 50%)";
-        if (p >= 1) { nav(); return; }                          // portal fills the screen → hand off to the real page
+        const t = ts - openAt;
+        let Rclip;
+        if (t < OPEN_MS) {                                       // expand: reveal more of the next page
+          const p = t / OPEN_MS;
+          R = Rclip = R0 + (Rhold - R0) * easeInOut(p);
+          if (p < 0.16) glow(ctx, cx, cy, R0 * 5, 0.5 * (1 - p / 0.16));
+        } else if (t < OPEN_MS + HOLD_MS) {                     // hold: fully open, the ring spins in place
+          R = Rclip = Rhold;
+        } else {                                                // dissolve: the ring fades where it is while the page fills the last corners
+          const pf = clamp((t - OPEN_MS - HOLD_MS) / FADE_MS, 0, 1);
+          R = Rhold; ringA = 1 - pf;
+          Rclip = Rhold + (maxR - Rhold) * easeInOut(pf);
+          if (pf >= 1) { nav(); return; }
+        }
+        frame.style.clipPath = "circle(" + Rclip.toFixed(1) + "px at 50% 50%)";
       }
       drawRing(ctx, cx, cy, R, el, embers, ringA);
       requestAnimationFrame(loop);
