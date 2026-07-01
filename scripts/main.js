@@ -1060,99 +1060,141 @@ async function initFit() {
 }
 
 /* ---------- Doctor Strange portal page transitions ---------- */
-/* The site is multi-page, so the effect spans a real navigation. On an internal-link
-   click the outgoing page opens a fiery portal from the click point that swallows it
-   into a warm void; the origin is stashed in sessionStorage and the incoming page is
-   covered by that void before first paint (an inline <head> guard adds .portal-arrive
-   + window.__portal), then this blooms the same gold-orange ember ring open to reveal
-   the new page. Full spectacle; skipped entirely under reduced motion; the <head>
-   failsafe guarantees a page can never stay covered if this script fails to run. */
+/* Multi-page site, so the effect spans a real navigation. A portal opens dead-centre: a
+   small spinning ring of sparks ignites, holds a beat, then expands in one smooth motion.
+   On arrival it opens onto the new page inside the ring and keeps rushing forward — the
+   ring blows past the screen and the page scales up — as if you're pulled through; on
+   departure the same ring swallows the current page into a warm void, then navigates. The
+   outgoing side flags sessionStorage and the incoming page is masked before first paint by
+   an inline <head> guard, so there's no flash. Gold-orange sparks, centre origin; skipped
+   under reduced motion; <head> + timer failsafes make sure a page is never left covered. */
 function initPortal() {
   if (prefersReduced) return;   // motion-heavy — links just navigate; the head guard no-ops too
 
   const TAU = Math.PI * 2;
   const mobile = matchMedia("(pointer: coarse)").matches || innerWidth < 640;
   const DPR = Math.min(window.devicePixelRatio || 1, 2);
-  const N = mobile ? 140 : 240;                 // ember count (full spectacle)
-  const SPIN = 0.0016;                          // ring rotation, rad/ms
-  const OUT_MS = 520, IN_MS = 680, HOLD = 70;   // out → navigate → in
+  const N = mobile ? 210 : 360;                 // spark count — a dense sparkler ring
+  const SPIN = 0.0019;                          // ring rotation, rad/ms
+  const OUT_MS = 500, IN_MS = 860, HOLD = 60;   // out → navigate → in
 
-  // gold → deep-orange embers, pre-rendered once to sprites (cheap additive stamps)
-  const HUES = ["255,244,214", "255,201,110", "247,148,52", "214,96,24"];
+  // white-gold → deep-orange sparks, pre-rendered once to sprites (cheap additive stamps)
+  const HUES = ["255,247,224", "255,206,120", "248,150,54", "222,96,26"];
   const sprites = HUES.map((rgb) => {
-    const s = 34, c = document.createElement("canvas"); c.width = c.height = s;
+    const s = 32, c = document.createElement("canvas"); c.width = c.height = s;
     const g = c.getContext("2d"), rad = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
-    rad.addColorStop(0, `rgba(${rgb},1)`); rad.addColorStop(0.35, `rgba(${rgb},0.72)`); rad.addColorStop(1, `rgba(${rgb},0)`);
+    rad.addColorStop(0, `rgba(${rgb},1)`); rad.addColorStop(0.4, `rgba(${rgb},0.6)`); rad.addColorStop(1, `rgba(${rgb},0)`);
     g.fillStyle = rad; g.fillRect(0, 0, s, s); return c;
   });
 
   const easeOut = (p) => 1 - Math.pow(1 - p, 3);
   const easeInOut = (p) => (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);
 
+  // a sparkler particle: sits in the ring band, sprays outward over its short life and rains down
   function makeEmbers() {
-    const a = [];
-    for (let i = 0; i < N; i++) a.push({
-      a: Math.random() * TAU, dr: -4 + Math.random() * 18,
-      sz: 2 + Math.random() * (mobile ? 5 : 7), al: 0.5 + Math.random() * 0.5,
-      hue: (Math.random() * HUES.length) | 0, tw: 0.004 + Math.random() * 0.013,
-      wob: 0.002 + Math.random() * 0.006, ph: Math.random() * TAU, spd: 0.6 + Math.random() * 1.3,
-    });
+    const a = [], spray = mobile ? 34 : 56, band = mobile ? 9 : 13;
+    for (let i = 0; i < N; i++) {
+      const t = Math.random();
+      a.push({
+        a: Math.random() * TAU,
+        band: (Math.random() * 2 - 1) * band,          // radial spread within the ring band
+        sz: 0.8 + t * t * (mobile ? 3.2 : 4.6),        // skewed small — lots of fine sparks, a few fat ones
+        al: 0.45 + Math.random() * 0.55,
+        hue: (Math.random() * HUES.length) | 0,
+        tw: 0.006 + Math.random() * 0.016, ph: Math.random() * TAU,
+        rate: 0.0011 + Math.random() * 0.0024,         // spark life-cycle speed (per ms)
+        life0: Math.random(),                          // staggered start
+        spray: spray * (0.4 + Math.random() * 0.9),    // how far it flies out
+        grav: (mobile ? 24 : 40) * Math.random(),      // downward rain
+        trail: Math.random() < 0.5,
+      });
+    }
     return a;
   }
 
-  function drawRing(ctx, x, y, R, el, p, embers) {
-    const rot = el * SPIN, fade = 1 - Math.max(0, (p - 0.85) / 0.15) * 0.45;
-    ctx.globalAlpha = 0.4 * fade; ctx.lineWidth = Math.max(6, R * 0.035);
-    ctx.strokeStyle = "rgba(240,150,60,1)";
-    ctx.beginPath(); ctx.arc(x, y, R, 0, TAU); ctx.stroke();                 // outer warm glow
-    ctx.globalAlpha = 0.95 * fade; ctx.lineWidth = mobile ? 1.8 : 2.4;
-    ctx.strokeStyle = "rgba(255,242,210,1)";
-    ctx.beginPath(); ctx.arc(x, y, R, 0, TAU); ctx.stroke();                 // bright core ring
+  function drawRing(ctx, cx, cy, R, el, embers, ringA) {
+    const rot = el * SPIN;
+    // glowing annulus: wide soft glow → hot gold body → white-hot core
+    ctx.globalAlpha = 0.30 * ringA; ctx.lineWidth = Math.max(7, R * 0.05);
+    ctx.strokeStyle = "rgba(236,140,52,1)";
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
+    ctx.globalAlpha = 0.70 * ringA; ctx.lineWidth = mobile ? 3 : 4.5;
+    ctx.strokeStyle = "rgba(255,190,96,1)";
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
+    ctx.globalAlpha = 0.95 * ringA; ctx.lineWidth = mobile ? 1.4 : 2;
+    ctx.strokeStyle = "rgba(255,247,222,1)";
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
+    // sparks spraying off the ring
     for (const e of embers) {
-      const ang = e.a + rot, fl = 0.55 + 0.45 * Math.sin(el * e.tw + e.ph);
-      const rr = R + e.dr + Math.sin(el * e.wob + e.ph) * 3 + e.spd * p * (mobile ? 10 : 16);
-      const sz = e.sz * (0.7 + 0.6 * fl);
-      ctx.globalAlpha = clamp(e.al * fl * fade, 0, 1);
-      ctx.drawImage(sprites[e.hue], x + Math.cos(ang) * rr - sz, y + Math.sin(ang) * rr - sz, sz * 2, sz * 2);
+      const lp = (el * e.rate + e.life0) % 1;                     // 0..1 spark life
+      const fl = 0.55 + 0.45 * Math.sin(el * e.tw + e.ph);
+      const ang = e.a + rot, rr = R + e.band + e.spray * lp;
+      const px = cx + Math.cos(ang) * rr, py = cy + Math.sin(ang) * rr + e.grav * lp * lp;
+      const a = clamp(e.al * fl * (1 - lp) * ringA, 0, 1);
+      if (a < 0.012) continue;
+      const sz = e.sz * (1 - 0.45 * lp), sp = sprites[e.hue];
+      ctx.globalAlpha = a;
+      ctx.drawImage(sp, px - sz, py - sz, sz * 2, sz * 2);
+      if (e.trail) {                                              // short motion-blur streak back toward the ring
+        const tr = R + e.band + e.spray * lp * 0.55;
+        ctx.globalAlpha = a * 0.5;
+        ctx.drawImage(sp, cx + Math.cos(ang) * tr - sz * 0.7, cy + Math.sin(ang) * tr + e.grav * lp * lp * 0.3 - sz * 0.7, sz * 1.4, sz * 1.4);
+      }
     }
     ctx.globalAlpha = 1;
   }
 
-  // one portal pass — polarity "out" seals the page into the void, "in" blooms it open
-  function run({ polarity, x, y, dur, block, onFirst, onDone }) {
-    const W = innerWidth, H = innerHeight;
+  // scale the page content (not the canvas — it lives on <html>) for the "pulled through" depth
+  const bodyEl = document.body;
+  function pageScale(s) {
+    if (s == null) { bodyEl.style.transform = ""; bodyEl.style.transformOrigin = ""; bodyEl.style.willChange = ""; }
+    else { bodyEl.style.transformOrigin = "50% 50%"; bodyEl.style.willChange = "transform"; bodyEl.style.transform = "scale(" + s.toFixed(4) + ")"; }
+  }
+
+  // one portal pass — "out" swallows the page into the void, "in" opens onto the new page
+  function run({ polarity, dur, beat, block, onFirst, onDone }) {
+    const W = innerWidth, H = innerHeight, cx = W / 2, cy = H / 2;
     const cv = document.createElement("canvas");
     cv.className = "portal-fx" + (block ? " is-block" : "");
     cv.setAttribute("aria-hidden", "true");
     cv.style.width = W + "px"; cv.style.height = H + "px";
     cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
-    document.body.appendChild(cv);
+    document.documentElement.appendChild(cv);   // on <html> so the page's scale transform never scales the effect
     const ctx = cv.getContext("2d");
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);   // draw in CSS px; one constant transform keeps the gradients honest
-    const maxR = Math.hypot(Math.max(x, W - x), Math.max(y, H - y)) * 1.05 + 28;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    const R0 = Math.min(W, H) * 0.05;                       // the small starting ring
+    const maxR = Math.hypot(cx, cy) * 1.18 + 40;            // rushes well past the corners
     const embers = makeEmbers();
-    const grad = ctx.createRadialGradient(x, y, 0, x, y, maxR);
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, maxR);
     grad.addColorStop(0, "#1b120a"); grad.addColorStop(0.5, "#0b0806"); grad.addColorStop(1, "#050403");
-    const bloom = ctx.createRadialGradient(x, y, 0, x, y, maxR * 0.7);
-    bloom.addColorStop(0, "rgba(255,226,170,1)"); bloom.addColorStop(1, "rgba(255,180,90,0)");
     let t0 = 0, first = false, done = false;
-    function finish() { if (done) return; done = true; if (onDone) onDone(cv); }   // idempotent; callable early as a failsafe
+    function finish() { if (done) return; done = true; pageScale(null); if (onDone) onDone(cv); }
 
     function frame(ts) {
       if (done) return;
       if (!t0) t0 = ts;
       const el = ts - t0, p = clamp(el / dur, 0, 1);
-      const R = (polarity === "in" ? easeOut(p) : easeInOut(p)) * maxR;
+
+      // radius: pop the small ring in → hold the beat → expand and rush past the edges
+      let R, expo = 0;
+      if (p < beat) { const b = p / beat; R = R0 * (b < 0.5 ? easeOut(b / 0.5) : 1); }
+      else { expo = easeInOut((p - beat) / (1 - beat)); R = R0 + (maxR - R0) * expo; }
+      const ringA = 1 - Math.max(0, (p - 0.9) / 0.1) * 0.5;                    // ease the ring out at the very end
+      pageScale(polarity === "in" ? 0.9 + 0.1 * expo : 1 - 0.05 * expo);       // arrival pulled forward, departure recedes
 
       ctx.clearRect(0, 0, W, H);
       ctx.globalCompositeOperation = "source-over";
       ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);                          // the warm void
       ctx.globalCompositeOperation = polarity === "in" ? "destination-out" : "destination-in";
-      ctx.beginPath(); ctx.arc(x, y, Math.max(0.01, R), 0, TAU); ctx.fill();   // carve the portal disc
+      ctx.beginPath(); ctx.arc(cx, cy, Math.max(0.01, R), 0, TAU); ctx.fill();   // carve the portal disc
       ctx.globalCompositeOperation = "lighter";
-      drawRing(ctx, x, y, R, el, p, embers);                                   // fiery ring on the boundary
-      const flare = polarity === "in" ? Math.max(0, 1 - p / 0.34) : Math.max(0, 1 - Math.abs(p - 0.78) / 0.22);
-      if (flare > 0) { ctx.globalAlpha = 0.5 * flare; ctx.fillStyle = bloom; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
+      if (p < beat + 0.12) {                                                   // warm ignite glow while the ring is small
+        const ig = clamp(1 - p / (beat + 0.12), 0, 1), gr = R0 * 6;
+        const gg = ctx.createRadialGradient(cx, cy, 0, cx, cy, gr);
+        gg.addColorStop(0, "rgba(255,224,160,1)"); gg.addColorStop(1, "rgba(255,180,90,0)");
+        ctx.globalAlpha = 0.55 * ig; ctx.fillStyle = gg; ctx.fillRect(cx - gr, cy - gr, gr * 2, gr * 2); ctx.globalAlpha = 1;
+      }
+      drawRing(ctx, cx, cy, R, el, embers, ringA);                            // the sparkler ring on the boundary
       ctx.globalCompositeOperation = "source-over";
 
       if (!first) { first = true; if (onFirst) onFirst(); }
@@ -1164,12 +1206,12 @@ function initPortal() {
 
   // ---- outgoing ----
   let leaving = false;
-  function depart(href, x, y) {
+  function depart(href) {
     if (leaving) return; leaving = true;
     try { const l = document.createElement("link"); l.rel = "prefetch"; l.href = href; document.head.appendChild(l); } catch (e) {}
-    try { sessionStorage.setItem("portal", JSON.stringify({ rx: x / innerWidth, ry: y / innerHeight, t: Date.now() })); } catch (e) {}
-    run({ polarity: "out", x, y, dur: OUT_MS, block: true });     // visual only — the full void holds until unload
-    setTimeout(() => { location.href = href; }, OUT_MS + HOLD);   // navigate on a clock, independent of rAF (survives a throttled tab)
+    try { sessionStorage.setItem("portal", JSON.stringify({ rx: 0.5, ry: 0.5, t: Date.now() })); } catch (e) {}
+    run({ polarity: "out", dur: OUT_MS, beat: 0.14, block: true });   // visual only — the void holds until unload
+    setTimeout(() => { location.href = href; }, OUT_MS + HOLD);       // navigate on a clock (survives a throttled tab)
   }
 
   // resolve a click to an in-site navigation URL, or null to leave the click alone
@@ -1190,30 +1232,29 @@ function initPortal() {
     const href = internalHref(a);
     if (!href) return;
     e.preventDefault();
-    let x = e.clientX, y = e.clientY;
-    if (e.detail === 0 || (!x && !y)) { const r = a.getBoundingClientRect(); x = r.left + r.width / 2; y = r.top + r.height / 2; }
-    depart(href, x, y);
+    depart(href);
   });
 
   // ⌘K palette (and any programmatic nav) can travel by portal too
-  portalGo = (href, origin) => {
+  portalGo = (href) => {
     let url; try { url = new URL(href, location.href); } catch (e) { location.assign(href); return; }
     if (url.origin !== location.origin || !/^https?:$/.test(url.protocol)) { location.assign(href); return; }
-    depart(url.href, origin ? origin.x : innerWidth / 2, origin ? origin.y : innerHeight / 2);
+    depart(url.href);
   };
 
-  // Back/forward: a page we portalled away from is frozen with the full-void canvas still on it.
-  // On bfcache restore, strip any leftover overlay so it's never stuck dark.
+  // Back/forward: a page we portalled away from is frozen with the void canvas + a scaled body.
+  // On bfcache restore, strip any leftover overlay and reset the page so it's never stuck.
   addEventListener("pageshow", (e) => {
     if (!e.persisted) return;
     leaving = false;
+    pageScale(null);
     document.querySelectorAll(".portal-fx").forEach((c) => c.remove());
     document.documentElement.classList.remove("portal-arrive");
   });
 
   // ---- incoming: the <head> guard set .portal-arrive + window.__portal before first paint ----
   if (window.__portal) {
-    const d = window.__portal; window.__portal = null;
+    window.__portal = null;
     clearTimeout(window.__portalKill);
     const dropCover = () => {   // remove the flat pre-paint cover (idempotent: onFirst + the failsafe both call it)
       const el = document.documentElement;
@@ -1221,12 +1262,11 @@ function initPortal() {
       el.style.removeProperty("--portal-x"); el.style.removeProperty("--portal-y");
     };
     const finish = run({
-      polarity: "in", dur: IN_MS,
-      x: (d.rx == null ? 0.5 : d.rx) * innerWidth, y: (d.ry == null ? 0.5 : d.ry) * innerHeight,
+      polarity: "in", dur: IN_MS, beat: 0.17,
       onFirst: dropCover,                // canvas has painted the void → drop the cover seamlessly
       onDone: (cv) => cv.remove(),
     });
-    setTimeout(() => { dropCover(); finish(); }, IN_MS + 700);   // failsafe: if rAF is throttled (backgrounded tab), never leave the cover or canvas behind
+    setTimeout(() => { dropCover(); pageScale(null); finish(); }, IN_MS + 800);   // failsafe: never leave the cover / canvas / scale behind
   }
 }
 
