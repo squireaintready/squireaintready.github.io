@@ -1148,14 +1148,16 @@ function initPortal() {
   const SPIN = 0.004;                           // ring rotation, rad/ms — full spin speed; the ring spins the whole time
   const OPEN_MS = 850, HOLD_MS = 800, FADE_MS = 470;   // expand → hold (spins in place) → dissolve
 
-  // white-gold → deep-orange sparks, pre-rendered once to sprites (cheap additive stamps)
-  const HUES = ["255,247,224", "255,206,120", "248,150,54", "222,96,26"];
-  const sprites = HUES.map((rgb) => {
+  // spark sprites, pre-rendered once (cheap stamps). Two palettes: bright white-gold for dark themes
+  // (additive glow), deeper saturated orange for light themes (normal paint) so they read on cream.
+  const mkSprites = (hues) => hues.map((rgb) => {
     const s = 32, c = document.createElement("canvas"); c.width = c.height = s;
     const g = c.getContext("2d"), rad = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
     rad.addColorStop(0, `rgba(${rgb},1)`); rad.addColorStop(0.4, `rgba(${rgb},0.6)`); rad.addColorStop(1, `rgba(${rgb},0)`);
     g.fillStyle = rad; g.fillRect(0, 0, s, s); return c;
   });
+  const spritesDark = mkSprites(["255,247,224", "255,206,120", "248,150,54", "222,96,26"]);
+  const spritesLight = mkSprites(["252,186,74", "240,146,44", "216,100,24", "184,64,14"]);
 
   const easeInOut = (p) => (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);
 
@@ -1169,7 +1171,7 @@ function initPortal() {
         band: (Math.random() * 2 - 1) * band,          // radial spread within the (wider) ring band
         sz: 1 + t * t * (mobile ? 4.4 : 6.2),          // skewed small — lots of fine sparks, a few fat embers
         al: 0.5 + Math.random() * 0.5,
-        hue: (Math.random() * HUES.length) | 0,
+        hue: (Math.random() * 4) | 0,
         tw: 0.006 + Math.random() * 0.018, ph: Math.random() * TAU,
         rate: 0.001 + Math.random() * 0.0022,          // spark life-cycle speed (per ms) — a touch slower, so they linger
         life0: Math.random(),                          // staggered start
@@ -1181,20 +1183,14 @@ function initPortal() {
     return a;
   }
 
-  function drawRing(ctx, cx, cy, R, el, embers, rot, strokeA, sparkA, sprayK) {
-    // fiery annulus, broad → hot → white-hot: a wide halo, an orange glow, a thick gold body, a bright core
-    ctx.globalAlpha = 0.16 * strokeA; ctx.lineWidth = Math.max(20, R * 0.13);
-    ctx.strokeStyle = "rgba(214,96,26,1)";
-    ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
-    ctx.globalAlpha = 0.34 * strokeA; ctx.lineWidth = Math.max(10, R * 0.06);
-    ctx.strokeStyle = "rgba(240,150,54,1)";
-    ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
-    ctx.globalAlpha = 0.78 * strokeA; ctx.lineWidth = mobile ? 4.5 : 7;
-    ctx.strokeStyle = "rgba(255,192,100,1)";
-    ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
-    ctx.globalAlpha = 0.98 * strokeA; ctx.lineWidth = mobile ? 2 : 2.6;
-    ctx.strokeStyle = "rgba(255,248,226,1)";
-    ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
+  function drawRing(ctx, cx, cy, R, el, embers, rot, strokeA, sparkA, sprayK, RING, spr) {
+    // fiery annulus: broad halo → orange glow → hot body → bright core (colors + base alphas per palette)
+    const LW = [Math.max(20, R * 0.13), Math.max(10, R * 0.06), mobile ? 4.5 : 7, mobile ? 2 : 2.6];
+    for (let i = 0; i < 4; i++) {
+      ctx.globalAlpha = RING[i][1] * strokeA; ctx.lineWidth = LW[i];
+      ctx.strokeStyle = "rgba(" + RING[i][0] + ",1)";
+      ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
+    }
     // sparks spraying off the ring — they keep living (rotating + shooting) even as the ring dissolves
     for (const e of embers) {
       const lp = (el * e.rate + e.life0) % 1;                     // 0..1 spark life
@@ -1204,7 +1200,7 @@ function initPortal() {
       const px = cx + Math.cos(ang) * rr, py = cy + Math.sin(ang) * rr + e.grav * lp * lp;
       const a = clamp(e.al * fl * (1 - lp) * sparkA, 0, 1);
       if (a < 0.012) continue;
-      const sz = e.sz * (1 - 0.4 * lp), sp = sprites[e.hue];
+      const sz = e.sz * (1 - 0.4 * lp), sp = spr[e.hue];
       ctx.globalAlpha = a;
       ctx.drawImage(sp, px - sz, py - sz, sz * 2, sz * 2);
       if (e.trail) {                                              // motion-blur streak back toward the ring (two stamps)
@@ -1231,6 +1227,21 @@ function initPortal() {
     if (leaving) return; leaving = true;
     const W = innerWidth, H = innerHeight, cx = W / 2, cy = H / 2;
     const R0 = Math.min(W, H) * 0.05, diag = Math.hypot(cx, cy), Rhold = diag * 0.82, maxR = diag * 1.06 + 24;
+    // additive "lighter" glows on dark themes but washes to nothing on a light (Paper) page —
+    // so pick the blend by background luminance: additive glow on dark, normal paint on light.
+    let bgLum = 0;
+    try {
+      for (const el of [document.body, document.documentElement]) {
+        const c = getComputedStyle(el).backgroundColor.match(/[\d.]+/g);
+        if (c && (c.length < 4 || +c[3] > 0.1)) { bgLum = (0.299 * +c[0] + 0.587 * +c[1] + 0.114 * +c[2]) / 255; break; }
+      }
+    } catch (e) {}
+    const blend = bgLum > 0.55 ? "source-over" : "lighter";
+    const dark = blend === "lighter";
+    const RING = dark                                        // [rgb, baseAlpha] per stroke: halo, glow, body, core
+      ? [["214,96,26", 0.16], ["240,150,54", 0.34], ["255,192,100", 0.78], ["255,248,226", 0.98]]
+      : [["188,66,16", 0.36], ["220,102,28", 0.66], ["234,138,40", 0.98], ["250,176,72", 1]];
+    const spr = dark ? spritesDark : spritesLight;
 
     // the destination, rendered inside the portal. Sandboxed → styled but runs no scripts, so it
     // can't fire analytics or a nested portal; same-origin so we can theme it to match.
@@ -1264,8 +1275,11 @@ function initPortal() {
     };
     // preview the destination with its <script>s stripped → styled, but fires no analytics and logs nothing
     fetch(href, { credentials: "same-origin" }).then((r) => r.text()).then((html) => {
+      let doc = html.replace(/<script[\s\S]*?<\/script>/gi, "");   // strip scripts → no analytics / nested portal
+      const t = document.documentElement.getAttribute("data-theme");
+      if (t) doc = doc.replace(/<html\b/i, '<html data-theme="' + t + '"');   // theme the preview to match from first paint
       frame.addEventListener("load", onReady, { once: true });   // armed after content is set → skips the initial about:blank load
-      frame.srcdoc = html.replace(/<script[\s\S]*?<\/script>/gi, "");
+      frame.srcdoc = doc;
     }).catch(() => { frame.addEventListener("load", onReady, { once: true }); frame.src = href; });
     setTimeout(onReady, 1000);   // safety: open even if the fetch/load stalls
 
@@ -1274,7 +1288,7 @@ function initPortal() {
       if (!lastTs) lastTs = ts;
       const el = ts - start, dt = Math.min(50, ts - lastTs); lastTs = ts;
       ctx.clearRect(0, 0, W, H);
-      ctx.globalCompositeOperation = "lighter";
+      ctx.globalCompositeOperation = blend;
       let R, strokeA = 1, sparkA = 1, spinMult = 1;   // spinMult 1 = full speed (spins throughout); winds down as it dissolves
       if (!ready) {                                              // charging: a small live ring while the frame loads
         R = R0 * (0.86 + 0.14 * Math.sin(el * 0.011));
@@ -1302,7 +1316,7 @@ function initPortal() {
       }
       const sprayK = spinMult;                                  // spark throw tracks spin speed (centrifugal): slower spin → shorter sparks
       rot += dt * SPIN * spinMult;
-      drawRing(ctx, cx, cy, R, el, embers, rot, strokeA, sparkA, sprayK);
+      drawRing(ctx, cx, cy, R, el, embers, rot, strokeA, sparkA, sprayK, RING, spr);
       requestAnimationFrame(loop);
     }
     requestAnimationFrame(loop);
