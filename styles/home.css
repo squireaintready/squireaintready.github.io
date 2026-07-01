@@ -190,8 +190,34 @@
 .more-item a:hover .more-item__go { color: var(--proj-ink, var(--accent)); transform: translate(2px, -2px); }
 .more-item__desc { margin-top: 0.3rem; font-family: var(--font-sans); font-size: var(--fs-sm); color: var(--text-dim); line-height: 1.45; max-width: 46ch; }
 
-/* ---------- About (modern, text + fact grid) ---------- */
-.about__body { font-size: var(--fs-lg); line-height: 1.62; color: var(--text-dim); max-width: 64ch; }
+/* ---------- About — prose wraps the interactive SJ monogram orb, then a fact grid ---------- */
+.about__grid { display: block; }
+.about__shape {
+  float: right; shape-outside: circle(50%);
+  width: clamp(150px, 28vw, 250px); aspect-ratio: 1;
+  margin: 0.4rem 0 1rem 1.6rem; position: relative; perspective: 820px;
+}
+.about__orb { position: absolute; inset: 0; transform-style: preserve-3d; animation: about-float 7s ease-in-out infinite; }
+@keyframes about-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+.about__orb-face {
+  position: absolute; inset: 0; border-radius: 50%; display: grid; place-items: center;
+  background: radial-gradient(120% 120% at 30% 25%, color-mix(in srgb, var(--accent) 22%, var(--surface)) 0%, var(--surface-2) 60%, var(--surface) 100%);
+  border: 1px solid var(--border); box-shadow: var(--shadow-2);
+  transform-style: preserve-3d; transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.2s var(--ease-out); cursor: pointer; -webkit-user-select: none; user-select: none;
+}
+.about__shape .ring { position: absolute; inset: -1px; border-radius: 50%; border: 1px solid var(--proj, var(--accent)); opacity: 0.28; transform: translateZ(14px); }
+.about__monogram { font-family: var(--font-display); font-weight: 360; font-size: clamp(3.2rem, 10vw, 6rem); color: var(--accent); letter-spacing: -0.04em; line-height: 1; transform: translateZ(30px); }
+.about__monogram.is-pop { animation: orb-pop 0.55s var(--ease-spring); }
+@keyframes orb-pop {
+  0% { transform: translateZ(30px) scale(1); }
+  35% { transform: translateZ(46px) scale(1.16); }
+  70% { transform: translateZ(30px) scale(0.97); }
+  100% { transform: translateZ(30px) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) { .about__orb { animation: none; } .about__orb-face { transition: none; } .about__monogram.is-pop { animation: none; } }
+@media (max-width: 600px) { .about__shape { width: clamp(116px, 33vw, 150px); margin: 0.3rem 0 0.7rem 1.2rem; } }
+.about__body { font-size: var(--fs-lg); line-height: 1.62; color: var(--text-dim); }
 .about__body p + p { margin-top: 1.1rem; }
 .about__body strong { color: var(--text); font-weight: var(--w-strong); }
 .about__meta { margin-top: clamp(1.6rem, 4vw, 2.4rem); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; }
