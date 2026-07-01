@@ -20,6 +20,7 @@ const escapeHTML = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt
 
 const EMAIL = "sungjohak@gmail.com";
 const LINKS = { github: "https://github.com/squireaintready", linkedin: "https://www.linkedin.com/in/samuel-jo/" };
+let portalGo = null;   // set by initPortal(); lets the ⌘K palette route through the portal too
 
 /* ---------- Theme ---------- */
 function systemTheme() { return matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; }
@@ -191,9 +192,9 @@ function initCommandPalette() {
   if (!openers.length) return;
 
   const onHome = !!document.getElementById("work");
-  const nav = (id, label) => ({ group: onHome ? "Jump to" : "Go to", icon: IC.jump, title: label, sub: onHome ? "#" + id : "/#" + id, kw: id + " " + label, run: () => (document.getElementById(id) ? goTo(id) : location.assign("/#" + id)) });
+  const nav = (id, label) => ({ group: onHome ? "Jump to" : "Go to", icon: IC.jump, title: label, sub: onHome ? "#" + id : "/#" + id, kw: id + " " + label, run: () => (document.getElementById(id) ? goTo(id) : (portalGo ? portalGo("/#" + id) : location.assign("/#" + id))) });
   const live = (title, url) => ({ group: "Open live", icon: IC.ext, title, sub: url.replace(/^https?:\/\//, "").replace(/\/$/, ""), kw: title + " live open site", run: () => openExt(url) });
-  const study = (title, url) => ({ group: "Case studies", icon: IC.doc, title: title + " — case study", sub: url, kw: title + " case study read", run: () => location.assign(url) });
+  const study = (title, url) => ({ group: "Case studies", icon: IC.doc, title: title + " — case study", sub: url, kw: title + " case study read", run: () => (portalGo ? portalGo(url) : location.assign(url)) });
   const theme = (t) => ({ group: "Theme", iconHTML: `<span class="sw sw-${t.id}"></span>`, title: t.name, sub: t.note, kw: "theme " + t.name + " " + t.note, keepOpen: true, run: () => { applyTheme(t.id); render(input.value); } });
 
   const COMMANDS = [
@@ -941,7 +942,179 @@ async function initFit() {
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(run);
 }
 
+/* ---------- Doctor Strange portal page transitions ---------- */
+/* The site is multi-page, so the effect spans a real navigation. On an internal-link
+   click the outgoing page opens a fiery portal from the click point that swallows it
+   into a warm void; the origin is stashed in sessionStorage and the incoming page is
+   covered by that void before first paint (an inline <head> guard adds .portal-arrive
+   + window.__portal), then this blooms the same gold-orange ember ring open to reveal
+   the new page. Full spectacle; skipped entirely under reduced motion; the <head>
+   failsafe guarantees a page can never stay covered if this script fails to run. */
+function initPortal() {
+  if (prefersReduced) return;   // motion-heavy — links just navigate; the head guard no-ops too
+
+  const TAU = Math.PI * 2;
+  const mobile = matchMedia("(pointer: coarse)").matches || innerWidth < 640;
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+  const N = mobile ? 140 : 240;                 // ember count (full spectacle)
+  const SPIN = 0.0016;                          // ring rotation, rad/ms
+  const OUT_MS = 520, IN_MS = 680, HOLD = 70;   // out → navigate → in
+
+  // gold → deep-orange embers, pre-rendered once to sprites (cheap additive stamps)
+  const HUES = ["255,244,214", "255,201,110", "247,148,52", "214,96,24"];
+  const sprites = HUES.map((rgb) => {
+    const s = 34, c = document.createElement("canvas"); c.width = c.height = s;
+    const g = c.getContext("2d"), rad = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+    rad.addColorStop(0, `rgba(${rgb},1)`); rad.addColorStop(0.35, `rgba(${rgb},0.72)`); rad.addColorStop(1, `rgba(${rgb},0)`);
+    g.fillStyle = rad; g.fillRect(0, 0, s, s); return c;
+  });
+
+  const easeOut = (p) => 1 - Math.pow(1 - p, 3);
+  const easeInOut = (p) => (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);
+
+  function makeEmbers() {
+    const a = [];
+    for (let i = 0; i < N; i++) a.push({
+      a: Math.random() * TAU, dr: -4 + Math.random() * 18,
+      sz: 2 + Math.random() * (mobile ? 5 : 7), al: 0.5 + Math.random() * 0.5,
+      hue: (Math.random() * HUES.length) | 0, tw: 0.004 + Math.random() * 0.013,
+      wob: 0.002 + Math.random() * 0.006, ph: Math.random() * TAU, spd: 0.6 + Math.random() * 1.3,
+    });
+    return a;
+  }
+
+  function drawRing(ctx, x, y, R, el, p, embers) {
+    const rot = el * SPIN, fade = 1 - Math.max(0, (p - 0.85) / 0.15) * 0.45;
+    ctx.globalAlpha = 0.4 * fade; ctx.lineWidth = Math.max(6, R * 0.035);
+    ctx.strokeStyle = "rgba(240,150,60,1)";
+    ctx.beginPath(); ctx.arc(x, y, R, 0, TAU); ctx.stroke();                 // outer warm glow
+    ctx.globalAlpha = 0.95 * fade; ctx.lineWidth = mobile ? 1.8 : 2.4;
+    ctx.strokeStyle = "rgba(255,242,210,1)";
+    ctx.beginPath(); ctx.arc(x, y, R, 0, TAU); ctx.stroke();                 // bright core ring
+    for (const e of embers) {
+      const ang = e.a + rot, fl = 0.55 + 0.45 * Math.sin(el * e.tw + e.ph);
+      const rr = R + e.dr + Math.sin(el * e.wob + e.ph) * 3 + e.spd * p * (mobile ? 10 : 16);
+      const sz = e.sz * (0.7 + 0.6 * fl);
+      ctx.globalAlpha = clamp(e.al * fl * fade, 0, 1);
+      ctx.drawImage(sprites[e.hue], x + Math.cos(ang) * rr - sz, y + Math.sin(ang) * rr - sz, sz * 2, sz * 2);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // one portal pass — polarity "out" seals the page into the void, "in" blooms it open
+  function run({ polarity, x, y, dur, block, onFirst, onDone }) {
+    const W = innerWidth, H = innerHeight;
+    const cv = document.createElement("canvas");
+    cv.className = "portal-fx" + (block ? " is-block" : "");
+    cv.setAttribute("aria-hidden", "true");
+    cv.style.width = W + "px"; cv.style.height = H + "px";
+    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+    document.body.appendChild(cv);
+    const ctx = cv.getContext("2d");
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);   // draw in CSS px; one constant transform keeps the gradients honest
+    const maxR = Math.hypot(Math.max(x, W - x), Math.max(y, H - y)) * 1.05 + 28;
+    const embers = makeEmbers();
+    const grad = ctx.createRadialGradient(x, y, 0, x, y, maxR);
+    grad.addColorStop(0, "#1b120a"); grad.addColorStop(0.5, "#0b0806"); grad.addColorStop(1, "#050403");
+    const bloom = ctx.createRadialGradient(x, y, 0, x, y, maxR * 0.7);
+    bloom.addColorStop(0, "rgba(255,226,170,1)"); bloom.addColorStop(1, "rgba(255,180,90,0)");
+    let t0 = 0, first = false, done = false;
+    function finish() { if (done) return; done = true; if (onDone) onDone(cv); }   // idempotent; callable early as a failsafe
+
+    function frame(ts) {
+      if (done) return;
+      if (!t0) t0 = ts;
+      const el = ts - t0, p = clamp(el / dur, 0, 1);
+      const R = (polarity === "in" ? easeOut(p) : easeInOut(p)) * maxR;
+
+      ctx.clearRect(0, 0, W, H);
+      ctx.globalCompositeOperation = "source-over";
+      ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);                          // the warm void
+      ctx.globalCompositeOperation = polarity === "in" ? "destination-out" : "destination-in";
+      ctx.beginPath(); ctx.arc(x, y, Math.max(0.01, R), 0, TAU); ctx.fill();   // carve the portal disc
+      ctx.globalCompositeOperation = "lighter";
+      drawRing(ctx, x, y, R, el, p, embers);                                   // fiery ring on the boundary
+      const flare = polarity === "in" ? Math.max(0, 1 - p / 0.34) : Math.max(0, 1 - Math.abs(p - 0.78) / 0.22);
+      if (flare > 0) { ctx.globalAlpha = 0.5 * flare; ctx.fillStyle = bloom; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
+      ctx.globalCompositeOperation = "source-over";
+
+      if (!first) { first = true; if (onFirst) onFirst(); }
+      if (p < 1) requestAnimationFrame(frame); else finish();
+    }
+    requestAnimationFrame(frame);
+    return finish;
+  }
+
+  // ---- outgoing ----
+  let leaving = false;
+  function depart(href, x, y) {
+    if (leaving) return; leaving = true;
+    try { const l = document.createElement("link"); l.rel = "prefetch"; l.href = href; document.head.appendChild(l); } catch (e) {}
+    try { sessionStorage.setItem("portal", JSON.stringify({ rx: x / innerWidth, ry: y / innerHeight, t: Date.now() })); } catch (e) {}
+    run({ polarity: "out", x, y, dur: OUT_MS, block: true });     // visual only — the full void holds until unload
+    setTimeout(() => { location.href = href; }, OUT_MS + HOLD);   // navigate on a clock, independent of rAF (survives a throttled tab)
+  }
+
+  // resolve a click to an in-site navigation URL, or null to leave the click alone
+  function internalHref(a) {
+    if (!a || !a.getAttribute || !a.getAttribute("href")) return null;
+    const target = a.getAttribute("target");
+    if ((target && target !== "_self") || a.hasAttribute("download")) return null;
+    let url; try { url = new URL(a.href, location.href); } catch (e) { return null; }
+    if (url.origin !== location.origin || !/^https?:$/.test(url.protocol)) return null;   // external / mailto / tel
+    if (url.pathname === location.pathname && url.search === location.search) return null; // same document → smooth-scroll / no-op
+    return url.href;
+  }
+
+  document.addEventListener("click", (e) => {
+    if (leaving) { e.preventDefault(); return; }
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    const a = e.target.closest && e.target.closest("a");
+    const href = internalHref(a);
+    if (!href) return;
+    e.preventDefault();
+    let x = e.clientX, y = e.clientY;
+    if (e.detail === 0 || (!x && !y)) { const r = a.getBoundingClientRect(); x = r.left + r.width / 2; y = r.top + r.height / 2; }
+    depart(href, x, y);
+  });
+
+  // ⌘K palette (and any programmatic nav) can travel by portal too
+  portalGo = (href, origin) => {
+    let url; try { url = new URL(href, location.href); } catch (e) { location.assign(href); return; }
+    if (url.origin !== location.origin || !/^https?:$/.test(url.protocol)) { location.assign(href); return; }
+    depart(url.href, origin ? origin.x : innerWidth / 2, origin ? origin.y : innerHeight / 2);
+  };
+
+  // Back/forward: a page we portalled away from is frozen with the full-void canvas still on it.
+  // On bfcache restore, strip any leftover overlay so it's never stuck dark.
+  addEventListener("pageshow", (e) => {
+    if (!e.persisted) return;
+    leaving = false;
+    document.querySelectorAll(".portal-fx").forEach((c) => c.remove());
+    document.documentElement.classList.remove("portal-arrive");
+  });
+
+  // ---- incoming: the <head> guard set .portal-arrive + window.__portal before first paint ----
+  if (window.__portal) {
+    const d = window.__portal; window.__portal = null;
+    clearTimeout(window.__portalKill);
+    const dropCover = () => {   // remove the flat pre-paint cover (idempotent: onFirst + the failsafe both call it)
+      const el = document.documentElement;
+      el.classList.remove("portal-arrive");
+      el.style.removeProperty("--portal-x"); el.style.removeProperty("--portal-y");
+    };
+    const finish = run({
+      polarity: "in", dur: IN_MS,
+      x: (d.rx == null ? 0.5 : d.rx) * innerWidth, y: (d.ry == null ? 0.5 : d.ry) * innerHeight,
+      onFirst: dropCover,                // canvas has painted the void → drop the cover seamlessly
+      onDone: (cv) => cv.remove(),
+    });
+    setTimeout(() => { dropCover(); finish(); }, IN_MS + 700);   // failsafe: if rAF is throttled (backgrounded tab), never leave the cover or canvas behind
+  }
+}
+
 function init() {
+  initPortal();
   initTheme();
   initNav();
   initSmoothScroll();

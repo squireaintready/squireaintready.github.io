@@ -27,6 +27,8 @@
   <link rel="preload" href="/assets/fonts/fraunces-latin-v2.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="/assets/fonts/newsreader-jffj.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <!-- Portal transition: mask the incoming page before first paint (paired with initPortal in main.js) -->
+  <script>(function(){try{if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;var s=sessionStorage.getItem("portal");if(!s)return;sessionStorage.removeItem("portal");var d=JSON.parse(s);if(!d||Date.now()-d.t>2000)return;var e=document.documentElement;e.style.setProperty("--portal-x",(d.rx*100).toFixed(2)+"%");e.style.setProperty("--portal-y",(d.ry*100).toFixed(2)+"%");e.classList.add("portal-arrive");window.__portal=d;window.__portalKill=setTimeout(function(){e.classList.remove("portal-arrive");},1800);}catch(_){}})();</script>
   <link rel="stylesheet" href="/styles/tokens.css" />
   <link rel="stylesheet" href="/styles/base.css" />
   <link rel="stylesheet" href="/styles/case.css" />
