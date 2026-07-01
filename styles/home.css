@@ -59,8 +59,8 @@
   pointer-events: auto; cursor: pointer;
 }
 .hero__o.is-loose::before {
-  content: "↺ reset"; position: absolute; left: 50%; top: 50%;
-  width: 0.62em; transform: translate(-50%, -50%); text-align: center; line-height: 1.35;
+  content: "reset"; position: absolute; left: 50%; top: 50%;
+  width: max-content; transform: translate(-50%, -50%); white-space: nowrap; text-align: center; line-height: 1.35;
   font-family: var(--font-mono); font-size: var(--fs-2xs); font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase;
   color: color-mix(in srgb, var(--accent) 74%, var(--text-dim)); opacity: 0.95; pointer-events: none;
   transition: color 0.2s var(--ease-out);
@@ -92,11 +92,12 @@
   transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(var(--os, 1));
   filter: drop-shadow(0 0 0 transparent);
   transition: transform 0.18s var(--ease-out), filter 0.28s var(--ease-out);
-  /* the SJ orb's glossy material, punched into a natural "O": accent-lit body from the upper-left, a
-     rounded dark inner wall + base occlusion, and a bright accent rim on the top-outer edge. The
-     radial mask (closest-side → 100% = the radius) punches the counter; a soft feather keeps it organic. */
+  /* the SJ orb's glossy material, shaped like an actual serif "o": the counter is an UPRIGHT ELLIPSE
+     (mask), so the ring is thick on the left/right and thin top/bottom — modulated like real type
+     rather than a uniform donut. Body is accent-lit from the upper-left, with a shaded inner wall
+     (hugging the elliptical counter) + base occlusion, and a bright accent rim on the top-outer edge. */
   background:
-    radial-gradient(circle closest-side at 50% 50%, rgba(0, 0, 0, 0.52) 47%, rgba(0, 0, 0, 0) 72%),
+    radial-gradient(36% 44% at 50% 50%, rgba(0, 0, 0, 0.5) 84%, rgba(0, 0, 0, 0) 126%),
     radial-gradient(circle at 50% 120%, rgba(0, 0, 0, 0.48) 0%, rgba(0, 0, 0, 0) 46%),
     radial-gradient(circle at 35% 24%, color-mix(in srgb, var(--accent) 48%, var(--surface)) 0%, var(--surface-2) 46%, color-mix(in srgb, #000 18%, var(--surface)) 100%);
   border: 1px solid var(--border);
@@ -104,8 +105,8 @@
     inset 0 0.055em 0.085em -0.04em color-mix(in srgb, var(--accent) 62%, #fff),
     inset 0 -0.03em 0.055em -0.04em rgba(0, 0, 0, 0.42),
     0 0.05em 0.11em rgba(0, 0, 0, 0.32);
-  -webkit-mask: radial-gradient(circle closest-side at 50% 50%, transparent 0 45%, #000 51%);
-          mask: radial-gradient(circle closest-side at 50% 50%, transparent 0 45%, #000 51%);
+  -webkit-mask: radial-gradient(36% 44% at 50% 50%, transparent 0 86%, #000 100%);
+          mask: radial-gradient(36% 44% at 50% 50%, transparent 0 86%, #000 100%);
 }
 /* fixed specular glint (the SJ orb's ::before) — the gloss that makes it read polished, not flat;
    the face's mask keeps it on the ring */
@@ -118,8 +119,8 @@
 .hero__o-spin {
   position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
   background: conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(255, 255, 255, 0.1) 44deg, transparent 96deg, transparent 360deg);
-  -webkit-mask: radial-gradient(circle closest-side at 50% 50%, transparent 0 45%, #000 51%);
-          mask: radial-gradient(circle closest-side at 50% 50%, transparent 0 45%, #000 51%);
+  -webkit-mask: radial-gradient(36% 44% at 50% 50%, transparent 0 86%, #000 100%);
+          mask: radial-gradient(36% 44% at 50% 50%, transparent 0 86%, #000 100%);
   animation: hero-o-turn 12s linear infinite;
 }
 .hero__o-ring {   /* thin accent ring just outside the torus — mirrors .about__shape .ring */
