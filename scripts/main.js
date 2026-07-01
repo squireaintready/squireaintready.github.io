@@ -1176,20 +1176,32 @@ function initPortal() {
         rate: 0.001 + Math.random() * 0.0022,          // spark life-cycle speed (per ms) — a touch slower, so they linger
         life0: Math.random(),                          // staggered start
         spray: spray * (0.4 + Math.random() * 1),      // how far it flies out
-        grav: (mobile ? 34 : 58) * Math.random(),      // downward rain
+        grav: (mobile ? 16 : 26) * Math.random(),      // gentle fall — kept small so the spin dominates over the drop
+        curl: 0.2 + Math.random() * 0.7,               // tangential swirl over its life → sparks spiral, not spray straight
         trail: Math.random() < 0.72,                   // most sparks streak
       });
     }
     return a;
   }
 
-  function drawRing(ctx, cx, cy, R, el, embers, rot, strokeA, sparkA, sprayK, RING, spr, streaks) {
+  function drawRing(ctx, cx, cy, R, el, embers, rot, strokeA, sparkA, sprayK, RING, spr, streaks, omega) {
     // fiery annulus: broad halo → orange glow → hot body → bright core (colors + base alphas per palette)
     const LW = [Math.max(20, R * 0.13), Math.max(10, R * 0.06), mobile ? 4.5 : 7, mobile ? 2 : 2.6];
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 2; i++) {                                 // halo + glow: soft uniform base
       ctx.globalAlpha = RING[i][1] * strokeA; ctx.lineWidth = LW[i];
       ctx.strokeStyle = "rgba(" + RING[i][0] + ",1)";
       ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
+    }
+    // bright band (hot body + core) drawn as rotating hot zones so the ring itself visibly spins, not just the streaks
+    const NSEG = mobile ? 22 : 36, seg = TAU / NSEG;
+    for (let i = 2; i < 4; i++) {
+      ctx.lineWidth = LW[i]; ctx.strokeStyle = "rgba(" + RING[i][0] + ",1)";
+      for (let s = 0; s < NSEG; s++) {
+        const a0 = s * seg;
+        const m = 0.28 + 0.72 * (0.5 + 0.5 * Math.sin(3 * (a0 - rot)));   // 3 hot zones sweeping around with the spin
+        ctx.globalAlpha = RING[i][1] * strokeA * m;
+        ctx.beginPath(); ctx.arc(cx, cy, R, a0, a0 + seg + 0.004); ctx.stroke();
+      }
     }
     // rotating comet-streaks sweep the band so the spin reads as strong, organic motion
     // (a smooth ring is rotationally symmetric — these varied streaks are what actually show rotation)
@@ -1205,22 +1217,23 @@ function initPortal() {
       }
     }
     // sparks spraying off the ring — they keep living (rotating + shooting) even as the ring dissolves
+    const blur = omega * 7;                                       // tangential motion-blur per stamp (scales with spin speed)
     for (const e of embers) {
       const lp = (el * e.rate + e.life0) % 1;                     // 0..1 spark life
       const fl = 0.5 + 0.5 * Math.sin(el * e.tw + e.ph);
-      const espray = e.spray * sprayK;
-      const ang = e.a + rot, rr = R + e.band + espray * lp;
-      const px = cx + Math.cos(ang) * rr, py = cy + Math.sin(ang) * rr + e.grav * lp * lp;
+      const ang = e.a + rot + e.curl * lp;                        // orbits with the ring + spirals as it flies out (swirl)
+      const rr = R + e.band + e.spray * sprayK * lp, gy = e.grav * lp * lp;
+      const px = cx + Math.cos(ang) * rr, py = cy + Math.sin(ang) * rr + gy;
       const a = clamp(e.al * fl * (1 - lp) * sparkA, 0, 1);
       if (a < 0.012) continue;
       const sz = e.sz * (1 - 0.4 * lp), sp = spr[e.hue];
       ctx.globalAlpha = a;
       ctx.drawImage(sp, px - sz, py - sz, sz * 2, sz * 2);
-      if (e.trail) {                                              // motion-blur streak back toward the ring (two stamps)
-        for (let k = 1; k <= 2; k++) {
-          const tr = R + e.band + espray * lp * (1 - k * 0.3), ts = sz * (1 - k * 0.2);
-          ctx.globalAlpha = a * (0.5 - k * 0.13);
-          ctx.drawImage(sp, cx + Math.cos(ang) * tr - ts, cy + Math.sin(ang) * tr + e.grav * lp * lp * (1 - k * 0.35) - ts, ts * 2, ts * 2);
+      if (e.trail) {                                              // trail streaks TANGENTIALLY (behind the spin) so the rotation reads
+        for (let k = 1; k <= 3; k++) {
+          const ta = ang - k * blur, ts = sz * (1 - k * 0.16);
+          ctx.globalAlpha = a * (0.5 - k * 0.12);
+          ctx.drawImage(sp, cx + Math.cos(ta) * rr - ts, cy + Math.sin(ta) * rr + gy - ts, ts * 2, ts * 2);
         }
       }
     }
@@ -1275,7 +1288,7 @@ function initPortal() {
     // comet-streaks that sweep the band (the real rotation cue on a symmetric ring), generated once with
     // varied length/speed/brightness so they drift instead of marching in lockstep → organic, not a pinwheel.
     const streaks = [];
-    for (let i = 0, sn = mobile ? 4 : 6; i < sn; i++) streaks.push({
+    for (let i = 0, sn = mobile ? 3 : 5; i < sn; i++) streaks.push({
       off: Math.random() * TAU,
       span: 0.45 + Math.random() * Math.random() * 2,        // mostly short, a few long tails
       spd: 0.75 + Math.random() * 0.8,                        // varied speeds → they drift apart, organic
@@ -1340,8 +1353,9 @@ function initPortal() {
         frame.style.clipPath = "circle(" + Rclip.toFixed(1) + "px at 50% 50%)";
       }
       const sprayK = spinMult;                                  // spark throw tracks spin speed (centrifugal): slower spin → shorter sparks
-      rot += dt * SPIN * spinMult;
-      drawRing(ctx, cx, cy, R, el, embers, rot, strokeA, sparkA, sprayK, RING, spr, streaks);
+      const omega = SPIN * spinMult;                              // current angular velocity — drives the spark motion-blur
+      rot += dt * omega;
+      drawRing(ctx, cx, cy, R, el, embers, rot, strokeA, sparkA, sprayK, RING, spr, streaks, omega);
       requestAnimationFrame(loop);
     }
     requestAnimationFrame(loop);
