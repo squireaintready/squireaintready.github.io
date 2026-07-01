@@ -1144,99 +1144,65 @@ function initPortal() {
   const TAU = Math.PI * 2;
   const mobile = matchMedia("(pointer: coarse)").matches || innerWidth < 640;
   const DPR = Math.min(window.devicePixelRatio || 1, 2);
-  const N = mobile ? 280 : 500;                 // spark count — a dense, fiery sparkler ring
+  const N = mobile ? 120 : 210;                 // fire streaks — each is a tangential arc; together they build the ring of fire
   const SPIN = 0.009;                           // ring rotation, rad/ms — full spin speed; the ring spins the whole time
   const OPEN_MS = 850, HOLD_MS = 800, FADE_MS = 470;   // expand → hold (spins in place) → dissolve
 
-  // spark sprites, pre-rendered once (cheap stamps). Two palettes: bright white-gold for dark themes
-  // (additive glow), deeper saturated orange for light themes (normal paint) so they read on cream.
-  const mkSprites = (hues) => hues.map((rgb) => {
-    const s = 32, c = document.createElement("canvas"); c.width = c.height = s;
-    const g = c.getContext("2d"), rad = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
-    rad.addColorStop(0, `rgba(${rgb},1)`); rad.addColorStop(0.4, `rgba(${rgb},0.6)`); rad.addColorStop(1, `rgba(${rgb},0)`);
-    g.fillStyle = rad; g.fillRect(0, 0, s, s); return c;
-  });
-  const spritesDark = mkSprites(["255,247,224", "255,206,120", "248,150,54", "222,96,26"]);
-  const spritesLight = mkSprites(["252,186,74", "240,146,44", "216,100,24", "184,64,14"]);
 
   const easeInOut = (p) => (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);
 
   // a sparkler particle: sits in the ring band, sprays outward over its short life and rains down
-  function makeEmbers() {
-    const a = [], spray = mobile ? 52 : 84, band = mobile ? 13 : 19;
+  // The ring IS fire: most streaks flow tangentially within the band; ~a third escape and fly off as embers.
+  function makeFire() {
+    const a = [], bandW = mobile ? 18 : 26;
     for (let i = 0; i < N; i++) {
-      const t = Math.random();
       a.push({
         a: Math.random() * TAU,
-        band: (Math.random() * 2 - 1) * band,          // radial spread within the (wider) ring band
-        sz: 1 + t * t * (mobile ? 4.4 : 6.2),          // skewed small — lots of fine sparks, a few fat embers
-        al: 0.5 + Math.random() * 0.5,
-        hue: (Math.random() * 4) | 0,
-        tw: 0.006 + Math.random() * 0.018, ph: Math.random() * TAU,
-        rate: 0.001 + Math.random() * 0.0022,          // spark life-cycle speed (per ms) — a touch slower, so they linger
-        life0: Math.random(),                          // staggered start
-        spray: spray * (0.4 + Math.random() * 1),      // how far it flies out
-        grav: (mobile ? 16 : 26) * Math.random(),      // gentle fall — kept small so the spin dominates over the drop
-        curl: 0.2 + Math.random() * 0.7,               // tangential swirl over its life → sparks spiral, not spray straight
-        trail: Math.random() < 0.72,                   // most sparks streak
+        band: (Math.random() * 2 - 1) * bandW,          // where in the band's thickness this streak sits
+        spd: 0.88 + Math.random() * 0.34,               // tangential (spin) speed — slight spread so the fire churns
+        arclen: 0.1 + Math.random() * Math.random() * 0.8,     // streak length (rad); mostly short, a few long wisps
+        wide: (mobile ? 1.5 : 2) + Math.random() * Math.random() * (mobile ? 3 : 5),
+        bri: 0.58 + Math.random() * 0.5,
+        tw: 0.01 + Math.random() * 0.03, ph: Math.random() * TAU,          // flicker
+        esc: Math.random() < 0.3,                       // escaping ember? (flies off the ring)
+        rate: 0.0012 + Math.random() * 0.0026,          // escaping-ember life speed
+        life0: Math.random(),
+        spray: (mobile ? 70 : 120) * (0.4 + Math.random()),   // how far an escaping ember flies
       });
     }
     return a;
   }
 
-  function drawRing(ctx, cx, cy, R, el, embers, rot, strokeA, sparkA, sprayK, RING, spr, streaks, omega) {
-    // fiery annulus: broad halo → orange glow → hot body → bright core (colors + base alphas per palette)
-    const LW = [Math.max(20, R * 0.13), Math.max(10, R * 0.06), mobile ? 4.5 : 7, mobile ? 2 : 2.6];
-    for (let i = 0; i < 2; i++) {                                 // halo + glow: soft uniform base
-      ctx.globalAlpha = RING[i][1] * strokeA; ctx.lineWidth = LW[i];
-      ctx.strokeStyle = "rgba(" + RING[i][0] + ",1)";
-      ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
-    }
-    // bright band (hot body + core) drawn as rotating hot zones so the ring itself visibly spins, not just the streaks
-    const NSEG = mobile ? 22 : 36, seg = TAU / NSEG;
-    for (let i = 2; i < 4; i++) {
-      ctx.lineWidth = LW[i]; ctx.strokeStyle = "rgba(" + RING[i][0] + ",1)";
-      for (let s = 0; s < NSEG; s++) {
-        const a0 = s * seg;
-        const m = 0.28 + 0.72 * (0.5 + 0.5 * Math.sin(3 * (a0 - rot)));   // 3 hot zones sweeping around with the spin
-        ctx.globalAlpha = RING[i][1] * strokeA * m;
-        ctx.beginPath(); ctx.arc(cx, cy, R, a0, a0 + seg + 0.004); ctx.stroke();
+  function drawRing(ctx, cx, cy, R, el, rot, strokeA, sparkA, sprayK, fire, RING) {
+    // soft warm bloom behind the fire — a glow, not a hard painted band
+    ctx.globalAlpha = 0.09 * strokeA; ctx.lineWidth = Math.max(28, R * 0.18);
+    ctx.strokeStyle = "rgba(" + RING[0][0] + ",1)";
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
+    ctx.globalAlpha = 0.14 * strokeA; ctx.lineWidth = Math.max(10, R * 0.07);
+    ctx.strokeStyle = "rgba(" + RING[1][0] + ",1)";
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
+    // the ring of fire: many tangential streaks flowing around it (white-hot → orange), with embers flying off
+    ctx.lineCap = "round";
+    const SEG = 3;
+    for (const p of fire) {
+      const fl = 0.55 + 0.45 * (0.5 + 0.5 * Math.sin(el * p.tw + p.ph));   // flicker
+      let rr = R + p.band, fade = sparkA;
+      if (p.esc) {                                                        // escaping ember: flies outward and fades out
+        const lp = (el * p.rate + p.life0) % 1;
+        rr += p.spray * sprayK * lp; fade = sparkA * (1 - lp) * (1 - lp);
+      }
+      const a0 = p.bri * fl * fade;
+      if (a0 < 0.03) continue;
+      const head = p.a + rot * p.spd, da = p.arclen / SEG;              // spins with the portal
+      ctx.lineWidth = p.wide;
+      for (let s = 0; s < SEG; s++) {                                    // comet taper: white-hot head → gold → orange tail
+        const f = s / SEG;
+        ctx.globalAlpha = clamp(a0 * (1 - f) * (1 - f), 0, 1);
+        ctx.strokeStyle = "rgba(" + (f < 0.34 ? RING[3][0] : f < 0.68 ? RING[2][0] : RING[1][0]) + ",1)";
+        ctx.beginPath(); ctx.arc(cx, cy, rr, head - (s + 1) * da, head - s * da); ctx.stroke();
       }
     }
-    // rotating comet-streaks sweep the band so the spin reads as strong, organic motion
-    // (a smooth ring is rotationally symmetric — these varied streaks are what actually show rotation)
-    const SEG = 9;
-    for (const st of streaks) {
-      const head = rot * st.spd + st.off;
-      ctx.lineWidth = st.wide;
-      for (let s = 0; s < SEG; s++) {
-        const f = s / SEG;                                          // 0 at the bright head → 1 at the faded tail
-        ctx.globalAlpha = (1 - f) * (1 - f) * st.bri * sparkA;      // comet taper; lingers like the sparks as it dissolves
-        ctx.strokeStyle = "rgba(" + (f < 0.34 ? RING[3][0] : RING[2][0]) + ",1)";
-        ctx.beginPath(); ctx.arc(cx, cy, R, head - (f + 1 / SEG) * st.span, head - f * st.span); ctx.stroke();
-      }
-    }
-    // sparks spraying off the ring — they keep living (rotating + shooting) even as the ring dissolves
-    const blur = omega * 7;                                       // tangential motion-blur per stamp (scales with spin speed)
-    for (const e of embers) {
-      const lp = (el * e.rate + e.life0) % 1;                     // 0..1 spark life
-      const fl = 0.5 + 0.5 * Math.sin(el * e.tw + e.ph);
-      const ang = e.a + rot + e.curl * lp;                        // orbits with the ring + spirals as it flies out (swirl)
-      const rr = R + e.band + e.spray * sprayK * lp, gy = e.grav * lp * lp;
-      const px = cx + Math.cos(ang) * rr, py = cy + Math.sin(ang) * rr + gy;
-      const a = clamp(e.al * fl * (1 - lp) * sparkA, 0, 1);
-      if (a < 0.012) continue;
-      const sz = e.sz * (1 - 0.4 * lp), sp = spr[e.hue];
-      ctx.globalAlpha = a;
-      ctx.drawImage(sp, px - sz, py - sz, sz * 2, sz * 2);
-      if (e.trail) {                                              // trail streaks TANGENTIALLY (behind the spin) so the rotation reads
-        for (let k = 1; k <= 3; k++) {
-          const ta = ang - k * blur, ts = sz * (1 - k * 0.16);
-          ctx.globalAlpha = a * (0.5 - k * 0.12);
-          ctx.drawImage(sp, cx + Math.cos(ta) * rr - ts, cy + Math.sin(ta) * rr + gy - ts, ts * 2, ts * 2);
-        }
-      }
-    }
+    ctx.lineCap = "butt";
     ctx.globalAlpha = 1;
   }
 
@@ -1267,7 +1233,7 @@ function initPortal() {
     const RING = dark                                        // [rgb, baseAlpha] per stroke: halo, glow, body, core
       ? [["214,96,26", 0.16], ["240,150,54", 0.34], ["255,192,100", 0.78], ["255,248,226", 0.98]]
       : [["188,66,16", 0.36], ["220,102,28", 0.66], ["234,138,40", 0.98], ["250,176,72", 1]];
-    const spr = dark ? spritesDark : spritesLight;
+    // (the ring of fire is drawn with arc strokes now — the old spark sprites are no longer used)
 
     // the destination, rendered inside the portal. Sandboxed → styled but runs no scripts, so it
     // can't fire analytics or a nested portal; same-origin so we can theme it to match.
@@ -1284,17 +1250,7 @@ function initPortal() {
     cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
     document.documentElement.appendChild(cv);
     const ctx = cv.getContext("2d"); ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    const embers = makeEmbers();
-    // comet-streaks that sweep the band (the real rotation cue on a symmetric ring), generated once with
-    // varied length/speed/brightness so they drift instead of marching in lockstep → organic, not a pinwheel.
-    const streaks = [];
-    for (let i = 0, sn = mobile ? 3 : 5; i < sn; i++) streaks.push({
-      off: Math.random() * TAU,
-      span: 0.45 + Math.random() * Math.random() * 2,        // mostly short, a few long tails
-      spd: 0.75 + Math.random() * 0.8,                        // varied speeds → they drift apart, organic
-      bri: 0.55 + Math.random() * 0.5,
-      wide: (mobile ? 3 : 4) + Math.random() * (mobile ? 2 : 3),
-    });
+    const fire = makeFire();
 
     let ready = false, openAt = 0, start = 0, done = false, rot = 0, lastTs = 0;
     const nav = () => { if (done) return; done = true; try { sessionStorage.setItem("portalReveal", "1"); } catch (e) {} location.href = href; };
@@ -1355,7 +1311,7 @@ function initPortal() {
       const sprayK = spinMult;                                  // spark throw tracks spin speed (centrifugal): slower spin → shorter sparks
       const omega = SPIN * spinMult;                              // current angular velocity — drives the spark motion-blur
       rot += dt * omega;
-      drawRing(ctx, cx, cy, R, el, embers, rot, strokeA, sparkA, sprayK, RING, spr, streaks, omega);
+      drawRing(ctx, cx, cy, R, el, rot, strokeA, sparkA, sprayK, fire, RING);
       requestAnimationFrame(loop);
     }
     requestAnimationFrame(loop);
