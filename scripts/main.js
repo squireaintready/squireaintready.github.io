@@ -1114,9 +1114,9 @@ function initPortal() {
   const TAU = Math.PI * 2;
   const mobile = matchMedia("(pointer: coarse)").matches || innerWidth < 640;
   const DPR = Math.min(window.devicePixelRatio || 1, 2);
-  const N = mobile ? 210 : 360;                 // spark count — a dense sparkler ring
-  const SPIN = 0.0019;                          // ring rotation, rad/ms
-  const OPEN_MS = 720;                          // portal expansion
+  const N = mobile ? 280 : 500;                 // spark count — a dense, fiery sparkler ring
+  const SPIN = 0.0021;                          // ring rotation, rad/ms
+  const OPEN_MS = 1100;                         // portal expansion — slower + deliberate for drama
 
   // white-gold → deep-orange sparks, pre-rendered once to sprites (cheap additive stamps)
   const HUES = ["255,247,224", "255,206,120", "248,150,54", "222,96,26"];
@@ -1131,21 +1131,21 @@ function initPortal() {
 
   // a sparkler particle: sits in the ring band, sprays outward over its short life and rains down
   function makeEmbers() {
-    const a = [], spray = mobile ? 34 : 56, band = mobile ? 9 : 13;
+    const a = [], spray = mobile ? 52 : 84, band = mobile ? 13 : 19;
     for (let i = 0; i < N; i++) {
       const t = Math.random();
       a.push({
         a: Math.random() * TAU,
-        band: (Math.random() * 2 - 1) * band,          // radial spread within the ring band
-        sz: 0.8 + t * t * (mobile ? 3.2 : 4.6),        // skewed small — lots of fine sparks, a few fat ones
-        al: 0.45 + Math.random() * 0.55,
+        band: (Math.random() * 2 - 1) * band,          // radial spread within the (wider) ring band
+        sz: 1 + t * t * (mobile ? 4.4 : 6.2),          // skewed small — lots of fine sparks, a few fat embers
+        al: 0.5 + Math.random() * 0.5,
         hue: (Math.random() * HUES.length) | 0,
-        tw: 0.006 + Math.random() * 0.016, ph: Math.random() * TAU,
-        rate: 0.0011 + Math.random() * 0.0024,         // spark life-cycle speed (per ms)
+        tw: 0.006 + Math.random() * 0.018, ph: Math.random() * TAU,
+        rate: 0.001 + Math.random() * 0.0022,          // spark life-cycle speed (per ms) — a touch slower, so they linger
         life0: Math.random(),                          // staggered start
-        spray: spray * (0.4 + Math.random() * 0.9),    // how far it flies out
-        grav: (mobile ? 24 : 40) * Math.random(),      // downward rain
-        trail: Math.random() < 0.5,
+        spray: spray * (0.4 + Math.random() * 1),      // how far it flies out
+        grav: (mobile ? 34 : 58) * Math.random(),      // downward rain
+        trail: Math.random() < 0.72,                   // most sparks streak
       });
     }
     return a;
@@ -1153,31 +1153,36 @@ function initPortal() {
 
   function drawRing(ctx, cx, cy, R, el, embers, ringA) {
     const rot = el * SPIN;
-    // glowing annulus: wide soft glow → hot gold body → white-hot core
-    ctx.globalAlpha = 0.30 * ringA; ctx.lineWidth = Math.max(7, R * 0.05);
-    ctx.strokeStyle = "rgba(236,140,52,1)";
+    // fiery annulus, broad → hot → white-hot: a wide halo, an orange glow, a thick gold body, a bright core
+    ctx.globalAlpha = 0.16 * ringA; ctx.lineWidth = Math.max(20, R * 0.13);
+    ctx.strokeStyle = "rgba(214,96,26,1)";
     ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
-    ctx.globalAlpha = 0.70 * ringA; ctx.lineWidth = mobile ? 3 : 4.5;
-    ctx.strokeStyle = "rgba(255,190,96,1)";
+    ctx.globalAlpha = 0.34 * ringA; ctx.lineWidth = Math.max(10, R * 0.06);
+    ctx.strokeStyle = "rgba(240,150,54,1)";
     ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
-    ctx.globalAlpha = 0.95 * ringA; ctx.lineWidth = mobile ? 1.4 : 2;
-    ctx.strokeStyle = "rgba(255,247,222,1)";
+    ctx.globalAlpha = 0.78 * ringA; ctx.lineWidth = mobile ? 4.5 : 7;
+    ctx.strokeStyle = "rgba(255,192,100,1)";
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
+    ctx.globalAlpha = 0.98 * ringA; ctx.lineWidth = mobile ? 2 : 2.6;
+    ctx.strokeStyle = "rgba(255,248,226,1)";
     ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
     // sparks spraying off the ring
     for (const e of embers) {
       const lp = (el * e.rate + e.life0) % 1;                     // 0..1 spark life
-      const fl = 0.55 + 0.45 * Math.sin(el * e.tw + e.ph);
+      const fl = 0.5 + 0.5 * Math.sin(el * e.tw + e.ph);
       const ang = e.a + rot, rr = R + e.band + e.spray * lp;
       const px = cx + Math.cos(ang) * rr, py = cy + Math.sin(ang) * rr + e.grav * lp * lp;
       const a = clamp(e.al * fl * (1 - lp) * ringA, 0, 1);
       if (a < 0.012) continue;
-      const sz = e.sz * (1 - 0.45 * lp), sp = sprites[e.hue];
+      const sz = e.sz * (1 - 0.4 * lp), sp = sprites[e.hue];
       ctx.globalAlpha = a;
       ctx.drawImage(sp, px - sz, py - sz, sz * 2, sz * 2);
-      if (e.trail) {                                              // short motion-blur streak back toward the ring
-        const tr = R + e.band + e.spray * lp * 0.55;
-        ctx.globalAlpha = a * 0.5;
-        ctx.drawImage(sp, cx + Math.cos(ang) * tr - sz * 0.7, cy + Math.sin(ang) * tr + e.grav * lp * lp * 0.3 - sz * 0.7, sz * 1.4, sz * 1.4);
+      if (e.trail) {                                              // motion-blur streak back toward the ring (two stamps)
+        for (let k = 1; k <= 2; k++) {
+          const tr = R + e.band + e.spray * lp * (1 - k * 0.3), ts = sz * (1 - k * 0.2);
+          ctx.globalAlpha = a * (0.5 - k * 0.13);
+          ctx.drawImage(sp, cx + Math.cos(ang) * tr - ts, cy + Math.sin(ang) * tr + e.grav * lp * lp * (1 - k * 0.35) - ts, ts * 2, ts * 2);
+        }
       }
     }
     ctx.globalAlpha = 1;
