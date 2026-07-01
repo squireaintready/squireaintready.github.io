@@ -214,23 +214,23 @@
   content: ""; position: absolute; z-index: -1; inset-block: 0; left: 50%; width: 100vw; transform: translateX(-50%);
   pointer-events: none; background-repeat: no-repeat;
 }
-/* Work — a faint data-point matrix + cool corner glow */
+/* Work — a faint data-point matrix + an accent corner glow */
 #work::before {
   background:
-    radial-gradient(46% 55% at 90% 4%, color-mix(in srgb, var(--proj-crowdtells) 7%, transparent), transparent 70%),
+    radial-gradient(46% 55% at 90% 4%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 70%),
     radial-gradient(var(--grid-line) 1px, transparent 1.6px) 0 0 / 24px 24px;
 }
 /* Capabilities — a faint engineering grid + glow */
 #capabilities::before {
   background:
-    radial-gradient(48% 58% at 86% 0%, color-mix(in srgb, var(--proj-crowdtells) 8%, transparent), transparent 70%),
+    radial-gradient(48% 58% at 86% 0%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 70%),
     repeating-linear-gradient(0deg, var(--grid-line) 0 1px, transparent 1px 30px),
     repeating-linear-gradient(90deg, var(--grid-line) 0 1px, transparent 1px 30px);
 }
 /* Play — a subtle felt vignette on a tinted band */
 #play::before {
   background:
-    radial-gradient(58% 72% at 50% 42%, color-mix(in srgb, var(--proj-tells) 9%, transparent), transparent 72%),
+    radial-gradient(58% 72% at 50% 42%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 72%),
     var(--bg-tint);
 }
 /* Contact — a soft centered focus glow */
@@ -396,7 +396,6 @@
 
 /* ---------- Capabilities ---------- */
 .cap-feature {
-  --proj: var(--proj-crowdtells); --proj-ink: var(--proj-crowdtells-ink);
   border: 1px solid var(--border); border-radius: var(--r-xl); background: var(--surface);
   padding: clamp(1.6rem, 4vw, 2.6rem); margin-bottom: clamp(1.75rem, 4vw, 2.5rem);
   position: relative; overflow: hidden;

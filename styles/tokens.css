@@ -118,11 +118,6 @@
   --shadow-1: 0 1px 0 rgba(255, 255, 255, 0.04);
   --shadow-2: 0 22px 46px rgba(0, 0, 0, 0.45);
   --shadow-3: 0 36px 80px rgba(0, 0, 0, 0.6);
-  /* per-project accents — lightened to read on the dark canvas */
-  --proj-crowdtells: #7aa6cf; --proj-crowdtells-ink: #8fb4d6;
-  --proj-regwatch:   #e2b878; --proj-regwatch-ink:   #e7c187;
-  --proj-miztips:    #8f8bf5; --proj-miztips-ink:    #a6a2f7;
-  --proj-tells:      #5fc995; --proj-tells-ink:      #6fd1a1;
 }
 
 /* ============================================================================
@@ -151,10 +146,6 @@
   --shadow-1: 0 1px 0 var(--border);
   --shadow-2: 0 18px 40px rgba(28, 26, 22, 0.10);
   --shadow-3: 0 32px 70px rgba(28, 26, 22, 0.16);
-  --proj-crowdtells: #27496d; --proj-crowdtells-ink: #27496d;
-  --proj-regwatch:   #c8862f; --proj-regwatch-ink:   #8a5a16;
-  --proj-miztips:    #4f46e5; --proj-miztips-ink:    #4338ca;
-  --proj-tells:      #2f7d5b; --proj-tells-ink:      #1f5a40;
 }
 
 /* ============================================================================
@@ -183,10 +174,6 @@
   --shadow-1: 0 1px 0 rgba(255, 255, 255, 0.04);
   --shadow-2: 0 22px 46px rgba(0, 0, 0, 0.45);
   --shadow-3: 0 36px 80px rgba(0, 0, 0, 0.6);
-  --proj-crowdtells: #7aa6cf; --proj-crowdtells-ink: #8fb4d6;
-  --proj-regwatch:   #e2b878; --proj-regwatch-ink:   #e7c187;
-  --proj-miztips:    #8f8bf5; --proj-miztips-ink:    #a6a2f7;
-  --proj-tells:      #5fc995; --proj-tells-ink:      #6fd1a1;
 }
 
 /* color-mix() fallback: keep nav/palette/grid from breaking on old engines */
@@ -194,9 +181,9 @@
   :root { --grid-line: rgba(127, 127, 127, 0.12); --glass: var(--bg); }
 }
 
-/* ---- Default live token + per-project application (case studies set data-proj) ---- */
-:root { --proj: var(--accent); --proj-ink: var(--accent); }
-[data-proj="crowdtells"] { --proj: var(--proj-crowdtells); --proj-ink: var(--proj-crowdtells-ink); }
-[data-proj="regwatch"]   { --proj: var(--proj-regwatch);   --proj-ink: var(--proj-regwatch-ink); }
-[data-proj="miztips"]    { --proj: var(--proj-miztips);    --proj-ink: var(--proj-miztips-ink); }
-[data-proj="tells"]      { --proj: var(--proj-tells);      --proj-ink: var(--proj-tells-ink); }
+/* ---- Live accent tokens the work + case-study pages paint with ----
+   Both resolve to the ACTIVE theme's accent, so every project reads in one color language
+   (forest → gold, paper → green, indigo → periwinkle). --proj-ink is the higher-contrast
+   variant for accent text/marks; --proj the base for fills, rules and glows. The data-proj
+   attribute stays on the markup as a semantic tag — it no longer forks the color. */
+:root { --proj: var(--accent); --proj-ink: var(--accent-strong); }
