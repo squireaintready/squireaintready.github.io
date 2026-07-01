@@ -1144,11 +1144,15 @@ function initPortal() {
     ctx.globalAlpha = 1;
   }
 
-  // scale the page content (not the canvas — it lives on <html>) for the "pulled through" depth
+  // scale the page content (not the canvas — it lives on <html>) for the "pulled through" depth.
+  // Pivot at the viewport centre in page coords (scroll-aware) so a tall/scrolled page zooms
+  // toward the portal, not around the document's middle.
   const bodyEl = document.body;
   function pageScale(s) {
-    if (s == null) { bodyEl.style.transform = ""; bodyEl.style.transformOrigin = ""; bodyEl.style.willChange = ""; }
-    else { bodyEl.style.transformOrigin = "50% 50%"; bodyEl.style.willChange = "transform"; bodyEl.style.transform = "scale(" + s.toFixed(4) + ")"; }
+    if (s == null) { bodyEl.style.transform = ""; bodyEl.style.transformOrigin = ""; bodyEl.style.willChange = ""; return; }
+    bodyEl.style.transformOrigin = (scrollX + innerWidth / 2) + "px " + (scrollY + innerHeight / 2) + "px";
+    bodyEl.style.willChange = "transform";
+    bodyEl.style.transform = "scale(" + s.toFixed(4) + ")";
   }
 
   // one portal pass — "out" swallows the page into the void, "in" opens onto the new page
