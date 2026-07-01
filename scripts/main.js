@@ -609,6 +609,38 @@ function initPlay() {
   rest();
 }
 
+/* ---------- Inter-orb collision — while both orbs are loose they bounce off each other instead of
+   overlapping. Each loose orb registers a handle (viewport-space centre / radius / velocity, whether
+   it's currently held, plus hooks to nudge + wake it); a shared rAF resolves circle-circle overlaps
+   with a mass-weighted elastic response, so the little "o" ricochets off the big SJ orb while the SJ
+   barely budges. Runs only while ≥2 orbs are loose. ---------- */
+const looseOrbs = [];
+let collideRaf = 0;
+function resolveOrbCollisions() {
+  for (let i = 0; i < looseOrbs.length; i++) for (let j = i + 1; j < looseOrbs.length; j++) {
+    const a = looseOrbs[i], b = looseOrbs[j];
+    let dx = b.cx() - a.cx(), dy = b.cy() - a.cy(), dist = Math.hypot(dx, dy);
+    const min = a.r() + b.r();
+    if (dist >= min) continue;
+    if (dist < 0.01) { dx = Math.random() - 0.5; dy = -Math.random() - 0.1; dist = Math.hypot(dx, dy) || 1; }  // dead-centre overlap → shove apart
+    const nx = dx / dist, ny = dy / dist, overlap = min - dist;
+    const ia = a.held() ? 0 : 1 / a.mass(), ib = b.held() ? 0 : 1 / b.mass(), inv = ia + ib;   // held = immovable
+    if (!inv) continue;
+    a.nudge(-nx * overlap * (ia / inv), -ny * overlap * (ia / inv));   // separate, weighted by inverse mass
+    b.nudge(nx * overlap * (ib / inv), ny * overlap * (ib / inv));
+    const vn = (b.vx() - a.vx()) * nx + (b.vy() - a.vy()) * ny;        // relative velocity along the contact normal
+    if (vn < 0) {                                                      // only if they're closing
+      const imp = -1.7 * vn / inv;                                    // restitution ~0.7
+      a.setV(a.vx() - imp * ia * nx, a.vy() - imp * ia * ny);
+      b.setV(b.vx() + imp * ib * nx, b.vy() + imp * ib * ny);
+    }
+    a.wake(); b.wake();
+  }
+}
+function collideLoop() { if (looseOrbs.length < 2) { collideRaf = 0; return; } resolveOrbCollisions(); collideRaf = requestAnimationFrame(collideLoop); }
+function registerOrb(h) { if (looseOrbs.indexOf(h) < 0) looseOrbs.push(h); if (!collideRaf && looseOrbs.length >= 2) collideRaf = requestAnimationFrame(collideLoop); }
+function deregisterOrb(h) { const i = looseOrbs.indexOf(h); if (i >= 0) looseOrbs.splice(i, 1); }
+
 /* ---------- Interactive monogram orb (About) ---------- */
 function initOrb() {
   const shape = $(".about__shape");
@@ -619,6 +651,7 @@ function initOrb() {
 
   let loose = false, dragging = false, armed = false, armedMouse = false, downX = 0, downY = 0;
   let x = 0, y = 0, vx = 0, vy = 0, w = 0, h = 0, rafId = 0, lastT = 0, dragDX = 0, dragDY = 0, hist = [], sjX = 0, sjY = 0, sjR = 0;
+  const collHandle = { cx: () => x + w / 2, cy: () => y + h / 2, r: () => w / 2, mass: () => w / 2, vx: () => vx, vy: () => vy, setV: (a, b) => { vx = a; vy = b; }, held: () => dragging, nudge: (ddx, ddy) => { x = clamp(x + ddx, 0, vw() - w); y = clamp(y + ddy, 0, vh() - h); draw(); }, wake: () => run() };
 
   // ---- hover tilt (locked state, mouse only) ----
   if (!prefersReduced) {
@@ -728,7 +761,7 @@ function initOrb() {
     orb.classList.add("is-loose"); shape.classList.add("is-loose");
     draw();
     stage().appendChild(orb);   // move into the clip layer, keeping its on-screen spot via the transform
-    loose = true;
+    loose = true; registerOrb(collHandle);
     sjX = sjY = sjR = 0;        // SJ starts centered, then eases down to the bottom in the loop
     getReset().classList.add("is-shown");
     if (pop) { vx = (Math.random() * 2 - 1) * 2.4; vy = -7; squish(); }   // a single click pops it straight up with a light bounce
@@ -736,7 +769,7 @@ function initOrb() {
     run();
   }
   function relock() {
-    loose = false; halt();
+    loose = false; halt(); deregisterOrb(collHandle);
     shape.appendChild(orb);   // reparent back into its float box (home)
     orb.classList.remove("is-loose"); shape.classList.remove("is-loose", "is-target");
     orb.style.transition = ""; orb.style.transform = ""; orb.style.width = ""; orb.style.height = "";
@@ -816,6 +849,7 @@ function initHeroOrb() {
 
   let loose = false, dragging = false, armed = false, armedMouse = false, downX = 0, downY = 0;
   let x = 0, y = 0, vx = 0, vy = 0, w = 0, h = 0, rafId = 0, lastT = 0, dragDX = 0, dragDY = 0, hist = [];
+  const collHandle = { cx: () => x + w / 2, cy: () => y + h / 2, r: () => w / 2, mass: () => w / 2, vx: () => vx, vy: () => vy, setV: (a, b) => { vx = a; vy = b; }, held: () => dragging, nudge: (ddx, ddy) => { x = clamp(x + ddx, 0, vw() - w); y = clamp(y + ddy, 0, vh() - h); draw(); }, wake: () => run() };
 
   // ---- hover tilt (locked, mouse only): the o leans toward the cursor as it sweeps the name ----
   if (!prefersReduced) {
@@ -890,14 +924,14 @@ function initHeroOrb() {
     orb.classList.add("is-loose"); home.classList.add("is-loose");
     draw();
     stage().appendChild(orb);   // pop into the clip layer, keeping its on-screen spot via the transform
-    loose = true;
+    loose = true; registerOrb(collHandle);
     getReset().classList.add("is-shown");
     if (pop) { vx = (Math.random() * 2 - 1) * 2.4; vy = -7; squish(); }   // a click pops it straight up with a light bounce
     else { vx = 0; vy = 0; }                                              // a drag grabs it in place
     run();
   }
   function relock() {
-    loose = false; halt();
+    loose = false; halt(); deregisterOrb(collHandle);
     home.appendChild(orb);   // back into the wordmark cutout (home)
     orb.classList.remove("is-loose"); home.classList.remove("is-loose", "is-target");
     orb.style.transition = ""; orb.style.transform = ""; orb.style.width = ""; orb.style.height = "";
