@@ -201,13 +201,22 @@
 @keyframes about-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
 .about__orb-face {
   position: absolute; inset: 0; border-radius: 50%; display: grid; place-items: center;
-  background: radial-gradient(120% 120% at 30% 25%, color-mix(in srgb, var(--accent) 22%, var(--surface)) 0%, var(--surface-2) 60%, var(--surface) 100%);
-  border: 1px solid var(--border); box-shadow: var(--shadow-2);
+  /* lit sphere: warm highlight top-left, occlusion + cast toward bottom, so it reads as a ball tipping toward you */
+  background:
+    radial-gradient(circle at 50% 116%, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0) 46%),
+    radial-gradient(circle at 36% 26%, color-mix(in srgb, var(--accent) 38%, var(--surface)) 0%, var(--surface-2) 48%, color-mix(in srgb, #000 26%, var(--surface)) 100%);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-2), inset 0 -15px 26px -12px rgba(0, 0, 0, 0.6), inset 0 12px 20px -14px color-mix(in srgb, var(--accent) 55%, #fff);
   transform-style: preserve-3d; transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
   transition: transform 0.2s var(--ease-out); cursor: pointer; -webkit-user-select: none; user-select: none;
 }
+.about__orb-face::before {   /* soft specular highlight — a real glint high on the sphere */
+  content: ""; position: absolute; left: 19%; top: 11%; width: 42%; height: 34%; border-radius: 50%;
+  background: radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 66%);
+  opacity: 0.5; pointer-events: none;
+}
 .about__shape .ring { position: absolute; inset: -1px; border-radius: 50%; border: 1px solid var(--proj, var(--accent)); opacity: 0.28; transform: translateZ(14px); }
-.about__monogram { font-family: var(--font-display); font-weight: 360; font-size: clamp(3.2rem, 10vw, 6rem); color: var(--accent); letter-spacing: -0.04em; line-height: 1; transform: translateZ(30px); }
+.about__monogram { font-family: var(--font-display); font-weight: 360; font-size: clamp(3.2rem, 10vw, 6rem); color: var(--accent); letter-spacing: -0.04em; line-height: 1; transform: translateZ(30px); will-change: transform; }
 .about__monogram.is-pop { animation: orb-pop 0.55s var(--ease-spring); }
 @keyframes orb-pop {
   0% { transform: translateZ(30px) scale(1); }
@@ -219,19 +228,44 @@
 @media (max-width: 600px) { .about__shape { width: clamp(116px, 33vw, 150px); margin: 0.3rem 0 0.7rem 1.2rem; } }
 /* Physics toy: click the orb to pop it loose (gravity + wall-bounce), fling it, drag it back onto the dashed cutout to snap home. The cutout keeps the float box so the prose never reflows. */
 .about__shape::after {
-  content: ""; position: absolute; inset: 0; border-radius: 50%;
-  border: 2px dashed color-mix(in srgb, var(--accent) 50%, transparent);
-  opacity: 0; transform: scale(0.94); pointer-events: none;
-  transition: opacity 0.28s var(--ease-out), transform 0.28s var(--ease-out), border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+  content: ""; position: absolute; inset: -2%; border-radius: 50%;
+  border: 1.5px dashed color-mix(in srgb, var(--accent) 52%, transparent);
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 9%, transparent) 0%, transparent 72%);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s var(--ease-out), border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
 }
-.about__shape.is-loose::after { opacity: 0.75; transform: scale(1); }
-.about__shape.is-target::after { opacity: 1; border-color: var(--accent); box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 16%, transparent); }
+.about__shape.is-loose::after { opacity: 0.8; animation: cutout-spin 18s linear infinite; }
+.about__shape.is-target::after { opacity: 1; border-color: var(--accent); box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 14%, transparent), inset 0 0 26px color-mix(in srgb, var(--accent) 16%, transparent); }
+@keyframes cutout-spin { to { transform: rotate(360deg); } }
+/* hint text centered in the cutout while the orb is loose */
+.about__cue {
+  position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 0 22%; line-height: 1.45;
+  font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: 0.08em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--accent) 72%, var(--text-dim));
+  opacity: 0; pointer-events: none; transition: opacity 0.3s var(--ease-out), color 0.2s, transform 0.3s var(--ease-spring);
+}
+.about__shape.is-loose .about__cue { opacity: 0.9; }
+.about__shape.is-target .about__cue { opacity: 1; color: var(--accent); transform: scale(1.08); }
 .orb-layer { position: fixed; inset: 0; z-index: 400; overflow: hidden; pointer-events: none; }
 .about__orb.is-loose {
   position: absolute; inset: auto; left: 0; top: 0; margin: 0;
   animation: none; cursor: grab; touch-action: none; pointer-events: auto; will-change: transform;
 }
 .about__orb.is-loose:active { cursor: grabbing; }
+/* return-home button — appears only while the orb is loose (in case it's flung far or you scroll away) */
+.orb-reset {
+  position: fixed; left: 50%; bottom: clamp(1rem, 3.5vw, 1.7rem); z-index: 401;
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--text); background: color-mix(in srgb, var(--surface) 82%, transparent);
+  border: 1px solid var(--border-strong); border-radius: var(--r-pill); padding: 0.55rem 0.95rem;
+  cursor: pointer; opacity: 0; pointer-events: none; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  transform: translateX(-50%) translateY(10px);
+  transition: opacity 0.3s var(--ease-out), transform 0.35s var(--ease-spring), border-color 0.2s, background 0.2s;
+}
+.orb-reset.is-shown { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
+.orb-reset:hover { border-color: var(--accent); background: color-mix(in srgb, var(--surface) 94%, transparent); }
+.orb-reset__i { font-size: 1.15em; line-height: 1; }
 .about__orb-face.is-squish { animation: orb-squish 0.28s var(--ease-out); }
 @keyframes orb-squish { 0% { transform: scale(1.18, 0.82); } 55% { transform: scale(0.94, 1.06); } 100% { transform: scale(1, 1); } }
 .about__body { font-size: var(--fs-lg); line-height: 1.62; color: var(--text-dim); }

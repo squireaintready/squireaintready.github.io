@@ -614,9 +614,10 @@ function initOrb() {
   const orb = shape && $(".about__orb", shape);
   const face = $("[data-orb]");
   if (!shape || !orb || !face) return;
+  const mono = face.querySelector(".about__monogram");
 
   let loose = false, dragging = false;
-  let x = 0, y = 0, vx = 0, vy = 0, w = 0, h = 0, rafId = 0, lastT = 0, dragDX = 0, dragDY = 0, hist = [];
+  let x = 0, y = 0, vx = 0, vy = 0, w = 0, h = 0, rafId = 0, lastT = 0, dragDX = 0, dragDY = 0, hist = [], sjX = 0, sjY = 0, sjR = 0;
 
   // ---- hover tilt (locked state, mouse only) ----
   if (!prefersReduced) {
@@ -652,6 +653,19 @@ function initOrb() {
   const draw = () => { orb.style.transform = "translate(" + x.toFixed(1) + "px," + y.toFixed(1) + "px)"; };
   const squish = () => { face.classList.remove("is-squish"); void face.offsetWidth; face.classList.add("is-squish"); };
   face.addEventListener("animationend", () => face.classList.remove("is-squish"));
+  const swayMono = () => { if (mono) mono.style.transform = "translate(" + sjX.toFixed(1) + "px," + sjY.toFixed(1) + "px) rotate(" + sjR.toFixed(1) + "deg)"; };
+
+  // return-home button — lazily created, shown only while the orb is loose
+  let resetBtn = null;
+  const getReset = () => {
+    if (!resetBtn) {
+      resetBtn = Object.assign(document.createElement("button"), { className: "orb-reset", type: "button" });
+      resetBtn.innerHTML = '<span class="orb-reset__i" aria-hidden="true">↺</span> Return SJ';
+      resetBtn.addEventListener("click", () => { if (loose) snapHome(); });
+      document.body.appendChild(resetBtn);
+    }
+    return resetBtn;
+  };
 
   function loop(t) {
     if (!loose) { rafId = 0; return; }
@@ -668,7 +682,13 @@ function initOrb() {
       else if (y >= H) { y = H; if (Math.abs(vy) > 2.4) hit = Math.max(hit, Math.abs(vy)); vy = -vy * FLOOR_REST; vx *= FLOORF; }
       if (hit > 4.5) squish();
       draw();
-      if (y >= H - 0.5 && Math.abs(vy) < 0.7 && Math.abs(vx) < 0.3) { vx = vy = 0; rafId = 0; return; }  // rest on the floor
+      // SJ "gravity": the heavy monogram sinks to the bottom of the orb and sways against the motion
+      const sink = h * 0.15;
+      sjX += (clamp(-vx * 1.0, -h * 0.09, h * 0.09) - sjX) * 0.16;
+      sjY += (sink - sjY) * 0.14;
+      sjR += (clamp(-vx * 0.65, -11, 11) - sjR) * 0.16;
+      swayMono();
+      if (y >= H - 0.5 && Math.abs(vy) < 0.7 && Math.abs(vx) < 0.3) { vx = vy = 0; sjX = 0; sjR = 0; sjY = sink; swayMono(); rafId = 0; return; }  // rest: settle SJ at the bottom
     }
     rafId = requestAnimationFrame(loop);
   }
@@ -685,6 +705,8 @@ function initOrb() {
     draw();
     stage().appendChild(orb);   // move into the clip layer, keeping its on-screen spot via the transform
     loose = true;
+    sjX = sjY = sjR = 0;        // SJ starts centered, then eases down to the bottom in the loop
+    getReset().classList.add("is-shown");
     vx = (Math.random() * 2 - 1) * 3; vy = -6.5;   // a little pop as it releases
     squish(); run();
   }
@@ -693,6 +715,9 @@ function initOrb() {
     shape.appendChild(orb);   // reparent back into its float box (home)
     orb.classList.remove("is-loose"); shape.classList.remove("is-loose", "is-target");
     orb.style.transition = ""; orb.style.transform = ""; orb.style.width = ""; orb.style.height = "";
+    if (mono) mono.style.transform = "";   // SJ back to its centered badge position
+    sjX = sjY = sjR = 0;
+    if (resetBtn) resetBtn.classList.remove("is-shown");
   }
   const near = () => {
     const hr = homeRect();
@@ -716,6 +741,7 @@ function initOrb() {
     try { orb.setPointerCapture(e.pointerId); } catch (_) {}
     dragDX = e.clientX - x; dragDY = e.clientY - y;
     hist = [{ x: e.clientX, y: e.clientY, t: performance.now() }];
+    sjX = 0; sjR = 0; sjY = h * 0.15; swayMono();   // SJ hangs at the bottom while carried
     orb.style.transition = ""; e.preventDefault();
   });
   orb.addEventListener("pointermove", (e) => {
