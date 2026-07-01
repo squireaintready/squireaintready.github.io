@@ -89,11 +89,6 @@
 .hero__o.is-loose:hover::before,
 .hero__o.is-target::before { color: var(--accent); }
 @keyframes hero-cutout-spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
-/* On phones the "o" hugs the screen edge and the ring is tiny, so drop the label (the ring is still
-   the tap-to-reset target, and the "Return o" button is the primary touch path). */
-@media (max-width: 680px) {
-  .hero__o.is-loose::before { display: none; }
-}
 .hero__o-orb {
   position: absolute; inset: 0; perspective: 6em;
   /* On load the o spins in (two decelerating turns), lands on its spot, then hops a couple of times

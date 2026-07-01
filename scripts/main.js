@@ -943,6 +943,7 @@ function initHeroOrb() {
   const run = () => { if (!rafId) { lastT = 0; rafId = requestAnimationFrame(loop); } };
   const halt = () => { if (rafId) { cancelAnimationFrame(rafId); rafId = 0; } };
 
+  let poppedAt = 0;   // when the o last popped loose — swallows the tap's ghost click so it can't snap right back
   function unlock(pop) {
     if (loose) return;
     const r = orb.getBoundingClientRect();
@@ -954,6 +955,7 @@ function initHeroOrb() {
     stage().appendChild(orb);   // pop into the clip layer, keeping its on-screen spot via the transform
     loose = true; registerOrb(collHandle);
     getReset().classList.add("is-shown");
+    poppedAt = performance.now();
     if (pop) { vx = (Math.random() * 2 - 1) * 2.4; vy = -7; squish(); }   // a click pops it straight up with a light bounce
     else { vx = 0; vy = 0; }                                              // a drag grabs it in place
     run();
@@ -1020,9 +1022,11 @@ function initHeroOrb() {
   }
   orb.addEventListener("pointerup", release);
   orb.addEventListener("pointercancel", (e) => { armed = false; release(e); });
-  // click the cutout (the ring at the o's spot) to snap the orb home — the target is `home` itself,
-  // not the orb (which is off in the clip layer while loose), so the pop-click never triggers this
-  home.addEventListener("click", (e) => { if (loose && e.target === home) snapHome(); });
+  // click the cutout (the ring at the o's spot) to snap the orb home — the target is `home` itself, not
+  // the orb (which is off in the clip layer while loose). On touch, popping loose flies the o up and the
+  // tap fires a synthesized click on the now-exposed cutout — the 320ms guard swallows that so a light
+  // tap can't pop-and-immediately-snap-back; a deliberate later tap on the cutout still resets.
+  home.addEventListener("click", (e) => { if (loose && e.target === home && performance.now() - poppedAt > 320) snapHome(); });
   addEventListener("resize", () => { if (loose && !dragging) { x = clamp(x, 0, vw() - w); y = clamp(y, 0, vh() - h); draw(); } }, { passive: true });
 }
 
