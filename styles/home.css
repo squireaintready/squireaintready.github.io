@@ -13,12 +13,12 @@
   border-bottom: 1px solid var(--border-strong);
 }
 .hero__inner { position: relative; z-index: 1; flex: 1 1 auto; align-content: center; display: grid; grid-template-columns: 1fr; gap: clamp(1.1rem, 3vw, 1.8rem); }
-@media (min-width: 720px) {
-  .hero__inner { grid-template-columns: clamp(112px, 15vw, 184px) 1fr; gap: clamp(1.25rem, 2.5vw, 2.25rem); align-items: end; }
+@media (min-width: 960px) {
+  .hero__inner { grid-template-columns: clamp(128px, 14vw, 190px) 1fr; gap: clamp(1.5rem, 2.5vw, 2.5rem); align-items: end; }
 }
 .hero__rail { display: flex; flex-direction: column; gap: 0.7rem; }
-@media (min-width: 720px) { .hero__rail { border-right: 1px solid var(--border-strong); padding-right: clamp(0.9rem, 1.8vw, 1.4rem); padding-bottom: 0.5rem; } }
-@media (max-width: 719px) { .hero__rail { flex-flow: row wrap; gap: 0.5rem 1.4rem; align-items: baseline; } }
+@media (min-width: 960px) { .hero__rail { border-right: 1px solid var(--border-strong); padding-right: clamp(0.9rem, 1.8vw, 1.4rem); padding-bottom: 0.5rem; } }
+@media (max-width: 959px) { .hero__rail { flex-flow: row wrap; gap: 0.5rem 1.4rem; align-items: baseline; } }
 .hero__rail-row { display: flex; flex-direction: column; gap: 1px; font-family: var(--font-sans); font-size: var(--fs-sm); color: var(--text-dim); }
 .hero__rail-k { font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-mute); }
 .hero__rail-row a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--border-strong); transition: text-decoration-color var(--t); }
@@ -28,14 +28,24 @@
 .hero__main { min-width: 0; }
 .hero__kicker { margin-bottom: clamp(0.7rem, 1.8vw, 1.1rem); }
 .hero__name {
-  margin: 0; color: var(--text);
+  margin: 0; color: var(--text); white-space: nowrap;
   font-family: var(--font-display); font-weight: var(--w-display); font-optical-sizing: none;
-  font-size: clamp(3.75rem, min(24vw, 15vh), 190px);   /* CLS fallback (sized under the text cut so it never clips pre-JS); JS fits it exactly */
-  line-height: 0.84; letter-spacing: -0.03em;
+  font-size: clamp(2.4rem, 13vw, 96px);   /* CLS fallback (under the fitted size so "Samuel Jo" never clips pre-JS); JS fits it to the column */
+  line-height: 0.9; letter-spacing: -0.03em;
 }
-.hero__name-l { display: block; }
-.hero__name-l2 { display: flex; align-items: center; gap: clamp(0.5rem, 1.5vw, 1.1rem); }
-.hero__name-rule { flex: 1 1 auto; height: clamp(2px, 0.03em, 5px); background: var(--border-strong); border-radius: 2px; align-self: center; opacity: 0.9; }
+/* animated accent rule under the name — draws in on load, its accent sweeps across on hover */
+.hero__rule {
+  height: clamp(2px, 0.3vw, 4px); width: min(100%, 40rem); margin-top: clamp(0.85rem, 2vw, 1.5rem);
+  border-radius: 3px; transform-origin: left;
+  background: linear-gradient(90deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 45%, var(--border-strong)) 40%, var(--border-strong) 68%, transparent 100%);
+  background-size: 220% 100%; background-position: 100% 0;
+  transform: scaleX(0); opacity: 0;
+  animation: hero-rule-in 1s var(--ease-out) 0.35s forwards;
+  transition: background-position 0.75s var(--ease-out);
+}
+@keyframes hero-rule-in { to { transform: scaleX(1); opacity: 1; } }
+.hero__main:hover .hero__rule { background-position: 0 0; }
+@media (prefers-reduced-motion: reduce) { .hero__rule { animation: none; transform: scaleX(1); opacity: 1; transition: none; } }
 
 .hero__statement { font-family: var(--font-display); font-weight: var(--w-display); font-optical-sizing: none; font-size: var(--fs-2xl); line-height: 1.16; letter-spacing: -0.01em; color: var(--text-dim); max-width: 30ch; text-wrap: balance; margin-top: clamp(0.9rem, 2.2vw, 1.4rem); }
 .hero__statement em { font-style: italic; color: var(--accent); }
@@ -51,8 +61,6 @@
 }
 @media (max-width: 600px) {
   .hero__rail { display: none; }                        /* role + location already live in the kicker */
-  .hero__name-l2 { flex-wrap: wrap; row-gap: 0.1em; }
-  .hero__name-rule { flex: 1 1 100%; }
   .hero__kicker { margin-bottom: 0.8rem; }
   .hero__statement { margin-top: 1rem; }
   .hero__lead { margin-top: 0.8rem; }

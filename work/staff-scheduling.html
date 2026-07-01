@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-7JHC95DWC3"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-7JHC95DWC3');
+  </script>
+  <title>staff-scheduling — Case study · Samuel Jo</title>
+  <meta name="description" content="staff-scheduling: a full-stack staff scheduling & payroll web app built to production standards — a pure, fully-tested business-logic core, type-checked and linted in CI, deployed live on Streamlit Community Cloud with an auto-seeding demo." />
+  <link rel="canonical" href="https://samjo.me/work/staff-scheduling.html" />
+  <meta property="og:url" content="https://samjo.me/work/staff-scheduling.html" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0b1310" media="(prefers-color-scheme: dark)" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="staff-scheduling — production-grade scheduling & payroll" />
+  <meta property="og:description" content="A full-stack scheduling & payroll app with a pure, fully-tested business-logic core, CI type-checking and linting, deployed live with an auto-seeding demo." />
+  <meta property="og:image" content="https://samjo.me/public/img/og.png" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <script>(function(){try{var t=localStorage.getItem("theme");if(["forest","paper","indigo"].includes(t))document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+  <link rel="preload" href="/assets/fonts/fraunces-latin-v2.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/assets/fonts/newsreader-jffj.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/styles/tokens.css" />
+  <link rel="stylesheet" href="/styles/base.css" />
+  <link rel="stylesheet" href="/styles/case.css" />
+  <script type="module" src="/scripts/main.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="scroll-progress" aria-hidden="true"><span class="scroll-progress__bar" data-progress></span></div>
+  <header class="site-nav">
+    <nav class="wrap wrap--wide site-nav__inner" aria-label="Primary">
+      <a class="brand" href="/" aria-label="Samuel Jo — home"><span class="brand__mark" aria-hidden="true"></span> Samuel&nbsp;Jo</a>
+      <div class="nav-links">
+        <a href="/#work">Work</a>
+        <a href="/#about">About</a>
+        <a href="/#contact">Contact</a>
+        <button class="cmdk-trigger" type="button" data-cmdk-open aria-label="Open command menu — search and jump anywhere">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <span class="cmdk-trigger__hint"><kbd>⌘</kbd><kbd>K</kbd></span>
+        </button>
+        <button class="theme-toggle" type="button" aria-label="Switch theme" title="Switch theme">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 14.2A8.2 8.2 0 0 1 9.8 3.5a.6.6 0 0 0-.82-.74 9.3 9.3 0 1 0 12.26 12.26.6.6 0 0 0-.74-.82Z"/></svg>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <article class="case">
+      <div class="case-top wrap wrap--wide">
+        <header class="case-hero">
+          <a class="case-back" href="/#work"><span aria-hidden="true">←</span> All work</a>
+          <p class="kicker kicker--accent"><span class="kicker__dot"></span> Full-stack · Production engineering</p>
+          <h1 class="case-title display" style="margin-top:1rem">staff-scheduling</h1>
+          <p class="case-tagline">Production-grade staff scheduling &amp; payroll, engineered like real software.</p>
+          <div class="case-meta">
+            <span>Solo — design &amp; engineering</span><span class="sep">·</span>
+            <span>2025–26</span><span class="sep">·</span>
+            <span class="badge badge--live"><span class="dot" aria-hidden="true"></span> Live</span>
+            <span class="sep">·</span>
+            <a href="https://squireaintready.github.io/staff-scheduling/" target="_blank" rel="noopener">View showcase <span class="arrow" aria-hidden="true">↗</span></a>
+          </div>
+        </header>
+        <figure class="case-shot reveal">
+          <div class="case-shot__frame"><div class="viz viz--mini"><span class="viz__mark">staff-scheduling</span></div></div>
+        </figure>
+      </div>
+      <div class="case-body wrap wrap--wide">
+        <aside class="case-aside">
+          <div class="fact"><p class="fact__label">Role</p><p class="fact__value">Solo — design &amp; engineering</p></div>
+          <div class="fact"><p class="fact__label">Stack</p><p class="fact__value"><span class="chip">Python</span><span class="chip">Streamlit</span><span class="chip">SQLite</span><span class="chip">pytest</span><span class="chip">GitHub Actions</span></p></div>
+          <div class="fact"><p class="fact__label">Status</p><p class="fact__value">Live · Streamlit Community Cloud</p></div>
+          <div class="fact"><p class="fact__label">Links</p><p class="fact__value"><a class="tlink" href="https://squireaintready.github.io/staff-scheduling/" target="_blank" rel="noopener">View showcase <span class="arrow" aria-hidden="true">↗</span></a></p></div>
+        </aside>
+        <div class="case-content">
+          <section class="case-section reveal">
+            <div class="case-section__head"><span class="case-section__n">01</span><h2>What it is</h2></div>
+            <div class="prose"><p>staff-scheduling is a full-stack scheduling and payroll web app built to production standards. At its core is a pure, fully-tested business-logic layer with a modular architecture, and it's deployed live with an auto-seeding demo you can click straight into.</p></div>
+          </section>
+          <section class="case-section reveal">
+            <div class="case-section__head"><span class="case-section__n">02</span><h2>How it's built</h2></div>
+            <div class="prose"><p>The business-logic and data layer are kept independent of the UI, so the rules can be tested in isolation. Every push is type-checked and linted in CI — ruff, mypy and pytest — and the whole thing is deployed on Streamlit Community Cloud.</p></div>
+          </section>
+        </div>
+      </div>
+      <nav class="case-nav wrap wrap--wide" aria-label="More work">
+        <a class="prev" href="/work/breakout.html"><span class="dir">← Prev</span><span class="name">breakout</span></a>
+        <a class="next" href="/work/game3d.html"><span class="dir">Next →</span><span class="name">game3d</span></a>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap wrap--wide footer-grid">
+      <div><a class="brand" href="/"><span class="brand__mark" aria-hidden="true"></span> Samuel&nbsp;Jo</a><p class="footer-cred" style="margin-top:.6rem; max-width:34ch">Software &amp; AI engineer in New York. Building products people use every day.</p></div>
+      <nav class="cluster" style="--cluster-gap:1.2rem" aria-label="Footer">
+        <a href="/#work">Work</a><a href="/#about">About</a><a href="/#contact">Contact</a>
+        <a href="https://github.com/squireaintready" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://www.linkedin.com/in/samuel-jo/" target="_blank" rel="noopener">LinkedIn</a>
+      </nav>
+    </div>
+    <p class="wrap wrap--wide footer-cred" style="margin-top:2rem; color:var(--text-mute)">© <span data-year>2026</span> Samuel Jo · Hand-built in HTML, CSS &amp; vanilla JS — no frameworks.</p>
+  </footer>
+</body>
+</html>

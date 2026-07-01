@@ -12,23 +12,29 @@
   transition: color var(--t), gap var(--t);
 }
 .case-back:hover { color: var(--proj-ink, var(--accent)); gap: 0.7em; }
-.case-title { font-family: var(--font-display); font-size: clamp(2.75rem, 1.2rem + 6vw, 5.5rem); font-weight: var(--w-display); line-height: 0.98; letter-spacing: -0.04em; }
-.case-tagline { font-family: var(--font-display); font-weight: 500; font-size: var(--fs-xl); line-height: 1.25; color: var(--text-dim); max-width: 30ch; margin-top: clamp(0.9rem, 2vw, 1.4rem); text-wrap: balance; }
-.case-meta { margin-top: clamp(1.4rem, 3vw, 2rem); display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1rem; font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--text-mute); }
+/* 2-col top: hero text beside the screenshot (stacks on mobile). Keeps the fold tight so you see
+   the work without scrolling. Degrades safely — a page without the .case-top wrapper stays a compact
+   single column via the .case-shot fallback margin below. */
+.case-top { display: grid; grid-template-columns: 1fr; gap: clamp(1.5rem, 4vw, 2.3rem); align-items: center; }
+@media (min-width: 840px) { .case-top { grid-template-columns: 1fr 1.06fr; gap: clamp(2rem, 4vw, 3.4rem); } }
+.case-title { font-family: var(--font-display); font-size: clamp(2.4rem, 1.4rem + 4.2vw, 4.25rem); font-weight: var(--w-display); line-height: 0.98; letter-spacing: -0.04em; }
+.case-tagline { font-family: var(--font-display); font-weight: 500; font-size: var(--fs-lg); line-height: 1.28; color: var(--text-dim); max-width: 34ch; margin-top: clamp(0.8rem, 1.6vw, 1.1rem); text-wrap: balance; }
+.case-meta { margin-top: clamp(1.1rem, 2.4vw, 1.5rem); display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.9rem; font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--text-mute); }
 .case-meta .sep { color: var(--border-strong); }
 .case-meta a { color: var(--proj-ink, var(--accent)); display: inline-flex; align-items: center; gap: 0.35em; font-weight: 500; }
 .case-meta a .arrow { transition: transform var(--t) var(--ease); }
 .case-meta a:hover .arrow { transform: translate(2px, -2px); }
 
 /* ---- Visual ---- */
-.case-shot { margin-top: clamp(2rem, 5vw, 3.25rem); }
+.case-shot { margin-top: clamp(1.5rem, 3vw, 2.5rem); }   /* fallback gap when NOT inside .case-top */
+.case-top .case-shot { margin-top: 0; }
 .case-shot__frame {
   border: 1px solid var(--border); border-radius: var(--r-xl); overflow: hidden;
   box-shadow: var(--shadow-3); background: var(--surface-2);
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 16 / 10; max-height: min(56vh, 520px);
 }
 .case-shot__frame img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
-.case-shot figcaption { margin-top: 0.8rem; font-family: var(--font-mono); font-size: var(--fs-2xs); color: var(--text-mute); letter-spacing: 0.06em; text-align: center; }
+.case-shot figcaption { margin-top: 0.7rem; font-family: var(--font-mono); font-size: var(--fs-2xs); color: var(--text-mute); letter-spacing: 0.06em; text-align: center; }
 
 /* CSS-rendered visuals (no public screenshot) */
 .viz { position: relative; width: 100%; height: 100%; display: grid; place-items: center; overflow: hidden; }
@@ -41,6 +47,10 @@
 .viz--miztips .coin { width: clamp(96px, 18%, 150px); aspect-ratio: 1; border-radius: 26%; box-shadow: 0 24px 60px rgba(0,0,0,0.35); }
 .viz--miztips .figure { position: absolute; bottom: 18%; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: clamp(28px, 6vw, 52px); color: #fff; font-weight: 600; letter-spacing: -0.01em; }
 .viz--miztips .cap { position: absolute; bottom: 14px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.72); }
+/* generic branded tile for mini case studies that have no screenshot */
+.viz--mini { background: radial-gradient(130% 100% at 32% 22%, color-mix(in srgb, var(--proj, var(--accent)) 26%, var(--surface)) 0%, var(--surface-2) 54%, var(--bg) 100%); }
+.viz--mini::after { content: ""; position: absolute; inset: 0; background-image: radial-gradient(color-mix(in srgb, var(--proj, var(--accent)) 18%, transparent) 1px, transparent 1.5px); background-size: 22px 22px; opacity: 0.4; }
+.viz--mini .viz__mark { position: relative; z-index: 1; font-family: var(--font-display); font-optical-sizing: none; font-weight: var(--w-display); font-size: clamp(1.9rem, 7vw, 3.2rem); color: var(--proj-ink, var(--accent)); letter-spacing: -0.03em; text-align: center; padding: 0 1rem; }
 
 /* ---- Body grid ---- */
 .case-body { display: grid; grid-template-columns: 1fr; gap: clamp(2rem, 5vw, 3.5rem); padding-block: clamp(3rem, 7vw, 5rem); }
