@@ -63,6 +63,20 @@
 .fact__value { font-family: var(--font-sans); font-size: var(--fs-sm); color: var(--text); line-height: 1.5; }
 .fact__value .chip { margin: 0.2rem 0.2rem 0 0; display: inline-block; }
 
+/* ---------- Project seal — a spinning signature stamp at the foot of the sidebar ---------- */
+.case-seal { margin-top: clamp(1.6rem, 4vw, 2.2rem); padding-top: clamp(1.4rem, 3vw, 1.9rem); border-top: 1px solid var(--border); display: flex; justify-content: center; }
+.seal { width: clamp(82px, 44%, 104px); aspect-ratio: 1; position: relative; color: var(--proj-ink, var(--accent)); flex: none; }
+.seal svg { width: 100%; height: 100%; display: block; }
+.seal__ring { animation: seal-spin 26s linear infinite; transform-origin: 50% 50%; }
+.seal:hover .seal__ring { animation-duration: 7s; }
+.seal__text { font-family: var(--font-mono); font-size: 6.3px; letter-spacing: 0.16em; text-transform: uppercase; fill: currentColor; }
+.seal__edge { fill: none; stroke: currentColor; stroke-width: 0.6; opacity: 0.4; }
+.seal__center { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+.seal__mark { width: 22%; height: 22%; background: var(--proj, var(--accent)); transform: rotate(45deg); border-radius: 3px; transition: transform var(--t-slow) var(--ease-spring); }
+.seal:hover .seal__mark { transform: rotate(225deg) scale(1.1); }
+@keyframes seal-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .seal__ring { animation: none; } }
+
 .case-content > .case-section + .case-section { margin-top: clamp(2.5rem, 6vw, 4rem); }
 .case-section__head { display: flex; align-items: baseline; gap: 0.7rem; margin-bottom: 1.25rem; }
 .case-section__n { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--proj-ink, var(--accent)); }
