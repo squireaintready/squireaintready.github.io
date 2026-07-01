@@ -610,14 +610,21 @@ function initPlay() {
 
 /* ---------- Interactive monogram orb (About) ---------- */
 function initOrb() {
+  const shape = $(".about__shape");
+  const orb = shape && $(".about__orb", shape);
   const face = $("[data-orb]");
-  if (!face) return;
-  const mono = face.querySelector(".about__monogram");
+  if (!shape || !orb || !face) return;
+
+  let loose = false, dragging = false;
+  let x = 0, y = 0, vx = 0, vy = 0, w = 0, h = 0, rafId = 0, lastT = 0, dragDX = 0, dragDY = 0, hist = [];
+
+  // ---- hover tilt (locked state, mouse only) ----
   if (!prefersReduced) {
     const zone = face.closest("section") || face;
     const MAX = 9;
     let raf = 0;
     zone.addEventListener("pointermove", (e) => {
+      if (loose || (e.pointerType && e.pointerType !== "mouse")) return;
       const r = face.getBoundingClientRect();
       const px = clamp(((e.clientX - r.left) / r.width - 0.5) * 2, -1, 1);
       const py = clamp(((e.clientY - r.top) / r.height - 0.5) * 2, -1, 1);
@@ -629,13 +636,108 @@ function initOrb() {
     }, { passive: true });
     zone.addEventListener("pointerleave", () => { face.style.setProperty("--rx", "0deg"); face.style.setProperty("--ry", "0deg"); });
   }
-  if (mono) {
-    face.addEventListener("click", () => {
-      if (prefersReduced) return;
-      mono.classList.remove("is-pop"); void mono.offsetWidth; mono.classList.add("is-pop");
-    });
-    mono.addEventListener("animationend", () => mono.classList.remove("is-pop"));
+
+  if (prefersReduced) return;  // the physics toy is motion — skip it entirely under reduced-motion
+
+  // A fixed, viewport-sized, overflow-hidden stage. The loose bubble (and its squish) live inside it, so they can
+  // never spill past the edges and spawn a scrollbar. pointer-events:none keeps the stage from blocking the page.
+  let layer = null;
+  const stage = () => (layer || (layer = document.body.appendChild(Object.assign(document.createElement("div"), { className: "orb-layer" }))));
+
+  // ---- physics: click to pop loose → gravity + wall bounce; drag to fling; drag back to the cutout to re-lock ----
+  const GRAV = 0.44, REST = 0.72, FLOOR_REST = 0.55, FLOORF = 0.84, AIRX = 0.992, AIRY = 0.999;
+  const vw = () => document.documentElement.clientWidth;   // clientWidth excludes the scrollbar, so a fixed bubble at the edge never spawns one
+  const vh = () => document.documentElement.clientHeight;
+  const homeRect = () => shape.getBoundingClientRect();
+  const draw = () => { orb.style.transform = "translate(" + x.toFixed(1) + "px," + y.toFixed(1) + "px)"; };
+  const squish = () => { face.classList.remove("is-squish"); void face.offsetWidth; face.classList.add("is-squish"); };
+  face.addEventListener("animationend", () => face.classList.remove("is-squish"));
+
+  function loop(t) {
+    if (!loose) { rafId = 0; return; }
+    const dt = lastT ? clamp((t - lastT) / 16.6667, 0.5, 2.4) : 1;
+    lastT = t;
+    if (!dragging) {
+      vy += GRAV * dt; vx *= Math.pow(AIRX, dt); vy *= Math.pow(AIRY, dt);
+      x += vx * dt; y += vy * dt;
+      const W = vw() - w, H = vh() - h;
+      let hit = 0;
+      if (x <= 0) { x = 0; vx = -vx * REST; hit = Math.abs(vx); }
+      else if (x >= W) { x = W; vx = -vx * REST; hit = Math.abs(vx); }
+      if (y <= 0) { y = 0; vy = -vy * REST; }
+      else if (y >= H) { y = H; if (Math.abs(vy) > 2.4) hit = Math.max(hit, Math.abs(vy)); vy = -vy * FLOOR_REST; vx *= FLOORF; }
+      if (hit > 4.5) squish();
+      draw();
+      if (y >= H - 0.5 && Math.abs(vy) < 0.7 && Math.abs(vx) < 0.3) { vx = vy = 0; rafId = 0; return; }  // rest on the floor
+    }
+    rafId = requestAnimationFrame(loop);
   }
+  const run = () => { if (!rafId) { lastT = 0; rafId = requestAnimationFrame(loop); } };
+  const halt = () => { if (rafId) { cancelAnimationFrame(rafId); rafId = 0; } };
+
+  function unlock() {
+    if (loose) return;
+    const r = orb.getBoundingClientRect();
+    w = r.width; h = r.height; x = r.left; y = r.top;
+    orb.style.width = w + "px"; orb.style.height = h + "px";
+    face.style.setProperty("--rx", "0deg"); face.style.setProperty("--ry", "0deg");
+    orb.classList.add("is-loose"); shape.classList.add("is-loose");
+    draw();
+    stage().appendChild(orb);   // move into the clip layer, keeping its on-screen spot via the transform
+    loose = true;
+    vx = (Math.random() * 2 - 1) * 3; vy = -6.5;   // a little pop as it releases
+    squish(); run();
+  }
+  function relock() {
+    loose = false; halt();
+    shape.appendChild(orb);   // reparent back into its float box (home)
+    orb.classList.remove("is-loose"); shape.classList.remove("is-loose", "is-target");
+    orb.style.transition = ""; orb.style.transform = ""; orb.style.width = ""; orb.style.height = "";
+  }
+  const near = () => {
+    const hr = homeRect();
+    return Math.hypot((x + w / 2) - (hr.left + hr.width / 2), (y + h / 2) - (hr.top + hr.height / 2)) < Math.max(64, w * 0.5);
+  };
+  function snapHome() {
+    const hr = homeRect();
+    halt();
+    orb.style.transition = "transform 0.36s var(--ease-spring)";
+    x = hr.left; y = hr.top; draw();
+    let done = false;
+    const finish = () => { if (done) return; done = true; orb.removeEventListener("transitionend", finish); relock(); };
+    orb.addEventListener("transitionend", finish);
+    setTimeout(finish, 440);
+  }
+
+  face.addEventListener("click", (e) => { if (!loose) { e.preventDefault(); unlock(); } });
+  orb.addEventListener("pointerdown", (e) => {
+    if (!loose) return;
+    dragging = true; halt();
+    try { orb.setPointerCapture(e.pointerId); } catch (_) {}
+    dragDX = e.clientX - x; dragDY = e.clientY - y;
+    hist = [{ x: e.clientX, y: e.clientY, t: performance.now() }];
+    orb.style.transition = ""; e.preventDefault();
+  });
+  orb.addEventListener("pointermove", (e) => {
+    if (!dragging) return;
+    x = clamp(e.clientX - dragDX, 0, vw() - w); y = clamp(e.clientY - dragDY, 0, vh() - h);
+    draw();
+    hist.push({ x: e.clientX, y: e.clientY, t: performance.now() });
+    if (hist.length > 6) hist.shift();
+    shape.classList.toggle("is-target", near());
+  });
+  function release() {
+    if (!dragging) return;
+    dragging = false;
+    if (hist.length >= 2) {
+      const a = hist[0], b = hist[hist.length - 1], d = Math.max(8, b.t - a.t);
+      vx = clamp((b.x - a.x) / d * 16.6667, -42, 42); vy = clamp((b.y - a.y) / d * 16.6667, -42, 42);
+    }
+    if (near()) snapHome(); else run();
+  }
+  orb.addEventListener("pointerup", release);
+  orb.addEventListener("pointercancel", release);
+  addEventListener("resize", () => { if (loose && !dragging) { x = clamp(x, 0, vw() - w); y = clamp(y, 0, vh() - h); draw(); } }, { passive: true });
 }
 
 /* ---------- Buttery smooth in-page scrolling (anchor clicks only — never hijacks free scroll) ---------- */
