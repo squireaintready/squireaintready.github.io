@@ -804,42 +804,159 @@ function initOrb() {
   addEventListener("resize", () => { if (loose && !dragging) { x = clamp(x, 0, vw() - w); y = clamp(y, 0, vh() - h); draw(); } }, { passive: true });
 }
 
-/* ---------- Hero wordmark: the "o" in "Jo" is a living orb (cursor-tilt + click-pop) ---------- */
-function initHeroMark() {
-  const orb = $(".hero__o");
+/* ---------- Hero wordmark: the "o" in "Jo" is the SECOND live orb — a glossy torus with the full
+   pop → gravity → fling → drag-back-to-the-cutout physics. Self-contained (a cousin of initOrb) so
+   both orbs can be loose at once; it shares the fixed .orb-layer stage. Lighting is fixed (CSS), the
+   sheen layer carries the spin, and the wordmark keeps its layout via the .hero__o cutout box. ---- */
+function initHeroOrb() {
+  const home = $(".hero__o");
+  const orb = home && $(".hero__o-orb", home);
   const face = orb && $(".hero__o-face", orb);
-  if (!orb || !face) return;
+  if (!home || !orb || !face) return;
 
-  // press feedback (squish + soft accent glow) — mirrors the About orb's "held" state; driven by JS
-  // so it's reliable on touch too (iOS won't apply :active without a touch listener on the element)
-  const press = () => face.classList.add("is-press");
-  const unpress = () => face.classList.remove("is-press");
-  orb.addEventListener("pointerdown", press);
-  ["pointerup", "pointercancel", "pointerleave"].forEach((ev) => orb.addEventListener(ev, unpress));
+  let loose = false, dragging = false, armed = false, armedMouse = false, downX = 0, downY = 0;
+  let x = 0, y = 0, vx = 0, vy = 0, w = 0, h = 0, rafId = 0, lastT = 0, dragDX = 0, dragDY = 0, hist = [];
 
-  // pop on click / tap (all pointer types) — a squash-and-stretch bounce, in the orb's family
-  const pop = () => { face.classList.remove("is-pop"); void face.offsetWidth; face.classList.add("is-pop"); };
-  orb.addEventListener("click", pop);
-  face.addEventListener("animationend", (e) => { if (e.animationName === "hero-o-pop") face.classList.remove("is-pop"); });
+  // ---- hover tilt (locked, mouse only): the o leans toward the cursor as it sweeps the name ----
+  if (!prefersReduced) {
+    const zone = home.closest(".hero__main") || home.closest(".hero") || home;
+    const MAX = 11;
+    let raf = 0;
+    zone.addEventListener("pointermove", (e) => {
+      if (loose || e.pointerType === "touch") return;
+      const r = orb.getBoundingClientRect();
+      const px = clamp((e.clientX - (r.left + r.width / 2)) / (r.width * 7), -1, 1);
+      const py = clamp((e.clientY - (r.top + r.height / 2)) / (r.height * 7), -1, 1);
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => { face.style.setProperty("--ry", (px * MAX).toFixed(2) + "deg"); face.style.setProperty("--rx", (-py * MAX).toFixed(2) + "deg"); });
+    }, { passive: true });
+    zone.addEventListener("pointerleave", () => { face.style.setProperty("--rx", "0deg"); face.style.setProperty("--ry", "0deg"); });
+  }
+  if (prefersReduced) return;   // physics is motion — under reduced-motion the o stays a static torus
 
-  if (prefersReduced) return;   // tilt is ambient motion — skip it; press + click-pop stay (discrete, user-invoked)
+  // shared fixed clip-layer — both orbs live here while loose, so neither can spill and spawn a scrollbar
+  const stage = () => $(".orb-layer") || document.body.appendChild(Object.assign(document.createElement("div"), { className: "orb-layer" }));
 
-  // tilt toward the cursor as it sweeps the wordmark column (mouse/pen only — touch has no hover)
-  const zone = orb.closest(".hero__main") || orb.closest(".hero") || orb;
-  const MAX = 11;
-  let raf = 0;
-  zone.addEventListener("pointermove", (e) => {
-    if (e.pointerType === "touch") return;
+  const GRAV = 0.44, REST = 0.72, FLOOR_REST = 0.62, FLOORF = 0.93, AIRX = 0.992, AIRY = 0.999;
+  const vw = () => document.documentElement.clientWidth;   // excludes the scrollbar → a fixed bubble never spawns one
+  const vh = () => document.documentElement.clientHeight;
+  const homeRect = () => home.getBoundingClientRect();
+  const draw = () => { orb.style.transform = "translate(" + x.toFixed(1) + "px," + y.toFixed(1) + "px)"; };
+  const squish = () => { face.classList.remove("is-squish"); void face.offsetWidth; face.classList.add("is-squish"); };
+  face.addEventListener("animationend", () => face.classList.remove("is-squish"));
+
+  // return-home button — lazily created, stacked above the About orb's so both can be live at once
+  let resetBtn = null;
+  const getReset = () => {
+    if (!resetBtn) {
+      resetBtn = Object.assign(document.createElement("button"), { className: "orb-reset orb-reset--hero", type: "button" });
+      resetBtn.innerHTML = '<span class="orb-reset__i" aria-hidden="true">↺</span> Return o';
+      resetBtn.addEventListener("click", () => { if (loose) snapHome(); });
+      document.body.appendChild(resetBtn);
+    }
+    return resetBtn;
+  };
+
+  function loop(t) {
+    if (!loose) { rafId = 0; return; }
+    const dt = lastT ? clamp((t - lastT) / 16.6667, 0.5, 2.4) : 1;
+    lastT = t;
+    if (!dragging) {
+      vy += GRAV * dt; vx *= Math.pow(AIRX, dt); vy *= Math.pow(AIRY, dt);
+      x += vx * dt; y += vy * dt;
+      const W = vw() - w, H = vh() - h;
+      let hit = 0;
+      if (x <= 0) { x = 0; vx = -vx * REST; hit = Math.abs(vx); }
+      else if (x >= W) { x = W; vx = -vx * REST; hit = Math.abs(vx); }
+      if (y <= 0) { y = 0; vy = -vy * REST; }
+      else if (y >= H) { y = H; if (Math.abs(vy) > 2.4) hit = Math.max(hit, Math.abs(vy)); vy = -vy * FLOOR_REST; vx *= FLOORF; }
+      if (hit > 4.5) squish();
+      draw();
+      const onFloor = y >= H - 0.5;
+      if (onFloor && Math.abs(vy) < 1.3) vy *= 0.8;   // bleed the dying bounces so it eases to rest, not a hard stop
+      if (onFloor && Math.abs(vy) < 0.16 && Math.abs(vx) < 0.09) { vx = vy = 0; rafId = 0; return; }
+    }
+    rafId = requestAnimationFrame(loop);
+  }
+  const run = () => { if (!rafId) { lastT = 0; rafId = requestAnimationFrame(loop); } };
+  const halt = () => { if (rafId) { cancelAnimationFrame(rafId); rafId = 0; } };
+
+  function unlock(pop) {
+    if (loose) return;
     const r = orb.getBoundingClientRect();
-    const px = clamp((e.clientX - (r.left + r.width / 2)) / (r.width * 7), -1, 1);   // reach ≈ the wordmark's half-width → gentle lean across the name
-    const py = clamp((e.clientY - (r.top + r.height / 2)) / (r.height * 7), -1, 1);
-    cancelAnimationFrame(raf);
-    raf = requestAnimationFrame(() => {
-      face.style.setProperty("--ry", (px * MAX).toFixed(2) + "deg");
-      face.style.setProperty("--rx", (-py * MAX).toFixed(2) + "deg");
-    });
-  }, { passive: true });
-  zone.addEventListener("pointerleave", () => { face.style.setProperty("--rx", "0deg"); face.style.setProperty("--ry", "0deg"); });
+    w = r.width; h = r.height; x = r.left; y = r.top;
+    orb.style.width = w + "px"; orb.style.height = h + "px";
+    face.style.setProperty("--rx", "0deg"); face.style.setProperty("--ry", "0deg");
+    orb.classList.add("is-loose"); home.classList.add("is-loose");
+    draw();
+    stage().appendChild(orb);   // pop into the clip layer, keeping its on-screen spot via the transform
+    loose = true;
+    getReset().classList.add("is-shown");
+    if (pop) { vx = (Math.random() * 2 - 1) * 2.4; vy = -7; squish(); }   // a click pops it straight up with a light bounce
+    else { vx = 0; vy = 0; }                                              // a drag grabs it in place
+    run();
+  }
+  function relock() {
+    loose = false; halt();
+    home.appendChild(orb);   // back into the wordmark cutout (home)
+    orb.classList.remove("is-loose"); home.classList.remove("is-loose", "is-target");
+    orb.style.transition = ""; orb.style.transform = ""; orb.style.width = ""; orb.style.height = "";
+    face.classList.remove("is-grabbed");
+    if (resetBtn) resetBtn.classList.remove("is-shown");
+  }
+  const near = () => {
+    const hr = homeRect();
+    return Math.hypot((x + w / 2) - (hr.left + hr.width / 2), (y + h / 2) - (hr.top + hr.height / 2)) < Math.max(70, w * 1.2);
+  };
+  function snapHome() {
+    const hr = homeRect();
+    halt();
+    orb.style.transition = "transform 0.36s var(--ease-spring)";
+    x = hr.left; y = hr.top; draw();
+    let done = false;
+    const finish = () => { if (done) return; done = true; orb.removeEventListener("transitionend", finish); relock(); };
+    orb.addEventListener("transitionend", finish);
+    setTimeout(finish, 440);
+  }
+
+  const DRAG_THRESH = 7;   // past this a locked press becomes a grab-and-pull; under it a plain click pops
+  function beginDrag(e) {
+    dragging = true;
+    dragDX = e.clientX - x; dragDY = e.clientY - y;
+    hist = [{ x: e.clientX, y: e.clientY, t: performance.now() }];
+    orb.style.transition = "";
+  }
+  orb.addEventListener("pointerdown", (e) => {
+    if (loose) { face.classList.add("is-grabbed"); try { orb.setPointerCapture(e.pointerId); } catch (_) {} beginDrag(e); e.preventDefault(); return; }
+    armed = true; armedMouse = e.pointerType !== "touch"; downX = e.clientX; downY = e.clientY;
+    if (armedMouse) { face.classList.add("is-grabbed"); try { orb.setPointerCapture(e.pointerId); } catch (_) {} e.preventDefault(); }
+  });
+  orb.addEventListener("pointermove", (e) => {
+    if (armed && !loose) {
+      if (armedMouse && Math.hypot(e.clientX - downX, e.clientY - downY) > DRAG_THRESH) { armed = false; unlock(false); beginDrag(e); }
+      else return;   // touch: let a vertical swipe scroll; a tap pops on pointerup
+    }
+    if (!dragging) return;
+    x = clamp(e.clientX - dragDX, 0, vw() - w); y = clamp(e.clientY - dragDY, 0, vh() - h);
+    draw();
+    hist.push({ x: e.clientX, y: e.clientY, t: performance.now() });
+    if (hist.length > 6) hist.shift();
+    home.classList.toggle("is-target", near());
+  });
+  function release(e) {
+    face.classList.remove("is-grabbed");
+    if (armed && !loose) { armed = false; unlock(true); return; }   // tap → pop loose + bounce
+    if (!dragging) return;
+    dragging = false;
+    if (hist.length >= 2) {
+      const a = hist[0], b = hist[hist.length - 1], d = Math.max(8, b.t - a.t);
+      vx = clamp((b.x - a.x) / d * 16.6667, -42, 42); vy = clamp((b.y - a.y) / d * 16.6667, -42, 42);
+    }
+    if (near()) snapHome(); else run();
+  }
+  orb.addEventListener("pointerup", release);
+  orb.addEventListener("pointercancel", (e) => { armed = false; release(e); });
+  addEventListener("resize", () => { if (loose && !dragging) { x = clamp(x, 0, vw() - w); y = clamp(y, 0, vh() - h); draw(); } }, { passive: true });
 }
 
 /* ---------- Buttery smooth in-page scrolling (anchor clicks only — never hijacks free scroll) ---------- */
@@ -1127,7 +1244,7 @@ function init() {
   initCommandPalette();
   initPlay();
   initOrb();
-  initHeroMark();
+  initHeroOrb();
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
 else init();
