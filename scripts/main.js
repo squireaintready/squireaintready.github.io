@@ -1144,7 +1144,7 @@ function initPortal() {
   const TAU = Math.PI * 2;
   const mobile = matchMedia("(pointer: coarse)").matches || innerWidth < 640;
   const DPR = Math.min(window.devicePixelRatio || 1, 2);
-  const N = mobile ? 120 : 210;                 // fire streaks — each is a tangential arc; together they build the ring of fire
+  const N = mobile ? 150 : 260;                 // fire streaks — each is a tangential arc; together they build the ring of fire
   const SPIN = 0.009;                           // ring rotation, rad/ms — full spin speed; the ring spins the whole time
   const OPEN_MS = 850, HOLD_MS = 800, FADE_MS = 470;   // expand → hold (spins in place) → dissolve
 
@@ -1154,15 +1154,15 @@ function initPortal() {
   // a sparkler particle: sits in the ring band, sprays outward over its short life and rains down
   // The ring IS fire: most streaks flow tangentially within the band; ~a third escape and fly off as embers.
   function makeFire() {
-    const a = [], bandW = mobile ? 18 : 26;
+    const a = [], bandW = mobile ? 24 : 34;
     for (let i = 0; i < N; i++) {
       a.push({
         a: Math.random() * TAU,
         band: (Math.random() * 2 - 1) * bandW,          // where in the band's thickness this streak sits
         spd: 0.88 + Math.random() * 0.34,               // tangential (spin) speed — slight spread so the fire churns
         arclen: 0.1 + Math.random() * Math.random() * 0.8,     // streak length (rad); mostly short, a few long wisps
-        wide: (mobile ? 1.5 : 2) + Math.random() * Math.random() * (mobile ? 3 : 5),
-        bri: 0.58 + Math.random() * 0.5,
+        wide: (mobile ? 2.5 : 3.5) + Math.random() * Math.random() * (mobile ? 4.5 : 8),
+        bri: 0.62 + Math.random() * 0.5,
         tw: 0.01 + Math.random() * 0.03, ph: Math.random() * TAU,          // flicker
         esc: Math.random() < 0.3,                       // escaping ember? (flies off the ring)
         rate: 0.0012 + Math.random() * 0.0026,          // escaping-ember life speed
@@ -1175,10 +1175,10 @@ function initPortal() {
 
   function drawRing(ctx, cx, cy, R, el, rot, strokeA, sparkA, sprayK, fire, RING) {
     // soft warm bloom behind the fire — a glow, not a hard painted band
-    ctx.globalAlpha = 0.09 * strokeA; ctx.lineWidth = Math.max(28, R * 0.18);
+    ctx.globalAlpha = 0.13 * strokeA; ctx.lineWidth = Math.max(40, R * 0.24);
     ctx.strokeStyle = "rgba(" + RING[0][0] + ",1)";
     ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
-    ctx.globalAlpha = 0.14 * strokeA; ctx.lineWidth = Math.max(10, R * 0.07);
+    ctx.globalAlpha = 0.2 * strokeA; ctx.lineWidth = Math.max(18, R * 0.12);
     ctx.strokeStyle = "rgba(" + RING[1][0] + ",1)";
     ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
     // the ring of fire: many tangential streaks flowing around it (white-hot → orange), with embers flying off
