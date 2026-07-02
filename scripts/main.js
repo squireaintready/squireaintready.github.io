@@ -136,7 +136,7 @@ function initReveals() {
   // (no second fade-in) instead of re-animating it on load.
   let viaPortal = false;
   try { viaPortal = !!sessionStorage.getItem("portalReveal"); if (viaPortal) sessionStorage.removeItem("portalReveal"); } catch (e) {}
-  if (viaPortal || prefersReduced || !("IntersectionObserver" in window)) { items.forEach((el) => el.classList.add("is-in")); return; }
+  if (viaPortal || prefersReduced || !("IntersectionObserver" in window)) { items.forEach((el) => el.classList.add("is-in")); document.documentElement.classList.remove("portal-in"); return; }
   const obs = new IntersectionObserver(
     (entries, o) => { entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("is-in"); o.unobserve(e.target); } }); },
     { rootMargin: "0px 0px -10% 0px", threshold: 0.08 }
@@ -1271,10 +1271,11 @@ function initPortal() {
       let doc = html.replace(/<script[\s\S]*?<\/script>/gi, "");   // strip scripts → no analytics / nested portal
       const t = document.documentElement.getAttribute("data-theme");
       if (t) doc = doc.replace(/<html\b/i, '<html data-theme="' + t + '"');   // theme the preview to match from first paint
-      frame.addEventListener("load", onReady, { once: true });   // armed after content is set → skips the initial about:blank load
+      doc = doc.replace(/<\/head>/i, "<style>.reveal{opacity:1!important;transform:none!important}</style></head>");   // show its JS-gated content in the preview
       frame.srcdoc = doc;
+      requestAnimationFrame(onReady);   // open as soon as the HTML is set — do NOT wait for 'load' (images can be slow, esp. on mobile → a lingering charge blob)
     }).catch(() => { frame.addEventListener("load", onReady, { once: true }); frame.src = href; });
-    setTimeout(onReady, 1000);   // safety: open even if the fetch/load stalls
+    setTimeout(onReady, 700);   // safety: open even if the fetch stalls
 
     function loop(ts) {
       if (!start) start = ts;

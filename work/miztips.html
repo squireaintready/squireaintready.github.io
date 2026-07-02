@@ -26,8 +26,8 @@
   <script>(function(){try{var t=localStorage.getItem("theme");if(["forest","paper","indigo"].includes(t))document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
   <link rel="preload" href="/assets/fonts/fraunces-latin-v2.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
-  <!-- Portal transition: mask the incoming page before first paint (paired with initPortal in main.js) -->
-  <script>(function(){try{if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;var s=sessionStorage.getItem("portal");if(!s)return;sessionStorage.removeItem("portal");var d=JSON.parse(s);if(!d||Date.now()-d.t>2000)return;var e=document.documentElement;e.style.setProperty("--portal-x",(d.rx*100).toFixed(2)+"%");e.style.setProperty("--portal-y",(d.ry*100).toFixed(2)+"%");e.classList.add("portal-arrive");window.__portal=d;window.__portalKill=setTimeout(function(){e.classList.remove("portal-arrive");},1800);}catch(_){}})();</script>
+  <!-- Portal arrival: if we came through the portal, show scroll-reveal content before first paint (no re-reveal flash) -->
+  <script>(function(){try{if(sessionStorage.getItem("portalReveal"))document.documentElement.classList.add("portal-in");}catch(_){}})();</script>
   <link rel="stylesheet" href="/styles/tokens.css" />
   <link rel="stylesheet" href="/styles/base.css" />
   <link rel="stylesheet" href="/styles/case.css" />
