@@ -1144,7 +1144,7 @@ function initPortal() {
   const TAU = Math.PI * 2;
   const mobile = matchMedia("(pointer: coarse)").matches || innerWidth < 640;
   const DPR = Math.min(window.devicePixelRatio || 1, 2);
-  const N = mobile ? 440 : 760;                 // fire streaks — each is a tangential arc; together they build the ring of fire
+  const N = mobile ? 300 : 500;                 // fire streaks — each is a tangential arc; together they build the ring of fire
   const SPIN = 0.009;                           // ring rotation, rad/ms — full spin speed; the ring spins the whole time
   const OPEN_MS = 850, HOLD_MS = 800, FADE_MS = 470;   // expand → hold (spins in place) → dissolve
 
