@@ -1144,7 +1144,7 @@ function initPortal() {
   const TAU = Math.PI * 2;
   const mobile = matchMedia("(pointer: coarse)").matches || innerWidth < 640;
   const DPR = Math.min(window.devicePixelRatio || 1, 2);
-  const N = mobile ? 220 : 380;                 // fire streaks — each is a tangential arc; together they build the ring of fire
+  const N = mobile ? 440 : 760;                 // fire streaks — each is a tangential arc; together they build the ring of fire
   const SPIN = 0.009;                           // ring rotation, rad/ms — full spin speed; the ring spins the whole time
   const OPEN_MS = 850, HOLD_MS = 800, FADE_MS = 470;   // expand → hold (spins in place) → dissolve
 
@@ -1183,7 +1183,8 @@ function initPortal() {
     ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
     // the ring of fire: many tangential streaks flowing around it (white-hot → orange), with embers flying off
     ctx.lineCap = "round";
-    const SEG = 3;
+    // two segments per streak, colors hoisted out of the loop (no per-segment string alloc) — cheap at this density
+    const SEG = 2, cHot = "rgba(" + RING[3][0] + ",1)", cGold = "rgba(" + RING[2][0] + ",1)", cOrange = "rgba(" + RING[1][0] + ",1)";
     for (const p of fire) {
       const fl = 0.55 + 0.45 * (0.5 + 0.5 * Math.sin(el * p.tw + p.ph));   // flicker
       let rr = R + p.band, fade = sparkA;
@@ -1198,7 +1199,7 @@ function initPortal() {
       for (let s = 0; s < SEG; s++) {                                    // comet taper: white-hot head → gold → orange tail
         const f = s / SEG;
         ctx.globalAlpha = clamp(a0 * (1 - f) * (1 - f), 0, 1);
-        ctx.strokeStyle = "rgba(" + (f < 0.34 ? RING[3][0] : f < 0.68 ? RING[2][0] : RING[1][0]) + ",1)";
+        ctx.strokeStyle = f < 0.34 ? cHot : f < 0.68 ? cGold : cOrange;
         ctx.beginPath(); ctx.arc(cx, cy, rr, head - (s + 1) * da, head - s * da); ctx.stroke();
       }
     }
