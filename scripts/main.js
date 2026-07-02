@@ -1146,7 +1146,7 @@ function initPortal() {
   const DPR = Math.min(window.devicePixelRatio || 1, 2);
   const N = mobile ? 300 : 500;                 // fire streaks — each is a tangential arc; together they build the ring of fire
   const SPIN = 0.009;                           // ring rotation, rad/ms — full spin speed; the ring spins the whole time
-  const OPEN_MS = 850, HOLD_MS = 800, FADE_MS = 470;   // expand → hold (spins in place) → dissolve
+  const OPEN_MS = 850, HOLD_MS = 800, FADE_MS = 470;   // expand → hold (pause on the outside) → fly out off-screen
 
 
   const easeInOut = (p) => (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);
@@ -1287,7 +1287,7 @@ function initPortal() {
         R = R0 * (0.86 + 0.14 * Math.sin(el * 0.011));
         spinMult = 2;
         glow(ctx, cx, cy, R0 * 5, 0.5);
-      } else {                                                   // opening: expand → hold (spin) → dissolve
+      } else {                                                   // opening: expand → hold (pause) → fly out
         if (!openAt) openAt = ts;
         const t = ts - openAt;
         let Rclip;
@@ -1298,13 +1298,11 @@ function initPortal() {
           if (p < 0.16) glow(ctx, cx, cy, R0 * 5, 0.5 * (1 - p / 0.16));
         } else if (t < OPEN_MS + HOLD_MS) {                     // hold: fully open, the ring spins in place
           R = Rclip = Rhold;
-        } else {                                                // dissolve: the ring stays ALIVE — spins up, shoots sparks — as it disintegrates
+        } else {                                                // fly out: after the pause, the ring rushes back outward off-screen (not a fade)
           const pf = clamp((t - OPEN_MS - HOLD_MS) / FADE_MS, 0, 1);
-          R = Rhold;
-          Rclip = Rhold + (maxR - Rhold) * easeInOut(pf);
-          strokeA = clamp(1 - pf * 1.5, 0, 1);                  // the solid ring dissolves first...
-          sparkA = 1 - pf * pf * pf;                            // ...leaving a swirl of sparks that fade last
-          spinMult = 1 - 0.5 * easeInOut(pf);                   // eases down as it loses energy, but keeps spinning hard
+          R = Rclip = Rhold + (maxR - Rhold) * (pf * pf);       // fire rides the opening edge, accelerating off-screen
+          strokeA = 1 - clamp((pf - 0.82) / 0.18, 0, 1);        // stays vivid; only a quick clean fade once it's past the edges
+          sparkA = strokeA;                                      // keeps full spin (spinMult stays 1) as it flies out
           if (pf >= 1) { nav(); return; }
         }
         frame.style.clipPath = "circle(" + Rclip.toFixed(1) + "px at 50% 50%)";
