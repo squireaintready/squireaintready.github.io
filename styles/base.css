@@ -243,7 +243,7 @@ kbd {
 .cmdk__input::placeholder { color: var(--text-mute); }
 .cmdk__esc { font-family: var(--font-mono); font-size: var(--fs-2xs); color: var(--text-mute); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; }
 .cmdk__list { overflow-y: auto; padding: 6px; overscroll-behavior: contain; }
-.cmdk__group { font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-mute); padding: 0.65rem 0.7rem 0.3rem; }
+.cmdk__group { font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--text-mute); padding: 0.65rem 0.7rem 0.3rem; }
 .cmdk__group:first-child { padding-top: 0.35rem; }
 .cmdk__item {
   display: flex; align-items: center; gap: 0.7rem; width: 100%; text-align: left;
@@ -321,6 +321,10 @@ kbd {
 }
 .badge--live { color: var(--up); background: color-mix(in srgb, var(--up) 12%, transparent); }
 .badge--live .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--up); animation: pulse-dot 2s var(--ease) infinite; }
+/* Paper (light): var(--up) text over its own 12% tint on warm paper lands at ~4.3:1 — just under AA for
+   this 11px bold label. Darken the TEXT to the paper accent-strong green (~7:1); dark themes keep --up. */
+[data-theme="paper"] .badge--live { color: var(--accent-strong); }
+@media (prefers-color-scheme: light) { :root:not([data-theme]) .badge--live { color: var(--accent-strong); } }
 
 @keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.45; transform: scale(0.82); } }
 
@@ -349,6 +353,8 @@ a, button { -webkit-tap-highlight-color: transparent; }
   .nav-links > a { padding-block: 0.6rem; }
   .index-rail a { padding-block: 0.5rem; }
   .site-footer .cluster a { padding-block: 0.55rem; }   /* footer links (GitHub/LinkedIn/Email…) reach ~44px on touch, like the rest of the UI */
+  .case-back { min-height: 44px; }   /* the primary "back to work" control on every case page — the header Work link is hidden on phones, so it carries real weight */
+  .orb-reset { min-height: 44px; }   /* the floating "Return SJ / Return o" reset button */
 }
 @media (pointer: coarse) and (max-width: 660px) {
   .cmdk-trigger { width: 44px; }                  /* icon-only on phones → comfortable square target */

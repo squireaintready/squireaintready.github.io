@@ -9,7 +9,15 @@
      • a heads-up Texas Hold'em mini-game (Play) — the engine behind facecard
      • Pretext exact-fit: the giant hero name is measured + sized to fill its column live
    ========================================================================== */
-import { readyFonts } from "../assets/vendor/lib.js";
+/* Ensure the display + UI faces are loaded before fitOne measures the hero name's real rendered
+   width. Inlined document.fonts wrapper — previously imported from assets/vendor/lib.js, which
+   statically re-exported the ~30KB Pretext engine (pretext.mjs) onto every page for this one helper,
+   even though nothing on the live site uses the layout engine at runtime. */
+async function readyFonts() {
+  const probes = ["360 120px 'Fraunces Variable'", "360 120px 'Display Override'", "400 16px 'Inter Variable'"];
+  try { await Promise.all(probes.map((f) => document.fonts.load(f))); } catch (e) {}
+  try { await document.fonts.ready; } catch (e) {}
+}
 
 const prefersReduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const $ = (s, r = document) => r.querySelector(s);
@@ -38,8 +46,7 @@ function applyTheme(id) {
 function initTheme() {
   const btn = $(".theme-toggle");
   if (!btn) return;
-  btn.setAttribute("aria-haspopup", "true");
-  btn.setAttribute("aria-expanded", "false");
+  btn.setAttribute("aria-expanded", "false");   // discloses a role="group" of theme toggles, not a menu — so no aria-haspopup (that would promise menu semantics)
   btn.setAttribute("aria-label", "Change theme");
 
   const menu = document.createElement("div");
@@ -1147,7 +1154,7 @@ function initPortal() {
 
   const TAU = Math.PI * 2;
   const mobile = matchMedia("(pointer: coarse)").matches || innerWidth < 640;
-  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+  const DPR = Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 2);   // full-screen per-frame canvas: cap the backing-store resolution harder on mobile GPUs (imperceptible on fast fire, ~2× less fill)
   const N = mobile ? 300 : 500;                 // fire streaks — each is a tangential arc; together they build the ring of fire
   const SPIN = 0.009;                           // ring rotation, rad/ms — full spin speed; the ring spins the whole time
   const OPEN_MS = 850, HOLD_MS = 800, FADE_MS = 470;   // expand → hold (pause on the outside) → fly out off-screen
@@ -1239,13 +1246,14 @@ function initPortal() {
     const R0 = Math.min(W, H) * 0.05, diag = Math.hypot(cx, cy), Rhold = diag * 0.82, maxR = diag * 1.06 + 24;
     // additive "lighter" glows on dark themes but washes to nothing on a light (Paper) page —
     // so pick the blend by background luminance: additive glow on dark, normal paint on light.
-    let bgLum = 0;
+    let bgLum = 0, bgColor = "";
     try {
       for (const el of [document.body, document.documentElement]) {
-        const c = getComputedStyle(el).backgroundColor.match(/[\d.]+/g);
-        if (c && (c.length < 4 || +c[3] > 0.1)) { bgLum = (0.299 * +c[0] + 0.587 * +c[1] + 0.114 * +c[2]) / 255; break; }
+        const bc = getComputedStyle(el).backgroundColor, c = bc.match(/[\d.]+/g);
+        if (c && (c.length < 4 || +c[3] > 0.1)) { bgColor = bc; bgLum = (0.299 * +c[0] + 0.587 * +c[1] + 0.114 * +c[2]) / 255; break; }
       }
     } catch (e) {}
+    if (!bgColor) bgColor = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim() || "#0b1310";   // fallback for the mobile solid panel
     const blend = bgLum > 0.55 ? "source-over" : "lighter";
     const dark = blend === "lighter";
     const RING = dark                                        // [rgb, baseAlpha] per stroke: halo, glow, body, core
@@ -1253,12 +1261,17 @@ function initPortal() {
       : [["188,66,16", 0.36], ["220,102,28", 0.66], ["234,138,40", 0.98], ["250,176,72", 1]];
     // (the ring of fire is drawn with arc strokes now — the old spark sprites are no longer used)
 
-    // the destination, rendered inside the portal. Sandboxed → styled but runs no scripts, so it
-    // can't fire analytics or a nested portal; same-origin so we can theme it to match.
-    const frame = document.createElement("iframe");
-    frame.className = "portal-frame"; frame.setAttribute("aria-hidden", "true"); frame.tabIndex = -1;
-    frame.setAttribute("sandbox", "allow-same-origin"); frame.setAttribute("scrolling", "no");
+    // What the ring opens onto. On desktop it's a live sandboxed <iframe> of the destination (styled but
+    // runs no scripts → no double analytics, no nested portal), so you see the real next page through the ring.
+    // On mobile that full-page render + per-frame clip-path recomposite starves the GPU and stalls the ring —
+    // so there the ring opens onto a solid panel painted the destination's background colour. Themes are global
+    // (localStorage), so the panel's colour matches the page being loaded and the hand-off stays seamless while
+    // it composites for almost nothing and holds 60fps. Identical choreography either way.
+    const frame = document.createElement(mobile ? "div" : "iframe");
+    frame.className = "portal-frame"; frame.setAttribute("aria-hidden", "true");
     frame.style.clipPath = "circle(0px at 50% 50%)";
+    if (mobile) frame.style.background = bgColor;
+    else { frame.tabIndex = -1; frame.setAttribute("sandbox", "allow-same-origin"); frame.setAttribute("scrolling", "no"); }
     document.documentElement.appendChild(frame);
 
     // the sparks ring on top — transparent, so the current page stays visible around the portal
@@ -1272,27 +1285,29 @@ function initPortal() {
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     const fire = makeFire();
 
-    let ready = false, openAt = 0, start = 0, rot = 0, lastTs = 0;   // done/nav are hoisted to the top of depart() as the always-on failsafe
-    const onReady = () => {   // frame rendered → match theme + reveal its JS-gated content, then open onto it
-      if (ready) return; ready = true;
-      try {
-        const d = frame.contentDocument, t = document.documentElement.getAttribute("data-theme");
-        if (t) d.documentElement.setAttribute("data-theme", t);   // else it keeps the same CSS default as this page
-        const st = d.createElement("style");
-        st.textContent = ".reveal{opacity:1!important;transform:none!important}";   // content is JS-gated → show it in the script-less preview
-        (d.head || d.documentElement).appendChild(st);
-      } catch (e) {}
-    };
-    // preview the destination with its <script>s stripped → styled, but fires no analytics and logs nothing
-    fetch(href, { credentials: "same-origin" }).then((r) => r.text()).then((html) => {
-      let doc = html.replace(/<script[\s\S]*?<\/script>/gi, "");   // strip scripts → no analytics / nested portal
-      const t = document.documentElement.getAttribute("data-theme");
-      if (t) doc = doc.replace(/<html\b/i, '<html data-theme="' + t + '"');   // theme the preview to match from first paint
-      doc = doc.replace(/<\/head>/i, "<style>.reveal{opacity:1!important;transform:none!important}</style></head>");   // show its JS-gated content in the preview
-      frame.srcdoc = doc;
-      requestAnimationFrame(onReady);   // open as soon as the HTML is set — do NOT wait for 'load' (images can be slow, esp. on mobile → a lingering charge blob)
-    }).catch(() => { frame.addEventListener("load", onReady, { once: true }); frame.src = href; });
-    setTimeout(onReady, 700);   // safety: open even if the fetch stalls
+    let ready = mobile, openAt = 0, start = 0, rot = 0, lastTs = 0;   // mobile: the panel is a solid colour — nothing to fetch/await, so open immediately. done/nav are the always-on failsafe hoisted to the top of depart()
+    if (!mobile) {
+      const onReady = () => {   // frame rendered → match theme + reveal its JS-gated content, then open onto it
+        if (ready) return; ready = true;
+        try {
+          const d = frame.contentDocument, t = document.documentElement.getAttribute("data-theme");
+          if (t) d.documentElement.setAttribute("data-theme", t);   // else it keeps the same CSS default as this page
+          const st = d.createElement("style");
+          st.textContent = ".reveal{opacity:1!important;transform:none!important}";   // content is JS-gated → show it in the script-less preview
+          (d.head || d.documentElement).appendChild(st);
+        } catch (e) {}
+      };
+      // preview the destination with its <script>s stripped → styled, but fires no analytics and logs nothing
+      fetch(href, { credentials: "same-origin" }).then((r) => r.text()).then((html) => {
+        let doc = html.replace(/<script[\s\S]*?<\/script>/gi, "");   // strip scripts → no analytics / nested portal
+        const t = document.documentElement.getAttribute("data-theme");
+        if (t) doc = doc.replace(/<html\b/i, '<html data-theme="' + t + '"');   // theme the preview to match from first paint
+        doc = doc.replace(/<\/head>/i, "<style>.reveal{opacity:1!important;transform:none!important}</style></head>");   // show its JS-gated content in the preview
+        frame.srcdoc = doc;
+        requestAnimationFrame(onReady);   // open as soon as the HTML is set — do NOT wait for 'load' (images can be slow)
+      }).catch(() => { frame.addEventListener("load", onReady, { once: true }); frame.src = href; });
+      setTimeout(onReady, 700);   // safety: open even if the fetch stalls
+    }
 
     function loop(ts) {
       if (!start) start = ts;
@@ -1359,6 +1374,10 @@ function initPortal() {
   portalGo = (href) => {
     let url; try { url = new URL(href, location.href); } catch (e) { location.assign(href); return; }
     if (url.origin !== location.origin || !/^https?:$/.test(url.protocol)) { location.assign(href); return; }
+    if (url.pathname === location.pathname && url.search === location.search) {   // same document (e.g. the palette's own case study) → don't open a portal onto ourselves; honour any hash, else no-op
+      if (url.hash && url.hash !== location.hash) location.hash = url.hash;
+      return;
+    }
     depart(url.href);
   };
 
