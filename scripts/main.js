@@ -49,14 +49,13 @@ function initTheme() {
 
   const pop = document.createElement("div");
   pop.className = "theme-pop";
-  pop.setAttribute("role", "menu");
+  pop.setAttribute("role", "group");   // a labeled group of toggle buttons, not a menu — Tab moves between them; no arrow-key model is promised
   pop.setAttribute("aria-label", "Theme");
   pop.hidden = true;
   const opts = THEMES.map((t) => {
     const o = document.createElement("button");
     o.type = "button";
     o.className = "theme-opt";
-    o.setAttribute("role", "menuitemradio");
     o.dataset.theme = t.id;
     o.innerHTML = `<span class="sw sw-${t.id}" aria-hidden="true"></span><span>${t.name}</span><span class="check" aria-hidden="true">✓</span>`;
     o.addEventListener("click", () => { applyTheme(t.id); sync(); close(); btn.focus(); });
@@ -67,7 +66,7 @@ function initTheme() {
 
   function sync() {
     const c = currentTheme();
-    opts.forEach((o) => o.setAttribute("aria-checked", String(o.dataset.theme === c)));
+    opts.forEach((o) => o.setAttribute("aria-pressed", String(o.dataset.theme === c)));
   }
   function onDoc(e) { if (!menu.contains(e.target)) close(); }
   function onKey(e) { if (e.key === "Escape") { close(); btn.focus(); } }
@@ -286,6 +285,7 @@ function initCommandPalette() {
     else if (e.key === "End") { e.preventDefault(); setActive(filtered.length - 1); }
     else if (e.key === "Enter") { e.preventDefault(); exec(active); }
     else if (e.key === "Escape") { e.preventDefault(); close(); }
+    else if (e.key === "Tab") { e.preventDefault(); }   // trap focus: the input is the only tabbable control, so Tab must not escape the aria-modal dialog to the page behind it
   });
   overlay.addEventListener("pointerdown", (e) => { if (e.target === overlay) close(); });
   openers.forEach((b) => b.addEventListener("click", (e) => { e.preventDefault(); open(); }));
@@ -681,7 +681,7 @@ function initOrb() {
   // A fixed, viewport-sized, overflow-hidden stage. The loose bubble (and its squish) live inside it, so they can
   // never spill past the edges and spawn a scrollbar. pointer-events:none keeps the stage from blocking the page.
   let layer = null;
-  const stage = () => (layer || (layer = document.body.appendChild(Object.assign(document.createElement("div"), { className: "orb-layer" }))));
+  const stage = () => (layer || (layer = $(".orb-layer") || document.body.appendChild(Object.assign(document.createElement("div"), { className: "orb-layer" }))));
 
   // ---- physics: click to pop loose → gravity + wall bounce; drag to fling; drag back to the cutout to re-lock ----
   const GRAV = 0.44, REST = 0.72, FLOOR_REST = 0.62, FLOORF = 0.93, AIRX = 0.992, AIRY = 0.999;
@@ -786,19 +786,21 @@ function initOrb() {
     const hr = homeRect();
     return Math.hypot((x + w / 2) - (hr.left + hr.width / 2), (y + h / 2) - (hr.top + hr.height / 2)) < Math.max(64, w * 0.5);
   };
+  let snapTimer = 0, endSnap = null;   // a pending snap-home (its transitionend + 440ms fallback); cancelled if the orb is re-grabbed mid-snap
   function snapHome() {
     const hr = homeRect();
     halt();
     orb.style.transition = "transform 0.36s var(--ease-spring)";
     x = hr.left; y = hr.top; draw();
-    let done = false;
-    const finish = () => { if (done) return; done = true; orb.removeEventListener("transitionend", finish); relock(); };
+    const finish = () => { clearTimeout(snapTimer); orb.removeEventListener("transitionend", finish); endSnap = null; relock(); };
+    endSnap = () => { clearTimeout(snapTimer); orb.removeEventListener("transitionend", finish); endSnap = null; };   // stop the snap WITHOUT relocking
     orb.addEventListener("transitionend", finish);
-    setTimeout(finish, 440);
+    snapTimer = setTimeout(finish, 440);
   }
 
   const DRAG_THRESH = 7;   // past this a locked-orb press becomes a grab-and-pull; under it, a plain click just pops
   function beginDrag(e) {
+    if (endSnap) endSnap();   // re-grabbed mid snap-home → cancel the pending relock so it can't teleport home under the drag
     dragging = true;
     dragDX = e.clientX - x; dragDY = e.clientY - y;
     hist = [{ x: e.clientX, y: e.clientY, t: performance.now() }];
@@ -972,19 +974,21 @@ function initHeroOrb() {
     const hr = homeRect();
     return Math.hypot((x + w / 2) - (hr.left + hr.width / 2), (y + h / 2) - (hr.top + hr.height / 2)) < Math.max(70, w * 1.2);
   };
+  let snapTimer = 0, endSnap = null;   // a pending snap-home (its transitionend + 440ms fallback); cancelled if the orb is re-grabbed mid-snap
   function snapHome() {
     const hr = homeRect();
     halt();
     orb.style.transition = "transform 0.36s var(--ease-spring)";
     x = hr.left; y = hr.top; draw();
-    let done = false;
-    const finish = () => { if (done) return; done = true; orb.removeEventListener("transitionend", finish); relock(); };
+    const finish = () => { clearTimeout(snapTimer); orb.removeEventListener("transitionend", finish); endSnap = null; relock(); };
+    endSnap = () => { clearTimeout(snapTimer); orb.removeEventListener("transitionend", finish); endSnap = null; };   // stop the snap WITHOUT relocking
     orb.addEventListener("transitionend", finish);
-    setTimeout(finish, 440);
+    snapTimer = setTimeout(finish, 440);
   }
 
   const DRAG_THRESH = 7;   // past this a locked press becomes a grab-and-pull; under it a plain click pops
   function beginDrag(e) {
+    if (endSnap) endSnap();   // re-grabbed mid snap-home → cancel the pending relock so it can't teleport home under the drag
     dragging = true;
     dragDX = e.clientX - x; dragDY = e.clientY - y;
     hist = [{ x: e.clientX, y: e.clientY, t: performance.now() }];
@@ -1216,8 +1220,21 @@ function initPortal() {
 
   // ---- open a portal onto the destination over the current page, then hand off to the real nav ----
   let leaving = false;
+  const HARD_MAX = 4000;   // absolute ceiling (ms): whatever stalls — a canvas throw, a hung fetch, rAF paused on a backgrounded tab — the click still reaches its destination
   function depart(href) {
     if (leaving) return; leaving = true;
+    // Guarantee navigation BEFORE building any of the animation machinery, so a throw or a stalled
+    // rAF/fetch can never strand the page with leaving=true swallowing every subsequent click.
+    let done = false, failsafe = 0;
+    function onHidden() { if (document.hidden) nav(); }   // backgrounded mid-portal → finish rather than freeze a ring they can't see
+    const nav = () => {
+      if (done) return; done = true;
+      clearTimeout(failsafe); document.removeEventListener("visibilitychange", onHidden);
+      try { sessionStorage.setItem("portalReveal", "1"); } catch (e) {}
+      location.href = href;
+    };
+    failsafe = setTimeout(nav, HARD_MAX);
+    document.addEventListener("visibilitychange", onHidden);
     const W = innerWidth, H = innerHeight, cx = W / 2, cy = H / 2;
     const R0 = Math.min(W, H) * 0.05, diag = Math.hypot(cx, cy), Rhold = diag * 0.82, maxR = diag * 1.06 + 24;
     // additive "lighter" glows on dark themes but washes to nothing on a light (Paper) page —
@@ -1250,14 +1267,14 @@ function initPortal() {
     cv.style.width = W + "px"; cv.style.height = H + "px";
     cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
     document.documentElement.appendChild(cv);
-    const ctx = cv.getContext("2d"); ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    const ctx = cv.getContext("2d");
+    if (!ctx) { frame.remove(); cv.remove(); nav(); return; }   // no 2D context (rare: context-limit/OOM) → skip the effect, just navigate
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     const fire = makeFire();
 
-    let ready = false, openAt = 0, start = 0, done = false, rot = 0, lastTs = 0;
-    const nav = () => { if (done) return; done = true; try { sessionStorage.setItem("portalReveal", "1"); } catch (e) {} location.href = href; };
+    let ready = false, openAt = 0, start = 0, rot = 0, lastTs = 0;   // done/nav are hoisted to the top of depart() as the always-on failsafe
     const onReady = () => {   // frame rendered → match theme + reveal its JS-gated content, then open onto it
       if (ready) return; ready = true;
-      setTimeout(nav, OPEN_MS + HOLD_MS + FADE_MS + 1200);   // hard backstop: reach the destination even if the rAF loop stalls
       try {
         const d = frame.contentDocument, t = document.documentElement.getAttribute("data-theme");
         if (t) d.documentElement.setAttribute("data-theme", t);   // else it keeps the same CSS default as this page

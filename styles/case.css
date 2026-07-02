@@ -38,15 +38,6 @@
 
 /* CSS-rendered visuals (no public screenshot) */
 .viz { position: relative; width: 100%; height: 100%; display: grid; place-items: center; overflow: hidden; }
-.viz--tells { background: radial-gradient(125% 95% at 50% 16%, #1d5440 0%, #0d271b 52%, #06110c 100%); }
-.viz--tells .felt { width: 64%; height: 46%; border-radius: 50%; background: radial-gradient(60% 70% at 50% 40%, #2f7d5b 0%, #1f5a40 70%, #164531 100%); box-shadow: inset 0 0 60px rgba(0,0,0,0.5), 0 30px 60px rgba(0,0,0,0.5); border: 6px solid #3a2417; position: relative; }
-.viz--tells .seat { position: absolute; width: 34px; height: 34px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #8fe7b0, #2f7d5b); box-shadow: 0 0 18px rgba(143,231,176,0.4); }
-.viz--tells .dots { position: absolute; inset: 0; background-image: radial-gradient(rgba(143,231,176,0.16) 1px, transparent 1.4px); background-size: 22px 22px; opacity: 0.5; }
-.viz--tells .label { position: absolute; bottom: 16px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(236,232,221,0.62); }
-.viz--miztips { background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%); }
-.viz--miztips .coin { width: clamp(96px, 18%, 150px); aspect-ratio: 1; border-radius: 26%; box-shadow: 0 24px 60px rgba(0,0,0,0.35); }
-.viz--miztips .figure { position: absolute; bottom: 18%; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: clamp(28px, 6vw, 52px); color: #fff; font-weight: 600; letter-spacing: -0.01em; }
-.viz--miztips .cap { position: absolute; bottom: 14px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.72); }
 /* generic branded tile for mini case studies that have no screenshot */
 .viz--mini { background: radial-gradient(130% 100% at 32% 22%, color-mix(in srgb, var(--proj, var(--accent)) 26%, var(--surface)) 0%, var(--surface-2) 54%, var(--bg) 100%); }
 .viz--mini::after { content: ""; position: absolute; inset: 0; background-image: radial-gradient(color-mix(in srgb, var(--proj, var(--accent)) 18%, transparent) 1px, transparent 1.5px); background-size: 22px 22px; opacity: 0.4; }

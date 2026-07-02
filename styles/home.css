@@ -379,9 +379,9 @@
 /* miztips preview adapts to the active theme */
 .browser__view--mz { background: #c1b38c; }
 .mz-shot--dark { display: none; }
-:is([data-theme="dark"], [data-theme="midnight"], [data-theme="bordeaux"], [data-theme="forest"]) .browser__view--mz { background: #0d1625; }
-:is([data-theme="dark"], [data-theme="midnight"], [data-theme="bordeaux"], [data-theme="forest"]) .mz-shot--luxe { display: none; }
-:is([data-theme="dark"], [data-theme="midnight"], [data-theme="bordeaux"], [data-theme="forest"]) .mz-shot--dark { display: block; }
+:is([data-theme="forest"], [data-theme="indigo"]) .browser__view--mz { background: #0d1625; }
+:is([data-theme="forest"], [data-theme="indigo"]) .mz-shot--luxe { display: none; }
+:is([data-theme="forest"], [data-theme="indigo"]) .mz-shot--dark { display: block; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) .browser__view--mz { background: #0d1625; }
   :root:not([data-theme]) .mz-shot--luxe { display: none; }
@@ -435,7 +435,7 @@
   opacity: 0.55; pointer-events: none;
 }
 .about__shape .ring { position: absolute; inset: -1px; border-radius: 50%; border: 1px solid var(--proj, var(--accent)); opacity: 0.28; transform: translateZ(14px); }
-.about__monogram { font-family: var(--font-display); font-weight: 360; font-size: clamp(3.2rem, 10vw, 6rem); color: var(--accent); letter-spacing: -0.04em; line-height: 1; transform: translateZ(30px); will-change: transform; }
+.about__monogram { font-family: var(--font-display); font-weight: 360; font-size: clamp(3.2rem, 10vw, 6rem); color: var(--accent); letter-spacing: -0.04em; line-height: 1; transform: translateZ(30px); }
 .about__monogram.is-pop { animation: orb-pop 0.55s var(--ease-spring); }
 @keyframes orb-pop {
   0% { transform: translateZ(30px) scale(1); }
@@ -538,13 +538,6 @@
 .seal.is-spun .seal__ring { animation-duration: 2.4s; }
 @keyframes seal-spin { to { transform: rotate(360deg); } }
 @keyframes seal-float { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(3px, -6px); } 50% { transform: translate(0, -9px); } 75% { transform: translate(-3px, -5px); } }
-/* second seal — opposite spin, out-of-phase drift, star center, dashed inner ring */
-.seal--alt { animation-delay: -4.5s; }
-.seal--alt .seal__ring { animation-name: seal-spin-rev; animation-duration: 24s; }
-@keyframes seal-spin-rev { to { transform: rotate(-360deg); } }
-.seal--alt .seal__mark { border-radius: 1px; clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
-.seal--alt:hover .seal__mark { transform: rotate(72deg) scale(1.12); }
-.seal__edge--dash { stroke-dasharray: 2.4 3; }
 @media (prefers-reduced-motion: reduce) { .seal, .seal__ring { animation: none; } }
 
 /* ---------- Play — heads-up Texas Hold'em ---------- */

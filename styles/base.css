@@ -59,15 +59,10 @@ ul, ol { list-style: none; padding: 0; }
 /* ---------- Layout primitives ---------- */
 .wrap { width: 100%; max-width: var(--maxw); margin-inline: auto; padding-inline: var(--gutter); }
 .wrap--wide { max-width: var(--maxw-wide); }
-.wrap--prose { max-width: 78ch; }
 .section { padding-block: clamp(3.5rem, 9vw, 7rem); }
 .section--tight { padding-block: clamp(2.5rem, 6vw, 4.5rem); }
 .stack > * + * { margin-top: var(--stack, 1rem); }
 .cluster { display: flex; flex-wrap: wrap; gap: var(--cluster-gap, 0.6rem); align-items: center; }
-
-/* Hairline section divider */
-.divider { border: 0; border-top: 1px solid var(--border); }
-.divider--strong { border-top-color: var(--border-strong); }
 
 /* ---------- Scroll progress (top hairline) ---------- */
 .scroll-progress {
@@ -214,10 +209,10 @@ kbd {
   font-size: var(--fs-sm); color: var(--text-dim); transition: background var(--t-fast), color var(--t-fast);
 }
 .theme-opt:hover { background: var(--surface-2); color: var(--text); }
-.theme-opt[aria-checked="true"] { color: var(--text); font-weight: 600; }
+.theme-opt[aria-pressed="true"] { color: var(--text); font-weight: 600; }
 .theme-opt .sw { width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(127,127,127,0.4); flex: none; }
 .theme-opt .check { margin-left: auto; opacity: 0; color: var(--accent); font-size: var(--fs-sm); }
-.theme-opt[aria-checked="true"] .check { opacity: 1; }
+.theme-opt[aria-pressed="true"] .check { opacity: 1; }
 .sw-forest { background: linear-gradient(135deg, #0f1814 50%, #e0bc8c 50%); }
 .sw-paper  { background: linear-gradient(135deg, #fbfaf7 50%, #1f6b49 50%); }
 .sw-indigo { background: linear-gradient(135deg, #12152e 50%, #a6a2f7 50%); }
@@ -299,7 +294,6 @@ kbd {
 .btn--ghost { border-color: var(--border-strong); color: var(--text); background: var(--surface); }
 .btn--ghost:hover { border-color: var(--text); background: var(--surface-2); }
 .btn--sm { padding: 0.45rem 0.8rem; font-size: var(--fs-xs); }
-.btn--block { width: 100%; justify-content: center; }
 .btn svg { width: 1em; height: 1em; }
 .btn .arrow { transition: transform var(--t) var(--ease); }
 .btn:hover .arrow { transform: translateX(3px); }
@@ -327,7 +321,6 @@ kbd {
 }
 .badge--live { color: var(--up); background: color-mix(in srgb, var(--up) 12%, transparent); }
 .badge--live .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--up); animation: pulse-dot 2s var(--ease) infinite; }
-.badge--private { color: var(--text-mute); background: var(--surface-2); border: 1px solid var(--border); }
 
 @keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.45; transform: scale(0.82); } }
 
@@ -355,6 +348,7 @@ a, button { -webkit-tap-highlight-color: transparent; }
   .cmdk-trigger { height: 44px; }                 /* pill keeps its auto width where the ⌘K hint shows */
   .nav-links > a { padding-block: 0.6rem; }
   .index-rail a { padding-block: 0.5rem; }
+  .site-footer .cluster a { padding-block: 0.55rem; }   /* footer links (GitHub/LinkedIn/Email…) reach ~44px on touch, like the rest of the UI */
 }
 @media (pointer: coarse) and (max-width: 660px) {
   .cmdk-trigger { width: 44px; }                  /* icon-only on phones → comfortable square target */
