@@ -1205,6 +1205,7 @@ function initPortal() {
       }
       const a0 = p.bri * fl * fade;
       if (a0 < 0.03) continue;
+      if (rr < 0.5) continue;   // ROOT-CAUSE GUARD: a streak whose band sits inside the ring centre would be a NEGATIVE-radius arc — ctx.arc() throws IndexSizeError, killing the whole rAF loop so the portal freezes at its opening radius (worst on small mobile rings: R0≈20 vs band ±30). Skip it; it draws normally once R grows past the band.
       const head = p.a + rot * p.spd, da = p.arclen / SEG;              // spins with the portal
       ctx.lineWidth = p.wide;
       for (let s = 0; s < SEG; s++) {                                    // comet taper: white-hot head → gold → orange tail
@@ -1343,7 +1344,8 @@ function initPortal() {
       const sprayK = spinMult;                                  // spark throw tracks spin speed (centrifugal): slower spin → shorter sparks
       const omega = SPIN * spinMult;                              // current angular velocity — drives the spark motion-blur
       rot += dt * omega;
-      drawRing(ctx, cx, cy, R, el, rot, strokeA, sparkA, sprayK, fire, RING);
+      try { drawRing(ctx, cx, cy, R, el, rot, strokeA, sparkA, sprayK, fire, RING); }
+      catch (e) { nav(); return; }   // belt-and-suspenders: a canvas draw error must bail straight to the destination, never strand a frozen frame (HARD_MAX is only the last-resort backstop)
       requestAnimationFrame(loop);
     }
     requestAnimationFrame(loop);
